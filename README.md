@@ -1,5 +1,6 @@
 # Introduction
-This project is a web interface for Samba4 made using Flask and python-ldap.
+This project is a web interface for Active Directory made using Flask and
+python-ldap, focusing in easy of use and simplicity.
 
 It's using the connecting user's own credentials to connect to the
 directory and allow a variety of operations.
@@ -8,18 +9,18 @@ The goal is to be able to do most common directory operations directly
 through this web interface rather than have to rely on command tools or
 Windows interfaces.
 
+Its compatible with both Windows AD y Samba4 domain controllers.
+
 # History
-Around 3 years ago, the Ubuntu flavor for education, Edubuntu, started
-working on a server edition, using containers for the various services
-commonly used by school districts and using Samba4 as the directory.
-
-Due to limited spare time by the main developers, this project slowly
-died but the web inteface developped to manage the Samba4 server still
-evolved and over the years, got a bunch of bugfixes and improvements.
-
-As a result, it was decided that this should be turned into its own
-project, outside of the scope of the Edubuntu project and be made widely
-available.
+This project is a fork of samba4-manager, created by Stéphane Graber
+and the Edubuntu community.
+This project was pick up for internal use at Havana's Technology University
+in 2017, and since it has received numerous updates, additions, and changes.
+We decided to release our version as a fork since the original project has 
+not been updated in the last four years and is incompatible with the latest 
+versions of Python and supporting libraries.
+We will keep updating the project for our organization and the community, 
+and we will love to receive all kinds of feedback and contributions.
 
 # Dependencies
  * python
@@ -45,6 +46,6 @@ You may then connect through: [http://localhost:8080](http://localhost:8080)
 # Contributing
 Contributions are always appreciated!
 
-The project is licensed under the GNU GPL version 2 (and any later version).
+The project is licensed under the GNU GPL version 3.
 Contributors must sign-off on their commits, indicating that they agree with
 the Developer Certificate of Ownership (developercertificate.org).
