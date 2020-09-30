@@ -1,0 +1,126 @@
+{% extends "base_es.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+
+{% if parent %}
+            <a href="{{ url_for('tree_base', base=parent) }}" class="button">Regresar a: {{ parent }}</a>
+{% endif %}
+
+<div class="group_profile" style="min-height:10em;">
+    <div class="right">
+{% if admin %}
+        <p style="text-align: right;"><a href="{{ url_for('group_edit', groupname=group['sAMAccountName']) }}" class="button">Editar grupo</a></p>
+        <p style="text-align: right;"><a href="{{ url_for('group_delete', groupname=group['sAMAccountName']) }}" class="button">Eliminar grupo</a></p>
+        <p style="text-align: right;"><a href="{{ url_for('group_addmembers', groupname=group['sAMAccountName']) }}" class="button">Adicionar miembros</a></p>
+{% endif %}
+    </div>
+    <h2>Propiedades</h2>
+
+    <table style='width:auto;'>
+{% for key, title in identity_fields %}
+{% if key in group %}
+        <tr>
+            <th style='padding-right:10px;'>{{ title }}</td>
+{% if key == "__groupScope" %}
+            <td>
+                <ul>
+{% for scope in group[key] %}
+                    <li>{{ scope }}</li>
+{% endfor %}
+                </ul>
+            </td>
+{% else %}
+            <td>{{ group[key] }}</td>
+{% endif %}
+        </tr>
+{% endif %}
+{% endfor %}
+{% if 'groupType' in group %}
+        <tr>
+            <th style='padding-right:10px;'>Tipo</th>
+{% if group['groupType'].__and__(2147483648) %}
+            <td>Grupo de Seguridad</td>
+{% else %}
+            <td>Lista de Distribución</td>
+{% endif %}
+        <tr>
+            <th style='padding-right:10px;'>Banderas del Grupo</th>
+            <td>
+                <ul>
+{% for key, value in grouptype_values.items() %}
+{% if group['groupType'].__and__(key) %}
+                    <li>{{ value[0] }}</li>
+{% endif %}
+{% endfor %}
+                </ul>
+            </td>
+        </tr>
+{% endif %}
+    </table>
+</div>
+
+{% if groups %}
+<h2>Membrecía del grupo</h2>
+<table>
+    <tr>
+{% for key, title in group_fields %}
+        <th>{{ title }}</th>
+{% endfor %}
+    </tr>
+
+{% for entry in groups %}
+    <tr>
+{% for key, title in group_fields %}
+{% if key == "sAMAccountName" and key in entry %}
+        <td style='padding-right:10px;white-space:nowrap;'><a href="{{ url_for('group_overview', groupname=entry['sAMAccountName']) }}">{{ entry[key] }}</a></td>
+{% elif key in entry %}
+        <td>{{ entry[key] }}</td>
+{% else %}
+        <td>&nbsp;</td>
+{% endif %}
+{% endfor %}
+    </tr>
+{% endfor %}
+</table>
+{% endif %}
+
+<h2>Miembros</h2>
+<table>
+    <tr>
+{% for key, title in group_fields %}
+        <th>{{ title }}</th>
+{% endfor %}
+        <th>Type</th>
+    </tr>
+
+{% for entry in members %}
+    <tr>
+{% for key, title in group_fields %}
+{% if key == "sAMAccountName" and key in entry %}
+{% if "user" in entry['objectClass'] %}
+        <td style='padding-right:10px;white-space:nowrap;'><a href="{{ url_for('user_overview', username=entry['sAMAccountName']) }}">{{ entry[key] }}</a></td>
+{% else %}
+        <td style='padding-right:10px;white-space:nowrap;'><a href="{{ url_for('group_overview', groupname=entry['sAMAccountName']) }}">{{ entry[key] }}</a></td>
+{% endif %}
+{% elif key == "description" and not entry[key] and 'displayName' in entry %}
+        <td>{{ entry['displayName'] }}</td>
+{% elif key in entry %}
+        <td>{{ entry[key] }}</td>
+{% else %}
+        <td>&nbsp;</td>
+{% endif %}
+{% endfor %}
+{% if '__primaryGroup' in entry and entry['__primaryGroup'] == group['distinguishedName'] %}
+        <td>Grupo principal</td>
+{% else %}
+{% if admin %}
+        <td><a href="{{ url_for('group_delmember', groupname=group['sAMAccountName'], member=entry['sAMAccountName']) }}">Miembro</a></td>
+{% else %}
+        <td>Miembro</td>
+{% endif %}
+{% endif %}
+    </tr>
+{% endfor %}
+</table>
+
+{% endblock %}

@@ -1,0 +1,98 @@
+{% extends "base_es.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+
+{% if parent %}
+            <a href="{{ url_for('tree_base', base=parent) }}" class="button">Regresar a: {{ parent }}</a>
+{% endif %}
+
+
+<div class="user_profile" style="min-height:10em;">
+    <div class="right">
+{% if g.ldap['username'] == user['sAMAccountName'] or admin %}
+        <p style="text-align: right;"><a href="{{ url_for('user_changepw', username=user['sAMAccountName']) }}" class="button">Cambiar contraseña</a></p>
+{% endif %}
+{% if admin %}
+        <p style="text-align: right;"><a href="{{ url_for('user_edit_profile', username=user['sAMAccountName']) }}" class="button">Editar usuario</a></p>
+        <p style="text-align: right;"><a href="{{ url_for('user_delete', username=user['sAMAccountName']) }}" class="button">Eliminar usuario</a></p>
+{% endif %}
+    </div>
+    <h2>Profile</h2>
+{% if g.ldap['username'] == user['sAMAccountName'] or admin %}
+    <table style='width:auto;'>
+{% endif %}
+{% for key, title in identity_fields %}
+{% if key in user %}
+        <tr>
+            <th style='padding-right:10px;'>{{ title }}</td>
+{% if key == "otherMailbox" %}
+            <td> {% for alias in user[key] %}
+                    {{ alias }},
+                 {% endfor %}
+            </td>
+{% else %}
+            <td>{{ user[key] }}</td>
+{% endif %}
+        </tr>
+{% endif %}
+{% endfor %}
+{% if 'userAccountControl' in user %}
+        <tr>
+            <th style='padding-right:10px;'>Estado </th>
+            <td>
+                <ul>
+{% for key, value in uac_values.items() %}
+{% if user['userAccountControl'].__and__(key) %}
+                    <li>{{ value[0] }}</li>
+{% endif %}
+{% endfor %}
+                </ul>
+            </td>
+        </tr>
+{% endif %}
+    </table>
+
+{% if groups %}
+<br><br>
+<hr>
+<div class="right">
+   {% if admin %}
+    <p>
+     <form method="post" action="?" class="form">
+        {{ form.csrf_token }}
+        {{ form.available_groups }}
+        <input type="submit" value="Adicionar" />
+    </form>
+    </p>
+   {% endif %}
+</div>
+<h2>Pertenencia a Grupos</h2>
+<table>
+    <tr>
+{% for key, title in group_fields %}
+        <th>{{ title }}</th>
+{% endfor %}
+    </tr>
+
+{% for entry in groups %}
+    <tr>
+{% for key, title in group_fields %}
+{% if key in entry %}
+        <td>{{ entry[key] }}</td>
+{% else %}
+        <td>&nbsp;</td>
+{% endif %}
+{% endfor %}
+        {% if admin %}
+           {% if '__primaryGroup' in user and user['__primaryGroup'] == entry['distinguishedName'] %}
+            <td></td>
+           {% else %}
+            <td><a href="{{ url_for('group_delmember', groupname=entry['sAMAccountName'], member=user['sAMAccountName'], show_user=True) }}">(remover de este grupo)</a></td>
+           {% endif %}
+        {% endif %}
+    </tr>
+{% endfor %}
+</table>
+{% endif %}
+</div>
+{% endblock %}

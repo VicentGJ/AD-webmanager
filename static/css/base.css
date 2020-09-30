@@ -1,0 +1,37 @@
+html, body {
+    margin: 0;
+    padding: 0;
+}
+body {
+    background: #054cde;
+    background-image: url("/static/img/adwaita-day.jpg");
+    background-attachment: fixed;
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+table td, table th {
+    vertical-align: top;
+}
+table tr:hover {
+    background-color: #f6f6f6;
+}
+pre {
+    background-color: #f2f2f2;
+    padding: 5px 5px 5px 3px;
+    display: block;
+    overflow: auto;
+}
+#flash-messages .warning pre {
+    background-color: #ECA918;
+}
+ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}

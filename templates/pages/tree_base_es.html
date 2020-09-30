@@ -1,0 +1,55 @@
+{% extends "base_es.html" %}
+{% block title %}{{ base }}{% endblock %}
+{% block content %}
+
+<div class="tree_base" style="min-height:10em;">
+    <div>
+        <p>
+{% if request.query_string %}
+    <form method="post" action="?{{ request.query_string }}" class="form">
+{% else %}
+    <form method="post" action="?" class="form">
+{% endif %}
+        {{ form.csrf_token }}
+        {{ form.filter_str(class_="right",size=12,maxlength=25)|safe }}
+        <!-- input class="right" type="submit" value="buscar" /-->
+    </form>
+
+{% if parent %}
+            <a href="{{ url_for('tree_base', base=parent) }}" class="button">Subir un nivel</a>
+{% endif %}
+{% if admin %}
+            <a href="{{ url_for('group_add', base=base) }}" class="button">Adicionar grupo</a>
+            <a href="{{ url_for('user_add', base=base) }}" class="button">Adicionar usuario</a>
+            <!--<a href="{{ url_for('core_index') }}" class="button">Crear contenedor</a>-->
+{% endif %}
+
+        </p>
+    </div>
+    <h2>Registros</h2>
+
+    <table>
+        <tr>
+{% for key, title in entry_fields %}
+            <th>{{ title }}</th>
+{% endfor %}
+        </tr>
+
+{% for entry in entries %}
+        <tr>
+{% for key, title in entry_fields %}
+{% if key == "name" and key in entry %}
+            <td style='padding-right:10px;white-space:nowrap;'><a href="{{ entry['__target'] }}">{{ entry[key] }}</a></td>
+{% elif key == "__type" and key in entry %}
+            <td style='white-space:nowrap;'>{{ entry[key] }}</td>
+{% elif key in entry %}
+            <td>{{ entry[key]|truncate(70) }}</td>
+{% else %}
+            <td>&nbsp;</td>
+{% endif %}
+{% endfor %}
+        </tr>
+{% endfor %}
+    </table>
+</div>
+{% endblock %}

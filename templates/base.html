@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+    <head>
+        <title>Samba4 web manager - {% block title %}{% endblock %}</title>
+        {% block css %}
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/import.css') }}" />
+        <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+        {% endblock %}
+    </head>
+    <body>
+        {% if self.header() %}
+        <div id="header">{% block header %}{% endblock %}</div>
+        {% endif %}
+
+        <div class="center-page-wrapper">
+            <div class="center-page-content">
+                <div id="body">
+                    <h1 id="page-title">{{ self.title() }}</h1>
+
+                    {% if g.menu %}
+                    <div id="menu">
+                        <ul class="nav">
+                            {% for url, link in g.menu %}
+                            <li><a href="{{ url }}">{{ link }}</a></li>
+                            {% endfor %}
+                        </ul>
+
+                        <div class="clear"></div>
+                    </div>
+                    {% endif %}
+
+                    <div id="content">
+
+                        {% if get_flashed_messages(with_categories=true) %}
+                        <ul id="flash-messages">
+                            {% for category, msg in get_flashed_messages(with_categories=true) %}
+                            <li class="flash-messages {{ category }}">{{ msg }}</li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+
+                        {% block content %}{% endblock %}
+
+                        <div class="clear"></div>
+                    </div>
+                    <div class="clear"></div>
+                </div>
+
+                <div id="footer">
+                    {% block footer %}{% endblock%}
+                    <p>&copy; 2012-2015 Stéphane Graber. <a href="https://github.com/stgraber/samba4-manager"/>Samba4 web manager.</a></p>
+                    <div class="clear"></div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

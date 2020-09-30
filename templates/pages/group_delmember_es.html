@@ -1,0 +1,20 @@
+{% extends "base-modal_es.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+    {% from "forms/macros.html" import render_field %}
+    <form method="post" action="?" class="form">
+        {{ form.csrf_token }}
+        <p>
+            Está seguro de que desea quitar al usuario '{{ member }}' del grupo '{{ group }}'?
+        </p>
+        <ul>
+        {% for field in form.visible_fields %}
+        {{ render_field(field) }}
+        {% endfor %}
+        </ul>
+        {% if parent %}
+        <a class="link-button" href="{{ parent }}">Cancelar</a>
+        {% endif %}
+        <input class="right" type="submit" value="{{ action }}" />
+    </form>
+{% endblock %}

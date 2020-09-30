@@ -1,0 +1,6 @@
+SECRET_KEY = "INSERT-SECRET-KEY-HERE"
+LDAP_DOMAIN = "mydomain.example"
+SEARCH_DN = "dc=Users,dc=mydomain,dc=example"
+#LDAP_SERVER = "some-specific-server.example"
+#DEBUG = True
+#URL_PREFIX = "/domain"

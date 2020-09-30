@@ -1,0 +1,267 @@
+/******************************************************************************
+    Page
+*/
+.center-page-wrapper {
+    text-align: center;
+    margin: 0 auto;
+    width: 1216px;
+}
+.center-page-content {
+    text-align: left;
+}
+
+
+/******************************************************************************
+    Header
+*/
+#global-header {
+    background-color: #2c001e;
+    padding: 6px 8px;
+}
+#user-nav {
+    float: right;
+}
+#user-nav li {
+    padding: 0;
+}
+#header {
+    min-height: 64px;
+    background: #dd4814 url(../img/header_stripes.png) repeat-x top left;
+    -moz-border-radius: 0 0 4px 4px;
+    -webkit-border-radius: 0 0 4px 4px;
+    border-radius: 0 0 4px 4px;
+}
+#global-header,
+#global-header a,
+#header a,
+#header {
+    color: #fff;
+    text-decoration: none;
+}
+#main-nav {
+    margin-left: 10px;
+    font-size: 14px;
+}
+#right-nav li a,
+#main-nav li a {
+    display: block;
+    height: 41px;
+    padding: 23px 15px 0 15px;
+}
+#right-nav li.icon a,
+#main-nav li.icon a {
+    padding-top: 18px;
+    height: 46px;
+}
+#main-nav li.icon.large a {
+    padding-top: 13px;
+    height: 51px;
+}
+#right-nav li.active a,
+#main-nav li.active a {
+    background: rgba(0,0,0,0.2) url(../img/header_tail.png) no-repeat bottom center;
+}
+#right-nav {
+    float: right;
+    margin-right: 5px;
+}
+#right-nav li.active a {
+    background-color: transparent;
+}
+#right-nav li.divider {
+    height: 30px;
+    margin-top: 17px;
+    border-left: 1px solid #c53f11;
+}
+
+#right textarea,
+input[type="password"],
+input[type="text"] {
+    width: 150px;
+    padding: 4px;
+    border: 1px solid #999;
+    font-size: 13px;
+    -moz-border-radius: 2px;
+    -webkit-border-radius: 2px;
+    border-radius: 2px;
+    background: #FFF;
+    overflow: auto;
+    white-space: nowrap;
+    word-wrap: normal;
+}
+
+
+/******************************************************************************
+    Header search
+*/
+#header-search {
+    margin: 18px 15px 0 0;
+}
+
+#header-search input[type="text"] {
+    width: 200px;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    border-radius: 4px;
+}
+
+
+/******************************************************************************
+    Content
+*/
+
+#body {
+    margin: 0;
+    padding-top: 1px;
+}
+
+#page-title {
+    /* Need to set relative so the tail appears above shadows. */
+    position: relative;
+    font-size: 36px;
+    color: #fff;
+    margin: 0 190px;
+    padding: 14px 0 20px 0;
+    background: transparent url(../img/content_tail.png) no-repeat 50px bottom;
+}
+
+#menu {
+    float: left;
+    width: 160px;
+    padding: 10px 10px 10px 10px;
+    background-color: #fff;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    border-radius: 4px;
+}
+
+#menu a {
+    color: black;
+    display: block;
+    padding: 0 5px;
+    border-bottom: 1px solid #e5e2e0;
+    width: 150px;
+}
+
+#menu li:last-child a {
+    border-bottom: none;
+}
+
+#menu a:focus,
+#menu a:hover {
+    background-color: #f2f2f2;
+}
+
+#content {
+    width: 81%;
+    float: right;
+    padding: 20px 20px 40px 20px;
+    background-color: #f8f9fd;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    border-radius: 4px;
+}
+
+
+/******************************************************************************
+    Content modifier: login
+*/
+.login .center-page-wrapper {
+    width: 440px;
+}
+.login.no-users .center-page-wrapper {
+    width: 670px;
+}
+.login #body {
+    margin-top: 100px;
+}
+.login #page-title {
+    margin: 0 20px;
+    margin-left: 15px;
+}
+.login #content {
+    width: inherit;
+    float: none;
+    padding: 30px 40px;
+    -webkit-box-shadow: 0 0 15px 0 rgba(0,0,0,1);
+    box-shadow: 0 0 15px 0 rgba(0,0,0,1);
+}
+.login #content h2:first-child {
+    margin: 0 0 20px 0;
+}
+.login h2 {
+    margin-bottom: 20px;
+}
+.login #footer {
+    margin: 0 auto;
+
+    background-color: inherit;
+}
+
+
+/******************************************************************************
+    Content modifier: sidebar
+*/
+.sidebar #content {
+    padding-right: 250px;
+}
+
+
+/******************************************************************************
+    Sidebar
+*/
+#sidebar {
+    display: none;
+    float: right;
+    width: 160px;
+    margin-right: -250px;
+    padding: 0 20px 10px 20px;
+    border-left: 1px solid #e5e2e0;
+}
+.sidebar #sidebar {
+    display: block;
+}
+#sidebar h4 {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+#sidebar .block:first-child h4 {
+    margin-top: 0;
+}
+#sidebar .button {
+    width: 100px;
+}
+#sidebar h4 {
+    margin: 30px 0 0 0;
+}
+#sidebar h4:first-child {
+    margin-top: 10px;
+}
+#sidebar .button,
+#sidebar button,
+#sidebar input[type="submit"] {
+    margin-top: 10px;
+}
+
+
+/******************************************************************************
+    Footer
+*/
+#footer {
+    margin-bottom: 20px;
+    margin-top: 5px;
+    width: 82.8%;
+    padding: 12px 10px;
+    color: #aea79f;
+    font-size: 12px;
+    float: right;
+
+    background-color: #0a3341c9;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    border-radius: 4px;
+}
+#footer img {
+    float: right;
+}
+

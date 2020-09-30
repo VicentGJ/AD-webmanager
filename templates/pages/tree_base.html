@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}{{ base }}{% endblock %}
+{% block content %}
+
+<div class="tree_base" style="min-height:10em;">
+    <div>
+        <p>
+{% if parent %}
+            <a href="{{ url_for('tree_base', base=parent) }}" class="button">Parent</a>
+{% endif %}
+{% if admin %}
+            <a href="{{ url_for('group_add', base=base) }}" class="button">Add group</a>
+            <a href="{{ url_for('user_add', base=base) }}" class="button">Add user</a>
+            <a href="{{ url_for('core_index') }}" class="button">Create container</a>
+{% endif %}
+        </p>
+    </div>
+    <h2>Entries</h2>
+
+    <table>
+        <tr>
+{% for key, title in entry_fields %}
+            <th>{{ title }}</th>
+{% endfor %}
+        </tr>
+
+{% for entry in entries %}
+        <tr>
+{% for key, title in entry_fields %}
+{% if key == "name" and key in entry %}
+            <td style='padding-right:10px;white-space:nowrap;'><a href="{{ entry['__target'] }}">{{ entry[key] }}</a></td>
+{% elif key == "__type" and key in entry %}
+            <td style='white-space:nowrap;'>{{ entry[key] }}</td>
+{% elif key in entry %}
+            <td>{{ entry[key]|truncate(70) }}</td>
+{% else %}
+            <td>&nbsp;</td>
+{% endif %}
+{% endfor %}
+        </tr>
+{% endfor %}
+    </table>
+</div>
+{% endblock %}
