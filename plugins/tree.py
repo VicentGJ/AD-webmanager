@@ -59,8 +59,12 @@ def init(app):
             scope = "onelevel"
 
         entries = []
-        users = sorted(ldap_get_entries("objectClass=person", base, scope, ignore_erros=False), key=lambda entry: entry['displayName'])
-        other_entries = sorted(ldap_get_entries("objectClass=top", base, scope, ignore_erros=False), key=lambda entry: entry['name'])
+        users = ldap_get_entries("objectClass=top", base, scope, ignore_erros=False)
+        users = filter(lambda entry: 'sAMAccountName' in entry, users)
+        users = sorted(users, key=lambda entry: entry['displayName'])
+        other_entries = ldap_get_entries("objectClass=top", base, scope, ignore_erros=False)
+        other_entries = filter(lambda entry: 'sAMAccountName' not in entry, other_entries)
+        other_entries = sorted(other_entries, key=lambda entry: entry['name'])
 
         for entry in users:
             if 'description' not in entry:
@@ -69,16 +73,12 @@ def init(app):
             else:
                 entry['__description'] = entry['description']
 
-            entry['__target'] = url_for('tree_base',
-                                        base=entry['distinguishedName'])
-            if 'user' in entry['objectClass']:
-                try:
-                    entry['name'] = entry['displayName']
-                except:
-                    entry['name'] = entry['cn']
-                entry['__type'] = "Usuario"
-                entry['__target'] = url_for('user_overview',
-                                            username=entry['sAMAccountName'])
+            entry['__target'] = url_for('tree_base', base=entry['distinguishedName'])
+
+            entry['name'] = entry['displayName']
+            #entry['name'] = entry['cn']
+            entry['__type'] = "Usuario"
+            entry['__target'] = url_for('user_overview', username=entry['sAMAccountName'])
             
             if 'user' in entry['objectClass']:
                 if entry['userAccountControl'] == 512:
@@ -112,8 +112,7 @@ def init(app):
                 else:
                     entry['__description'] = entry['description']
                 
-                entry['__target'] = url_for('tree_base',
-                                        base=entry['distinguishedName'])
+                entry['__target'] = url_for('tree_base', base=entry['distinguishedName'])
 
                 if 'group' in entry['objectClass']:
                     entry['__type'] = "Grupo"
@@ -135,7 +134,7 @@ def init(app):
                         entries.append(entry)
                 else:
                     entries.append(entry)
-
+                    
         parent = None
         base_split = base.split(',')
         if not base_split[0].lower().startswith("dc"):

@@ -172,6 +172,7 @@ def init(app):
             identity_fields = [('givenName', "Nombre"),
                                ('sn', "Apellidos"),
                                ('displayName', "Nombre Completo"),
+                               ('name', "Carnet de Identidad"),
                                ('sAMAccountName', "Nombre de Usuario"),
                                ('mail', u"Dirección de Correo"),
                                ('pager', "Categoría")]
