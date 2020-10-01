@@ -59,8 +59,10 @@ def init(app):
             scope = "onelevel"
 
         entries = []
-        for entry in sorted(ldap_get_entries("objectClass=top", base, scope, ignore_erros=False), 
-            key=lambda entry: entry['name']):
+        users = sorted(ldap_get_entries("objectClass=person", base, scope, ignore_erros=False), key=lambda entry: entry['displayName'])
+        other_entries = sorted(ldap_get_entries("objectClass=top", base, scope, ignore_erros=False), key=lambda entry: entry['name'])
+
+        for entry in users:
             if 'description' not in entry:
                 if 'sAMAccountName' in entry:
                    entry['__description'] = entry['sAMAccountName']
@@ -77,18 +79,6 @@ def init(app):
                 entry['__type'] = "Usuario"
                 entry['__target'] = url_for('user_overview',
                                             username=entry['sAMAccountName'])
-            elif 'group' in entry['objectClass']:
-                entry['__type'] = "Grupo"
-                entry['__target'] = url_for('group_overview',
-                                            groupname=entry['sAMAccountName'])
-            elif 'organizationalUnit' in entry['objectClass']:
-                entry['__type'] = "Unidad Organizativa"
-            elif 'container' in entry['objectClass']:
-                entry['__type'] = "Contenedor"
-            elif 'builtinDomain' in entry['objectClass']:
-                entry['__type'] = "Built-in"
-            else:
-                entry['__type'] = "Desconocido"
             
             if 'user' in entry['objectClass']:
                 if entry['userAccountControl'] == 512:
@@ -113,6 +103,38 @@ def init(app):
                     entries.append(entry)
             else:
                 entries.append(entry)
+        
+        for entry in other_entries:
+            if entry not in users:
+                if 'description' not in entry:
+                    if 'sAMAccountName' in entry:
+                        entry['__description'] = entry['sAMAccountName']
+                else:
+                    entry['__description'] = entry['description']
+                
+                entry['__target'] = url_for('tree_base',
+                                        base=entry['distinguishedName'])
+
+                if 'group' in entry['objectClass']:
+                    entry['__type'] = "Grupo"
+                    entry['__target'] = url_for('group_overview',
+                                                groupname=entry['sAMAccountName'])
+                elif 'organizationalUnit' in entry['objectClass']:
+                    entry['__type'] = "Unidad Organizativa"
+                elif 'container' in entry['objectClass']:
+                    entry['__type'] = "Contenedor"
+                elif 'builtinDomain' in entry['objectClass']:
+                    entry['__type'] = "Built-in"
+                else:
+                    entry['__type'] = "Desconocido"
+
+                if filter_str:
+                    if '__description' in entry and filter_str in entry['__description'].lower():
+                        entries.append(entry)
+                    elif 'sAMAccountName' in entry and filter_str in entry['sAMAccountName'].lower():
+                        entries.append(entry)
+                else:
+                    entries.append(entry)
 
         parent = None
         base_split = base.split(',')
