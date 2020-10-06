@@ -60,10 +60,10 @@ def init(app):
 
         entries = []
         users = ldap_get_entries("objectClass=top", base, scope, ignore_erros=False)
-        users = filter(lambda entry: 'sAMAccountName' in entry, users)
+        users = filter(lambda entry: 'displayName' in entry, users)
         users = sorted(users, key=lambda entry: entry['displayName'])
         other_entries = ldap_get_entries("objectClass=top", base, scope, ignore_erros=False)
-        other_entries = filter(lambda entry: 'sAMAccountName' not in entry, other_entries)
+        other_entries = filter(lambda entry: 'displayName' not in entry, other_entries)
         other_entries = sorted(other_entries, key=lambda entry: entry['name'])
 
         for entry in users:
