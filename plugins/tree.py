@@ -75,10 +75,11 @@ def init(app):
         Get all entries that will be displayed in the tree
         """
         entries = []
-        query = filter_select + "=" + filter_str
-        users = ldap_get_entries(query, base, scope, ignore_erros=True)
+        
+        users = ldap_get_entries("objectClass=top", base, scope, ignore_erros=True)
         users = filter(lambda entry: 'displayName' in entry, users)
         users = filter(lambda entry: 'sAMAccountName' in entry, users)
+        users = filter(lambda entry: filter_str in entry[filter_select], users)
         users = sorted(users, key=lambda entry: entry['displayName'])
         if filter_str == "top":
             other_entries = ldap_get_entries("objectClass=top", base, scope, ignore_erros=True)
