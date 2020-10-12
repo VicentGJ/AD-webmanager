@@ -28,7 +28,7 @@ TREE_BLACKLIST = ["CN=ForeignSecurityPrincipals",
 
 class FilterTreeView(FlaskForm):
     filter_str = StringField()
-    filter_select = SelectField(choices=[('sAMAccountName', 'Usuario'), ('displayName', 'Nombre'), ('cUJAEPersonDNI', 'Carné')])
+    filter_select = SelectField(choices=['sAMAccountName', 'displayName', 'cUJAEPersonDNI'])
 
 
 def init(app):
@@ -59,7 +59,6 @@ def init(app):
         else:
             filter_str = None
             scope = "onelevel"
-            print(form.filter_select.data)
             entries = get_entries("top", "objectClass", base, scope)
                     
         parent = None
@@ -77,7 +76,6 @@ def init(app):
         """
         entries = []
         query = filter_select + "=" + filter_str
-
         users = ldap_get_entries(query, base, scope, ignore_erros=True)
         users = filter(lambda entry: 'displayName' in entry, users)
         users = filter(lambda entry: 'sAMAccountName' in entry, users)
