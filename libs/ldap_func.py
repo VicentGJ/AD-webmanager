@@ -48,10 +48,12 @@ LDAP_AD_BOOL_ATTRIBUTES = ['showInAdvancedViewOnly']
 LDAP_AD_GUID_ATTRIBUTES = ['objectGUID']
 LDAP_AD_MULTIVALUE_ATTRIBUTES = ['member', 'memberOf', 'objectClass', 'repsTo',
                                  'servicePrincipalName', 'sshPublicKey', 'managedObjects',
-                                 'proxyAddresses', 'otherMailbox', 'dsCorePropagationData']
+                                 'proxyAddresses', 'otherMailbox', 'dsCorePropagationData', 
+                                 'msSFU30SearchAttributes', 'msSFU30ResultAttributes', 'msSFU30KeyAttributes',
+                                 'ipsecNFAReference', 'dNSProperty']
 LDAP_AD_SID_ATTRIBUTES = ['objectSid']
 LDAP_AD_UINT_ATTRIBUTES = ['userAccountControl', 'groupType']
-LDAP_AD_BLOB_ATTRIBUTES = ['jpegPhoto']
+LDAP_AD_Object_ATTRIBUTES = ['jpegPhoto', 'ipsecData', 'dnsRecord']
 
 
 def ldap_change_password(old_password, new_password, username=None):
@@ -511,7 +513,9 @@ def _ldap_decode_attribute(key, value):
 
     if isinstance(value, list):
         if len(value) > 1:
-            raise Exception("Unknown multiple value field: %s" % key)
+            #raise Exception("Unknown multiple value field: %s" % key)
+            print("Unknown multiple value field: %s" % key)
+            return value
         else:
             value = value[0]
 
@@ -531,14 +535,16 @@ def _ldap_decode_attribute(key, value):
         return value == "TRUE"
     
     # Do nothing to binary object files
-    if key in LDAP_AD_BLOB_ATTRIBUTES:
+    if key in LDAP_AD_Object_ATTRIBUTES:
         return value
 
     # Decode the rest to unicode
     try:
         return value.decode('utf-8')
     except:
-        raise Exception("Unknown type: %s" % key)
+        #raise Exception("Unknown type: %s" % key)
+        print("Unknown multiple value field: %s" % key)
+        return value
 
 
 # Decorators

@@ -20,14 +20,15 @@ from libs.common import iri_for as url_for
 from flask import g, render_template, request, redirect
 from libs.ldap_func import ldap_auth, ldap_get_entries, ldap_in_group
 from flask_wtf import FlaskForm
-from wtforms import StringField
+from wtforms import StringField, SelectField
 
 
 TREE_BLACKLIST = ["CN=ForeignSecurityPrincipals",
                   "OU=sudoers"]
 
 class FilterTreeView(FlaskForm):
-    filter_str = StringField('Buscar')
+    filter_str = StringField()
+    filter_select = SelectField(choices=[('sAMAccountName', 'Usuario'), ('displayName', 'Nombre'), ('cUJAEPersonDNI', 'Carné')])
 
 
 def init(app):
@@ -55,14 +56,14 @@ def init(app):
             scope = "subtree"
         else:
             filter_str = None
-            form.filter_str.data = u'Buscar'
             scope = "onelevel"
 
         entries = []
-        users = ldap_get_entries("objectClass=top", base, scope, ignore_erros=False)
+        users = ldap_get_entries("objectClass=top", base, scope, ignore_erros=True)
         users = filter(lambda entry: 'displayName' in entry, users)
+        users = filter(lambda entry: 'sAMAccountName' in entry, users)
         users = sorted(users, key=lambda entry: entry['displayName'])
-        other_entries = ldap_get_entries("objectClass=top", base, scope, ignore_erros=False)
+        other_entries = ldap_get_entries("objectClass=top", base, scope, ignore_erros=True)
         other_entries = filter(lambda entry: 'displayName' not in entry, other_entries)
         other_entries = sorted(other_entries, key=lambda entry: entry['name'])
 
@@ -76,7 +77,6 @@ def init(app):
             entry['__target'] = url_for('tree_base', base=entry['distinguishedName'])
 
             entry['name'] = entry['displayName']
-            #entry['name'] = entry['cn']
             entry['__type'] = "Usuario"
             entry['__target'] = url_for('user_overview', username=entry['sAMAccountName'])
             
