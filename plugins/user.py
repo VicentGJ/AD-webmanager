@@ -61,6 +61,7 @@ class SICCIPEdit(FlaskForm):
 
 
 class UserAdd(UserProfileEdit):
+    base = None
     cujae_type = SelectField('Trabajador o Estudiante?', [Required()])
     cujae_dni = StringField('Carné de Identidad', [Required()])
     cujae_teacher = SelectField('Profesor?', [Required()], choices=["TRUE", "FALSE"])
@@ -90,9 +91,12 @@ def init(app):
     def user_add():
         title = "Adicionar Usuario"
 
-        base = request.args.get('base')
-        if not base:
-            base = "CN=Users,%s" % g.ldap['dn']
+        if not UserAdd.base:
+            UserAdd.base = request.args.get('base')
+        #if not base:
+        #    base = "CN=Users,%s" % g.ldap['dn']
+        base = UserAdd.base
+        print(base, "fist base")
 
         form = UserAdd(request.form)
         field_mapping = [('givenName', form.first_name),
@@ -113,8 +117,11 @@ def init(app):
         form.cujae_type.choices = ["Worker", "Student"]
         form.uac_flags.choices = [(key, value[0]) for key, value in LDAP_AD_USERACCOUNTCONTROL_VALUES.items()]
 
+        print(base, "secund base")
+
         if form.validate_on_submit():
             try:
+                print(base, "third base")
                 # Default attributes
                 upn = "%s@%s" % (form.user_name.data, g.ldap['domain'])
                 attributes = {'objectClass': [b'top', b'person', b'organizationalPerson', b'user', b'inetOrgPerson'],
@@ -131,18 +138,19 @@ def init(app):
                         attributes[attribute] = [str(current_uac).encode('utf-8')]
                     elif attribute and field.data:
                         attributes[attribute] = [field.data.encode('utf-8')]
-
-                ldap_create_entry("cn=%s,%s" % (form.user_name.data, base),
+                
+                # As a CUJAE specific change I use the dni to create the user
+                ldap_create_entry("cn=%s,%s" % (form.cujae_dni.data, base),
                                   attributes)
+                print("cn=%s,%s" % (form.user_name.data, base))
                 ldap_change_password(None, form.password.data,
                                      form.user_name.data)
                 flash(u"Usuario creado con éxito.", "success")
                 return redirect(url_for('user_overview',
                                         username=form.user_name.data))
             except ldap.LDAPError as e:
-                error = e.message['info'].split(":", 2)[-1].strip()
-                error = str(error[0].upper() + error[1:])
-                flash(error, "error")
+                
+                flash(e, "error")
         elif form.errors:
             flash("Some fields failed validation.", "error")
 
@@ -172,6 +180,7 @@ def init(app):
             identity_fields = [('givenName', "Nombre"),
                                ('sn', "Apellidos"),
                                ('displayName', "Nombre Completo"),
+                               ('name', "Carnet de Identidad"),
                                ('sAMAccountName', "Nombre de Usuario"),
                                ('mail', u"Dirección de Correo"),
                                ('pager', "Categoría")]
@@ -214,9 +223,7 @@ def init(app):
                         flash(u"Usuario añadido con éxito al grupo.", "success")
                     return redirect(url_for('user_overview',username=username))
                 except ldap.LDAPError as e:
-                    error = e.message['info'].split(":", 2)[-1].strip()
-                    error = str(error[0].upper() + error[1:])
-                    flash(error, "error")
+                    flash(e, "error")
             elif form.errors:
                     flash(u"Falló la validación de los datos.", "error")
 
@@ -262,9 +269,7 @@ def init(app):
                 flash(u"La contraseña se cambió con éxito.", "success")
                 return redirect(url_for('user_overview', username=username))
             except ldap.LDAPError as e:
-                error = e.message['info'].split(":", 2)[-1].strip()
-                error = str(error[0].upper() + error[1:])
-                flash(error, "error")
+                flash(e, "error")
         elif form.errors:
                 flash(u"Falló la validación de los datos.", "error")
 
@@ -290,9 +295,7 @@ def init(app):
                 flash(u"Usuario borrado con éxito.", "success")
                 return redirect(url_for('core_index'))
             except ldap.LDAPError as e:
-                error = e.message['info'].split(":", 2)[-1].strip()
-                error = str(error[0].upper() + error[1:])
-                flash(error, "error")
+                flash(e, "error")
         elif form.errors:
                 flash(u"Falló la validación de los datos.", "error")
 
@@ -398,9 +401,7 @@ def init(app):
                 flash("SSH keys successfuly updated.", "success")
                 return redirect(url_for('user_overview', username=username))
             except ldap.LDAPError as e:
-                error = e.message['info'].split(":", 2)[-1].strip()
-                error = str(error[0].upper() + error[1:])
-                flash(error, "error")
+                flash(e, "error")
         elif form.errors:
             flash(u"Falló la validación de los datos.", "error")
 
@@ -435,9 +436,7 @@ def init(app):
                 flash(u"Pertenencia a grupos modificada con éxito.", "success")
                 return redirect(url_for('user_overview', username=username))
             except ldap.LDAPError as e:
-                error = e.message['info'].split(":", 2)[-1].strip()
-                error = str(error[0].upper() + error[1:])
-                flash(error, "error")
+                flash(e, "error")
         elif form.errors:
             flash(u"Falló la validación de los datos.", "error")
 

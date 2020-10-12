@@ -48,10 +48,12 @@ LDAP_AD_BOOL_ATTRIBUTES = ['showInAdvancedViewOnly']
 LDAP_AD_GUID_ATTRIBUTES = ['objectGUID']
 LDAP_AD_MULTIVALUE_ATTRIBUTES = ['member', 'memberOf', 'objectClass', 'repsTo',
                                  'servicePrincipalName', 'sshPublicKey', 'managedObjects',
-                                 'proxyAddresses', 'otherMailbox', 'dsCorePropagationData']
+                                 'proxyAddresses', 'otherMailbox', 'dsCorePropagationData', 
+                                 'msSFU30SearchAttributes', 'msSFU30ResultAttributes', 'msSFU30KeyAttributes',
+                                 'ipsecNFAReference', 'dNSProperty']
 LDAP_AD_SID_ATTRIBUTES = ['objectSid']
 LDAP_AD_UINT_ATTRIBUTES = ['userAccountControl', 'groupType']
-LDAP_AD_BLOB_ATTRIBUTES = ['jpegPhoto']
+LDAP_AD_Object_ATTRIBUTES = ['jpegPhoto', 'ipsecData', 'dnsRecord']
 
 
 def ldap_change_password(old_password, new_password, username=None):
@@ -331,7 +333,7 @@ def ldap_update_attribute(dn, attribute, value, objectClass=None):
 
     connection = g.ldap['connection']
     current_entry = ldap_get_entry_simple({'distinguishedName': dn})
-    old_value = current_entry[attribute]
+    #old_value = current_entry[attribute]
     mod_attrs = []
 
     if not current_entry:
@@ -352,16 +354,19 @@ def ldap_update_attribute(dn, attribute, value, objectClass=None):
     
     if isinstance(value, list):
         # This does not do what it need. It should flush all entries and re-add everything
-        if attribute in current_entry and isinstance(old_value, list):
-            pass
+        #if attribute in current_entry and isinstance(old_value, list):
+            #pass
+        pass
     elif not value and attribute in current_entry:
         # Erase attribute
         pass
     elif attribute in current_entry:
         # Update an attribute
+        print(value)
         mod_attrs.append((ldap.MOD_REPLACE, attribute, value.encode('utf-8')))
     elif value:
         # add a new attribute
+        print(value)
         mod_attrs.append((ldap.MOD_ADD, attribute, [value.encode('utf-8')]))
 
     if len(mod_attrs) != 0:
@@ -508,7 +513,9 @@ def _ldap_decode_attribute(key, value):
 
     if isinstance(value, list):
         if len(value) > 1:
-            raise Exception("Unknown multiple value field: %s" % key)
+            #raise Exception("Unknown multiple value field: %s" % key)
+            print("Unknown multiple value field: %s" % key)
+            return value
         else:
             value = value[0]
 
@@ -528,14 +535,16 @@ def _ldap_decode_attribute(key, value):
         return value == "TRUE"
     
     # Do nothing to binary object files
-    if key in LDAP_AD_BLOB_ATTRIBUTES:
+    if key in LDAP_AD_Object_ATTRIBUTES:
         return value
 
     # Decode the rest to unicode
     try:
         return value.decode('utf-8')
     except:
-        raise Exception("Unknown type: %s" % key)
+        #raise Exception("Unknown type: %s" % key)
+        print("Unknown multiple value field: %s" % key)
+        return value
 
 
 # Decorators

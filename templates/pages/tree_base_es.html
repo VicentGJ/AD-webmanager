@@ -8,12 +8,16 @@
 {% if request.query_string %}
     <form method="post" action="?{{ request.query_string }}" class="form">
 {% else %}
-    <form method="post" action="?" class="form">
+    <div class="right">
+        <form method="post" action="?" class="form">
+            {{ form.csrf_token }}
+            {{ form.filter_select }}
+            {{ form.filter_str }}
+            <input type="submit" value="Buscar">
+        
+        </form>
+    </div>
 {% endif %}
-        {{ form.csrf_token }}
-        {{ form.filter_str(class_="right",size=12,maxlength=25)|safe }}
-        <!-- input class="right" type="submit" value="buscar" /-->
-    </form>
 
 {% if parent %}
             <a href="{{ url_for('tree_base', base=parent) }}" class="button">Subir un nivel</a>
