@@ -53,20 +53,41 @@ def init(app):
 
         if form.validate_on_submit():
             filter_str = form.filter_str.data
+            filter_select = form.filter_select.data
             scope = "subtree"
+            entries = get_entries(filter_str, filter_select, base, scope)
         else:
             filter_str = None
             scope = "onelevel"
+            print(form.filter_select.data)
+            entries = get_entries("top", "objectClass", base, scope)
+                    
+        parent = None
+        base_split = base.split(',')
+        if not base_split[0].lower().startswith("dc"):
+            parent = ",".join(base_split[1:])
 
+        return render_template("pages/tree_base_es.html", form=form, parent=parent,
+                               admin=admin, base=base, entries=entries,
+                               entry_fields=entry_fields)
+
+    def get_entries(filter_str, filter_select, base, scope):
+        """
+        Get all entries that will be displayed in the tree
+        """
         entries = []
-        users = ldap_get_entries("objectClass=top", base, scope, ignore_erros=True)
+        query = filter_select + "=" + filter_str
+
+        users = ldap_get_entries(query, base, scope, ignore_erros=True)
         users = filter(lambda entry: 'displayName' in entry, users)
         users = filter(lambda entry: 'sAMAccountName' in entry, users)
         users = sorted(users, key=lambda entry: entry['displayName'])
-        other_entries = ldap_get_entries("objectClass=top", base, scope, ignore_erros=True)
-        other_entries = filter(lambda entry: 'displayName' not in entry, other_entries)
-        other_entries = sorted(other_entries, key=lambda entry: entry['name'])
-
+        if filter_str == "top":
+            other_entries = ldap_get_entries("objectClass=top", base, scope, ignore_erros=True)
+            other_entries = filter(lambda entry: 'displayName' not in entry, other_entries)
+            other_entries = sorted(other_entries, key=lambda entry: entry['name'])
+        else:
+            other_entries = []
         for entry in users:
             if 'description' not in entry:
                 if 'sAMAccountName' in entry:
@@ -96,13 +117,7 @@ def init(app):
                 if entry['distinguishedName'].startswith(blacklist):
                     break
 
-            if filter_str:
-                if '__description' in entry and filter_str in entry['__description'].lower():
-                    entries.append(entry)
-                elif 'sAMAccountName' in entry and filter_str in entry['sAMAccountName'].lower():
-                    entries.append(entry)
-            else:
-                entries.append(entry)
+            entries.append(entry)
         
         for entry in other_entries:
             if entry not in users:
@@ -127,19 +142,6 @@ def init(app):
                 else:
                     entry['__type'] = "Desconocido"
 
-                if filter_str:
-                    if '__description' in entry and filter_str in entry['__description'].lower():
-                        entries.append(entry)
-                    elif 'sAMAccountName' in entry and filter_str in entry['sAMAccountName'].lower():
-                        entries.append(entry)
-                else:
-                    entries.append(entry)
-                    
-        parent = None
-        base_split = base.split(',')
-        if not base_split[0].lower().startswith("dc"):
-            parent = ",".join(base_split[1:])
-
-        return render_template("pages/tree_base_es.html", form=form, parent=parent,
-                               admin=admin, base=base, entries=entries,
-                               entry_fields=entry_fields)
+                
+                entries.append(entry)
+        return entries
