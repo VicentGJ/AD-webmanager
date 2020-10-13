@@ -149,8 +149,8 @@ def init(app):
                 return redirect(url_for('user_overview',
                                         username=form.user_name.data))
             except ldap.LDAPError as e:
-                
-                flash(e, "error")
+                e = dict(e.args[0])
+                flash(e['info'], "error")
         elif form.errors:
             flash("Some fields failed validation.", "error")
 
@@ -223,7 +223,8 @@ def init(app):
                         flash(u"Usuario añadido con éxito al grupo.", "success")
                     return redirect(url_for('user_overview',username=username))
                 except ldap.LDAPError as e:
-                    flash(e, "error")
+                    e = dict(e.args[0])
+                flash(e['info'], "error")
             elif form.errors:
                     flash(u"Falló la validación de los datos.", "error")
 
@@ -269,7 +270,8 @@ def init(app):
                 flash(u"La contraseña se cambió con éxito.", "success")
                 return redirect(url_for('user_overview', username=username))
             except ldap.LDAPError as e:
-                flash(e, "error")
+                e = dict(e.args[0])
+                flash(e['info'], "error")
         elif form.errors:
                 flash(u"Falló la validación de los datos.", "error")
 
@@ -295,7 +297,8 @@ def init(app):
                 flash(u"Usuario borrado con éxito.", "success")
                 return redirect(url_for('core_index'))
             except ldap.LDAPError as e:
-                flash(e, "error")
+                e = dict(e.args[0])
+                flash(e['info'], "error")
         elif form.errors:
                 flash(u"Falló la validación de los datos.", "error")
 
@@ -352,7 +355,8 @@ def init(app):
                 flash(u"Perfil actualizado con éxito.", "success")
                 return redirect(url_for('user_overview', username=form.user_name.data))
             except ldap.LDAPError as e:
-                flash(e, "error")
+                e = dict(e.args[0])
+                flash(e['info'], "error")
         elif form.errors:
             flash(u"Falló la validación de los datos.", "error")
 
@@ -401,7 +405,8 @@ def init(app):
                 flash("SSH keys successfuly updated.", "success")
                 return redirect(url_for('user_overview', username=username))
             except ldap.LDAPError as e:
-                flash(e, "error")
+                e = dict(e.args[0])
+                flash(e['info'], "error")
         elif form.errors:
             flash(u"Falló la validación de los datos.", "error")
 
@@ -436,7 +441,8 @@ def init(app):
                 flash(u"Pertenencia a grupos modificada con éxito.", "success")
                 return redirect(url_for('user_overview', username=username))
             except ldap.LDAPError as e:
-                flash(e, "error")
+                e = dict(e.args[0])
+                flash(e['info'], "error")
         elif form.errors:
             flash(u"Falló la validación de los datos.", "error")
 
