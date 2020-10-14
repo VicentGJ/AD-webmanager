@@ -79,6 +79,7 @@ def init(app):
         users = ldap_get_entries("objectClass=top", base, scope, ignore_erros=True)
         users = filter(lambda entry: 'displayName' in entry, users)
         users = filter(lambda entry: 'sAMAccountName' in entry, users)
+        users = filter(lambda entry: filter_select in entry, users)
         users = filter(lambda entry: filter_str in entry[filter_select], users)
         users = sorted(users, key=lambda entry: entry['displayName'])
         if filter_str == "top":
