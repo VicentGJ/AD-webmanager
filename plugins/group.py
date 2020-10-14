@@ -286,9 +286,8 @@ def init(app):
                     return redirect(url_for('group_overview',
                                             groupname=groupname))
                 except ldap.LDAPError as e:
-                    error = e.message['info'].split(":", 2)[-1].strip()
-                    error = str(error[0].upper() + error[1:])
-                    flash(error, "error")
+                    e = dict(e.args[0])
+                    flash(e['info'], "error")
         elif form.errors:
             flash(u"Falló la validación de los datos.", "error")
 

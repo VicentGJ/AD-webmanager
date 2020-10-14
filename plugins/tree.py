@@ -28,7 +28,7 @@ TREE_BLACKLIST = ["CN=ForeignSecurityPrincipals",
 
 class FilterTreeView(FlaskForm):
     filter_str = StringField()
-    filter_select = SelectField(choices=['sAMAccountName', 'displayName', 'cUJAEPersonDNI'])
+    filter_select = SelectField(choices=[('sAMAccountName', 'Usuario'), ('displayName', 'Nombre'), ('cUJAEPersonDNI', 'Carné ID')])
 
 
 def init(app):

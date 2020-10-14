@@ -353,10 +353,20 @@ def ldap_update_attribute(dn, attribute, value, objectClass=None):
         connection.modify_s(dn, ldif) """
     
     if isinstance(value, list):
-        # This does not do what it need. It should flush all entries and re-add everything
-        #if attribute in current_entry and isinstance(old_value, list):
-            #pass
-        pass
+        
+        new_values = []
+
+        try:
+            old_value = current_entry[attribute]
+            for i in old_value:
+                value.append(i)
+            mod_attrs.append((ldap.MOD_DELETE, attribute, None))
+        except:
+            pass
+        for i in value:
+            a = i.encode('utf-8')
+            new_values.append(a)
+            mod_attrs.append((ldap.MOD_ADD, attribute, new_values))
     elif not value and attribute in current_entry:
         # Erase attribute
         pass

@@ -173,6 +173,7 @@ def init(app):
 
         user = ldap_get_user(username=username)
         admin = ldap_in_group("SM Admin")
+        cujae_external = user['cUJAEPersonExternal']
         logged_user = g.ldap['username']
         
         if logged_user == user['sAMAccountName'] or admin:
@@ -224,7 +225,7 @@ def init(app):
                     return redirect(url_for('user_overview',username=username))
                 except ldap.LDAPError as e:
                     e = dict(e.args[0])
-                flash(e['info'], "error")
+                    flash(e['info'], "error")
             elif form.errors:
                     flash(u"Falló la validación de los datos.", "error")
 
@@ -235,7 +236,7 @@ def init(app):
 
         return render_template("pages/user_overview_es.html", g=g, title=title, form=form,
                                user=user, identity_fields=identity_fields,
-                               group_fields=group_fields, admin=admin, groups=groups,
+                               group_fields=group_fields, admin=admin, external=cujae_external, groups=groups,
                                parent=parent, uac_values=LDAP_AD_USERACCOUNTCONTROL_VALUES)
 
 
