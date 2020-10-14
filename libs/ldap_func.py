@@ -360,12 +360,12 @@ def ldap_update_attribute(dn, attribute, value, objectClass=None):
             old_value = current_entry[attribute]
             for i in old_value:
                 value.append(i)
-            mod_attrs.append((ldap.MOD_DELETE, attribute, None))
         except:
             pass
         for i in value:
             a = i.encode('utf-8')
             new_values.append(a)
+            mod_attrs.append((ldap.MOD_DELETE, attribute, None))
             mod_attrs.append((ldap.MOD_ADD, attribute, new_values))
     elif not value and attribute in current_entry:
         # Erase attribute
