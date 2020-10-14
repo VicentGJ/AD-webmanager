@@ -173,7 +173,11 @@ def init(app):
 
         user = ldap_get_user(username=username)
         admin = ldap_in_group("SM Admin")
-        cujae_external = user['cUJAEPersonExternal']
+        if user['cUJAEPersonExternal'] == 'FALSE':
+            cujae_external = False
+        else:
+            cujae_external = True
+        print(cujae_external)
         logged_user = g.ldap['username']
         
         if logged_user == user['sAMAccountName'] or admin:
