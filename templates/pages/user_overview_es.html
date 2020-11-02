@@ -89,7 +89,7 @@
            {% if '__primaryGroup' in user and user['__primaryGroup'] == entry['distinguishedName'] %}
             <td></td>
            {% else %}
-            <td><a href="{{ url_for('group_delmember', groupname=entry['sAMAccountName'], member=user['sAMAccountName'], show_user=True) }}">(remover de este grupo)</a></td>
+            <td><a href="{{ url_for('group_delmember', groupname=entry['sAMAccountName'], member=user['sAMAccountName']) }}">(remover de este grupo)</a></td>
            {% endif %}
         {% endif %}
     </tr>

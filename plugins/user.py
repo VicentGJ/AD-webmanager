@@ -93,8 +93,7 @@ def init(app):
 
         if not UserAdd.base:
             UserAdd.base = request.args.get('base')
-        #if not base:
-        #    base = "CN=Users,%s" % g.ldap['dn']
+
         base = UserAdd.base
         print(base, "fist base")
 
@@ -117,11 +116,8 @@ def init(app):
         form.cujae_type.choices = ["Worker", "Student"]
         form.uac_flags.choices = [(key, value[0]) for key, value in LDAP_AD_USERACCOUNTCONTROL_VALUES.items()]
 
-        print(base, "secund base")
-
         if form.validate_on_submit():
             try:
-                print(base, "third base")
                 # Default attributes
                 upn = "%s@%s" % (form.user_name.data, g.ldap['domain'])
                 attributes = {'objectClass': [b'top', b'person', b'organizationalPerson', b'user', b'inetOrgPerson'],
@@ -140,11 +136,9 @@ def init(app):
                         attributes[attribute] = [field.data.encode('utf-8')]
                 
                 # As a CUJAE specific change I use the dni to create the user
-                ldap_create_entry("cn=%s,%s" % (form.cujae_dni.data, base),
-                                  attributes)
-                print("cn=%s,%s" % (form.user_name.data, base))
-                ldap_change_password(None, form.password.data,
-                                     form.user_name.data)
+                print(attributes)
+                ldap_create_entry("cn=%s,%s" % (form.cujae_dni.data, base), attributes)
+                ldap_change_password(None, form.password.data, form.user_name.data)
                 flash(u"Usuario creado con éxito.", "success")
                 return redirect(url_for('user_overview',
                                         username=form.user_name.data))

@@ -90,36 +90,28 @@
 {% for key, title in group_fields %}
         <th>{{ title }}</th>
 {% endfor %}
-        <th>Type</th>
+        <th>Operación</th>
     </tr>
 
 {% for entry in members %}
-    <tr>
-{% for key, title in group_fields %}
-{% if key == "sAMAccountName" and key in entry %}
-{% if "user" in entry['objectClass'] %}
-        <td style='padding-right:10px;white-space:nowrap;'><a href="{{ url_for('user_overview', username=entry['sAMAccountName']) }}">{{ entry[key] }}</a></td>
-{% else %}
-        <td style='padding-right:10px;white-space:nowrap;'><a href="{{ url_for('group_overview', groupname=entry['sAMAccountName']) }}">{{ entry[key] }}</a></td>
-{% endif %}
-{% elif key == "description" and not entry[key] and 'displayName' in entry %}
-        <td>{{ entry['displayName'] }}</td>
-{% elif key in entry %}
-        <td>{{ entry[key] }}</td>
-{% else %}
-        <td>&nbsp;</td>
-{% endif %}
-{% endfor %}
-{% if '__primaryGroup' in entry and entry['__primaryGroup'] == group['distinguishedName'] %}
-        <td>Grupo principal</td>
-{% else %}
-{% if admin %}
-        <td><a href="{{ url_for('group_delmember', groupname=group['sAMAccountName'], member=entry['sAMAccountName']) }}">Miembro</a></td>
-{% else %}
-        <td>Miembro</td>
-{% endif %}
-{% endif %}
-    </tr>
+<tr>
+        {% for key, title in group_fields %}
+                {% if key == "sAMAccountName" and key in entry %}
+                        {% if "user" in entry['objectClass'] %}
+                                <td style='padding-right:10px;white-space:nowrap;'><a href="{{ url_for('user_overview', username=entry['sAMAccountName']) }}">{{ entry[key] }}</a></td>
+                        {% else %}
+                                <td style='padding-right:10px;white-space:nowrap;'><a href="{{ url_for('group_overview', groupname=entry['sAMAccountName']) }}">{{ entry[key] }}</a></td>
+                        {% endif %}
+                {% elif key == "description" and not entry[key] and 'displayName' in entry %}
+                        <td>{{ entry['displayName'] }}</td>
+                {% elif key in entry %}
+                        <td>{{ entry[key] }}</td>
+                {% else %}
+                        <td>&nbsp;</td>
+                {% endif %}
+        {% endfor %}
+        <td><a href="{{ url_for('group_delmember', groupname=group['sAMAccountName'], member=entry['sAMAccountName']) }}">(remover de este grupo)</a></td>
+</tr>
 {% endfor %}
 </table>
 
