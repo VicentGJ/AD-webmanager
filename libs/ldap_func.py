@@ -289,6 +289,7 @@ def ldap_get_membership(name=None):
     if 'memberOf' in entry:
         groups += entry['memberOf']
 
+    print(groups)
     return groups
 
 
@@ -301,9 +302,7 @@ def ldap_in_group(groupname, username=None):
         username = g.ldap['username']
 
     group = ldap_get_group(groupname)
-    #group = group[0] 
     groups = ldap_get_membership(username)
-
     # Start by looking at direct membership
     if group['distinguishedName'] in groups:
         return True
@@ -323,7 +322,7 @@ def ldap_in_group(groupname, username=None):
 
     return group['distinguishedName'] in checked
 
-def ldap_update_attribute(dn, attribute, value, objectClass=None):
+def ldap_update_attribute(dn, attribute, value=None, objectClass=None):
     """
         Set/Update a given attribute.
     """
@@ -353,13 +352,21 @@ def ldap_update_attribute(dn, attribute, value, objectClass=None):
         connection.modify_s(dn, ldif) """
     
     if isinstance(value, list):
-        # This does not do what it need. It should flush all entries and re-add everything
-        #if attribute in current_entry and isinstance(old_value, list):
-            #pass
-        pass
+        # Flush all entries and re-add everything
+        new_values = []
+        
+        if len(value) > 0:
+            for i in value:
+                a = i.encode('utf-8')
+                new_values.append(a)
+                mod_attrs.append((ldap.MOD_DELETE, attribute, None))
+                mod_attrs.append((ldap.MOD_ADD, attribute, new_values))
+        else:
+            mod_attrs.append((ldap.MOD_DELETE, attribute, None))
+
     elif not value and attribute in current_entry:
         # Erase attribute
-        pass
+        mod_attrs.append((ldap.MOD_DELETE, attribute, None))
     elif attribute in current_entry:
         # Update an attribute
         print(value)
@@ -417,8 +424,6 @@ def ldap_update_attribute_old(dn, attribute, value, objectclass=None):
 
     if not changes:
         return True
-
-    print(":::::::::::::::::::::", changes)
     connection.modify_s(dn, changes)
     return True
 
