@@ -102,7 +102,7 @@ def init(app):
 
         return render_template("forms/basicform.html", form=form, title=title,
                                action="Adicionar grupo",
-                               parent=url_for('group_add'))
+                               parent=url_for('tree_base'))
 
     @app.route('/group/<groupname>')
     @ldap_auth("Domain Users")

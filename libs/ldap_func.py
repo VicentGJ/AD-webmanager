@@ -36,12 +36,12 @@ LDAP_AD_GROUPTYPE_VALUES = {1: ('Sistema', False),
 
 #!!! This need editing for open-source release
 LDAP_AD_USERACCOUNTCONTROL_VALUES = {2: (u"Cuenta Deshabilitada", True),
-                                     #64: (u"El usuario no puede cambiar la contraseña", False),
-                                     512: ("Cuenta Habilitada", False), #!!! It should be: Cuenta Normal
-                                     #4096: ("Cuenta de confianza de PC", False),
-                                     #8192: ("Cuenta de confianza de Servidor", False),
-                                     #65536: (u"La contraseña no expira nunca", True),
-                                     #8388608: (u"La contraseña expiró", False)
+                                     64: (u"El usuario no puede cambiar la contraseña", False),
+                                     512: ("Cuenta Normal", False),
+                                     4096: ("Cuenta de confianza de PC", False),
+                                     8192: ("Cuenta de confianza de Servidor", False),
+                                     65536: (u"La contraseña no expira nunca", True),
+                                     8388608: (u"La contraseña expiró", False)
                                      }
 
 LDAP_AD_BOOL_ATTRIBUTES = ['showInAdvancedViewOnly']

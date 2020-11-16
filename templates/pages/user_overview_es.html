@@ -14,9 +14,7 @@
 {% endif %}
 {% if admin%}
         <p style="text-align: right;"><a href="{{ url_for('user_edit_profile', username=user['sAMAccountName']) }}" class="button">Editar usuario</a></p>
-        {% if external %}
         <p style="text-align: right;"><a href="{{ url_for('user_delete', username=user['sAMAccountName']) }}" class="button">Eliminar usuario</a></p>
-        {% endif %}
 {% endif %}
     </div>
     <h2>Profile</h2>

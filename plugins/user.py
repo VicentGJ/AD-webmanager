@@ -48,7 +48,6 @@ class UserProfileEdit(FlaskForm):
     user_name = StringField('Nombre de Usuario', [Required()])
     mail = StringField(u'Dirección de correo')
     aliases = FieldList(StringField(), label=u'Otras direcciones de correo - Aliases')
-    cujae_category = SelectField(label='Categoría', choices=[('A', 'Categoría A'), ('B', 'Categoría B'), ('C', 'Categoría C')])
     uac_flags = SelectMultipleField('Estado', coerce=int)
 
 
@@ -62,10 +61,6 @@ class SICCIPEdit(FlaskForm):
 
 class UserAdd(UserProfileEdit):
     base = None
-    cujae_type = SelectField('Trabajador o Estudiante?', [Required()])
-    cujae_dni = StringField('Carné de Identidad', [Required()])
-    cujae_teacher = SelectField('Profesor?', [Required()], choices=["TRUE", "FALSE"])
-    cujae_external = SelectField('Usuario Externo?', [Required()], choices=["TRUE", "FALSE"])
     password = PasswordField(u'Contraseña', [Required()])
     password_confirm = PasswordField(u'Repetir contraseña',
                                      [Required(),
@@ -87,7 +82,7 @@ class PasswordChangeUser(PasswordChange):
 
 def init(app):
     @app.route('/users/+add', methods=['GET', 'POST'])
-    @ldap_auth("SM Admin")
+    @ldap_auth("Domain Admins")
     def user_add():
         title = "Adicionar Usuario"
 
@@ -103,17 +98,11 @@ def init(app):
                          ('displayName', form.display_name),
                          ('sAMAccountName', form.user_name),
                          ('mail', form.mail),
-                         ('cUJAEPersonType', form.cujae_type),
-                         ('cUJAEPersonDNI', form.cujae_dni),
-                         ('cUJAEWorkerTeacher', form.cujae_teacher),
-                         ('cUJAEPersonExternal', form.cujae_external),
-                         ('pager', form.cujae_category),
                          (None, form.password),
                          (None, form.password_confirm),
                          ('userAccountControl', form.uac_flags)]
 
         form.visible_fields = [field[1] for field in field_mapping]
-        form.cujae_type.choices = ["Worker", "Student"]
         form.uac_flags.choices = [(key, value[0]) for key, value in LDAP_AD_USERACCOUNTCONTROL_VALUES.items()]
 
         if form.validate_on_submit():
@@ -134,10 +123,9 @@ def init(app):
                         attributes[attribute] = [str(current_uac).encode('utf-8')]
                     elif attribute and field.data:
                         attributes[attribute] = [field.data.encode('utf-8')]
-                
-                # As a CUJAE specific change I use the dni to create the user
+
                 print(attributes)
-                ldap_create_entry("cn=%s,%s" % (form.cujae_dni.data, base), attributes)
+                ldap_create_entry("cn=%s,%s" % (form.user_name.data, base), attributes)
                 ldap_change_password(None, form.password.data, form.user_name.data)
                 flash(u"Usuario creado con éxito.", "success")
                 return redirect(url_for('user_overview',
@@ -154,7 +142,7 @@ def init(app):
 
         return render_template("forms/basicform.html", form=form, title=title,
                                action="Adicionar Usuario",
-                               parent=url_for('user_add'))
+                               parent=url_for('tree_base'))
 
 
     @app.route('/user/<username>', methods=['GET', 'POST'])
@@ -166,15 +154,7 @@ def init(app):
             abort(404)
 
         user = ldap_get_user(username=username)
-        admin = ldap_in_group("SM Admin")
-
-        if 'cUJAEPersonExternal' in user:
-            if user['cUJAEPersonExternal'] == 'FALSE':
-                cujae_external = False
-            else:
-                cujae_external = True
-        else:
-            cujae_external = True
+        admin = ldap_in_group("Domain Admins")
         logged_user = g.ldap['username']
         
         if logged_user == user['sAMAccountName'] or admin:
@@ -182,10 +162,9 @@ def init(app):
             identity_fields = [('givenName', "Nombre"),
                                ('sn', "Apellidos"),
                                ('displayName', "Nombre Completo"),
-                               ('name', "Carnet de Identidad"),
+                               ('name', "Nombre del Registro"),
                                ('sAMAccountName', "Nombre de Usuario"),
-                               ('mail', u"Dirección de Correo"),
-                               ('pager', "Categoría")]
+                               ('mail', u"Dirección de Correo")]
             group_fields = [('sAMAccountName', "Nombre"),
                             ('description', u"Descripción")]
 
@@ -237,7 +216,7 @@ def init(app):
 
         return render_template("pages/user_overview_es.html", g=g, title=title, form=form,
                                user=user, identity_fields=identity_fields,
-                               group_fields=group_fields, admin=admin, external=cujae_external, groups=groups,
+                               group_fields=group_fields, admin=admin, groups=groups,
                                parent=parent, uac_values=LDAP_AD_USERACCOUNTCONTROL_VALUES)
 
 
@@ -249,7 +228,7 @@ def init(app):
         if not ldap_user_exists(username=username):
             abort(404)
 
-        admin = ldap_in_group("SM Admin")
+        admin = ldap_in_group("Domain Admins")
         if username != g.ldap['username'] and admin:
             form = PasswordChange(request.form)
             form.visible_fields = []
@@ -283,7 +262,7 @@ def init(app):
                                               username=username))
 
     @app.route('/user/<username>/+delete', methods=['GET', 'POST'])
-    @ldap_auth("SM Admin")
+    @ldap_auth("Domain Admins")
     def user_delete(username):
         title = "Borrar Usuario"
 
@@ -311,7 +290,7 @@ def init(app):
                                               username=username))
 
     @app.route('/user/<username>/+edit-profile', methods=['GET', 'POST'])
-    @ldap_auth("SM Admin")
+    @ldap_auth("Domain Admins")
     def user_edit_profile(username):
         title = "Editar usuario"
 
@@ -326,7 +305,6 @@ def init(app):
                          ('sAMAccountName', form.user_name),
                          ('mail', form.mail),
                          ('otherMailbox', form.aliases),
-                         ('pager', form.cujae_category),
                          ('userAccountControl', form.uac_flags)]
 
         form.uac_flags.choices = [(key, value[0]) for key, value in LDAP_AD_USERACCOUNTCONTROL_VALUES.items()]
@@ -385,7 +363,7 @@ def init(app):
 
 
     @app.route('/user/<username>/+edit-ssh', methods=['GET', 'POST'])
-    @ldap_auth("SM Admin")
+    @ldap_auth("Domain Admins")
     def user_edit_ssh(username):
         title = "Editar llaves SSH"
 
@@ -423,7 +401,7 @@ def init(app):
 
 
     @app.route('/user/<username>/+edit-groups', methods=['GET', 'POST'])
-    @ldap_auth("SM Admin")
+    @ldap_auth("Domain Admins")
     def user_edit_groups(username):
         title = "Editar pertenencia a Grupos"
 
@@ -454,5 +432,4 @@ def init(app):
 
         return render_template("forms/basicform.html", form=form, title=title,
                                action="Salvar los cambios",
-                               parent=url_for('user_overview',
-                                              username=username))
+                               parent=url_for('user_overview', username=username))
