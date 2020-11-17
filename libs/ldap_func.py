@@ -289,7 +289,6 @@ def ldap_get_membership(name=None):
     if 'memberOf' in entry:
         groups += entry['memberOf']
 
-    print(groups)
     return groups
 
 
@@ -369,11 +368,9 @@ def ldap_update_attribute(dn, attribute, value=None, objectClass=None):
         mod_attrs.append((ldap.MOD_DELETE, attribute, None))
     elif attribute in current_entry:
         # Update an attribute
-        print(value)
         mod_attrs.append((ldap.MOD_REPLACE, attribute, value.encode('utf-8')))
     elif value:
         # add a new attribute
-        print(value)
         mod_attrs.append((ldap.MOD_ADD, attribute, [value.encode('utf-8')]))
 
     if len(mod_attrs) != 0:

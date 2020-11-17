@@ -33,6 +33,7 @@ from libs.common import get_parsed_pager_attribute
 
 import ldap
 
+
 class UserSSHEdit(FlaskForm):
     ssh_keys = TextAreaField('Llaves SSH')
 
@@ -61,6 +62,8 @@ class SICCIPEdit(FlaskForm):
     email_type = SelectField(u'Tipo de cuenta de correo', choices=[('F',u'Sin restrcciones'),
                                                                    ('R', u'Envío y recepción restringidos (.cu)'),
                                                                    ('L', u'Solo correo local')])
+    email_quota = DecimalField('Cuota de correo en UM')
+    dansguardian_filter = IntegerField(u'Número del filtro de contenido')
 
 
 class UserAdd(UserProfileEdit):
@@ -148,7 +151,6 @@ def init(app):
                                action="Adicionar Usuario",
                                parent=url_for('tree_base'))
 
-
     @app.route('/user/<username>', methods=['GET', 'POST'])
     @ldap_auth("Domain Users")
     def user_overview(username):
@@ -172,7 +174,6 @@ def init(app):
             group_fields = [('sAMAccountName', "Nombre"),
                             ('description', u"Descripción")]
 
-            
             user = ldap_get_user(username=username)
             group_details = [ldap_get_group(group, 'distinguishedName')
                             for group in ldap_get_membership(username)]
@@ -182,7 +183,8 @@ def init(app):
 
             siccip_data = None
             if 'pager' in user:
-                siccip_data = get_parsed_pager_attribute(user['pager'][0])
+                siccip_data = get_parsed_pager_attribute(user['pager'])
+                print(siccip_data)
 
             available_groups = ldap_get_entries(ldap_filter="(objectclass=group)", scope="subtree")
             group_choices = [("_","Seleccione un Grupo")]
@@ -224,9 +226,8 @@ def init(app):
 
         return render_template("pages/user_overview_es.html", g=g, title=title, form=form,
                                user=user, identity_fields=identity_fields,
-                               group_fields=group_fields, admin=admin, groups=groups,
+                               group_fields=group_fields, admin=admin, groups=groups, siccip_data=siccip_data,
                                parent=parent, uac_values=LDAP_AD_USERACCOUNTCONTROL_VALUES)
-
 
     @app.route('/user/<username>/+changepw', methods=['GET', 'POST'])
     @ldap_auth("Domain Users")
@@ -396,7 +397,8 @@ def init(app):
                                                  form.email_type.data, form.email_quota.data,
                                                  form.dansguardian_filter.data)
                 if pager != new_pager:
-                    ldap_update_attribute(user['distinguishedName'],"pager", new_pager)
+                    ldap_update_attribute(user['distinguishedName'], "pager", new_pager)
+                    print(new_pager)
 
                 flash(u"Perfil actualizado con éxito.", "success")
                 return redirect(url_for('user_overview',
@@ -463,35 +465,35 @@ def init(app):
                                               username=username))
 
 
-    @app.route('/user/<username>/+edit-groups', methods=['GET', 'POST'])
-    @ldap_auth("Domain Admins")
-    def user_edit_groups(username):
-        title = "Editar pertenencia a Grupos"
-
-        if not ldap_user_exists(username=username):
-            abort(404)
-
-        user = ldap_get_user(username=username)
-
-        form = UserGroupEdit(request.form)
-        form.visible_fields = [form.ssh_keys]
-
-        if form.validate_on_submit():
-            try:
-                ldap_update_attribute(user['distinguishedName'],
-                                      'sshPublicKey', new_entries,
-                                      'ldapPublicKey')
-                flash(u"Pertenencia a grupos modificada con éxito.", "success")
-                return redirect(url_for('user_overview', username=username))
-            except ldap.LDAPError as e:
-                e = dict(e.args[0])
-                flash(e['info'], "error")
-        elif form.errors:
-            flash(u"Falló la validación de los datos.", "error")
-
-        if not form.is_submitted():
-            if 'sshPublicKey' in user:
-                form.ssh_keys.data = "\n".join(user['sshPublicKey'])
+    # @app.route('/user/<username>/+edit-groups', methods=['GET', 'POST'])
+    # @ldap_auth("Domain Admins")
+    # def user_edit_groups(username):
+    #     title = "Editar pertenencia a Grupos"
+    #
+    #     if not ldap_user_exists(username=username):
+    #         abort(404)
+    #
+    #     user = ldap_get_user(username=username)
+    #
+    #     form = UserGroupEdit(request.form)
+    #     form.visible_fields = [form.ssh_keys]
+    #
+    #     if form.validate_on_submit():
+    #         try:
+    #             ldap_update_attribute(user['distinguishedName'],
+    #                                   'sshPublicKey', new_entries,
+    #                                   'ldapPublicKey')
+    #             flash(u"Pertenencia a grupos modificada con éxito.", "success")
+    #             return redirect(url_for('user_overview', username=username))
+    #         except ldap.LDAPError as e:
+    #             e = dict(e.args[0])
+    #             flash(e['info'], "error")
+    #     elif form.errors:
+    #         flash(u"Falló la validación de los datos.", "error")
+    #
+    #     if not form.is_submitted():
+    #         if 'sshPublicKey' in user:
+    #             form.ssh_keys.data = "\n".join(user['sshPublicKey'])
 
         return render_template("forms/basicform.html", form=form, title=title,
                                action="Salvar los cambios",
