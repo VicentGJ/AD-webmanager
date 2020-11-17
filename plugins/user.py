@@ -52,11 +52,15 @@ class UserProfileEdit(FlaskForm):
 
 
 class SICCIPEdit(FlaskForm):
-    manual = BooleanField('Manual')
-    category = SelectField(u'Categoría de la cuenta', [Required()],
-                                choices=[('A', u'Acceso Total'),
-                                         ('B', u'Acceso con restricciones'),
-                                         ('C', u'Menor Acceso')])
+    internet_type = SelectField(u'Tipo de acceso a Internet', [Optional()],
+                                choices=[('F',u'Acceso Total'),
+                                         ('R', u'Acceso con restricciones'),
+                                         ('L', u'Solo navegación local')])
+    internet_quota = DecimalField('Cuota para Internet en UM')
+    socialnetwork_quota = DecimalField('% de la cuota utilizable para redes sociales')
+    email_type = SelectField(u'Tipo de cuenta de correo', choices=[('F',u'Sin restrcciones'),
+                                                                   ('R', u'Envío y recepción restringidos (.cu)'),
+                                                                   ('L', u'Solo correo local')])
 
 
 class UserAdd(UserProfileEdit):
@@ -175,6 +179,10 @@ def init(app):
 
             groups = sorted(group_details, key=lambda entry:
                             entry['sAMAccountName'])
+
+            siccip_data = None
+            if 'pager' in user:
+                siccip_data = get_parsed_pager_attribute(user['pager'][0])
 
             available_groups = ldap_get_entries(ldap_filter="(objectclass=group)", scope="subtree")
             group_choices = [("_","Seleccione un Grupo")]
@@ -304,7 +312,6 @@ def init(app):
                          ('displayName', form.display_name),
                          ('sAMAccountName', form.user_name),
                          ('mail', form.mail),
-                         ('otherMailbox', form.aliases),
                          ('userAccountControl', form.uac_flags)]
 
         form.uac_flags.choices = [(key, value[0]) for key, value in LDAP_AD_USERACCOUNTCONTROL_VALUES.items()]
@@ -318,10 +325,10 @@ def init(app):
                     if value != user.get(attribute):
                         if attribute == 'sAMAccountName':
                             # Rename the account
-                            ldap_update_attribute(user['distinguishedName'],"sAMAccountName", value)
-                            ldap_update_attribute(user['distinguishedName'],"userPrincipalName", "%s@%s" % (value, g.ldap['domain']))
+                            ldap_update_attribute(user['distinguishedName'], "sAMAccountName", value)
+                            ldap_update_attribute(user['distinguishedName'], "userPrincipalName", "%s@%s" % (value, g.ldap['domain']))
                             # Finish by renaming the whole record
-                            ldap_update_attribute(user['distinguishedName'],"cn", value)
+                            ldap_update_attribute(user['distinguishedName'], "cn", value)
                             user = ldap_get_user(value)
                         elif attribute == 'userAccountControl':
                             current_uac = 512
@@ -355,6 +362,62 @@ def init(app):
                                    LDAP_AD_USERACCOUNTCONTROL_VALUES.items()
                                    if (flag[1] and
                                        user['userAccountControl'] & key)]
+
+        return render_template("forms/basicform.html", form=form, title=title,
+                               action="Salvar los cambios",
+                               parent=url_for('user_overview',
+                                              username=username))
+
+    @app.route('/user/<username>/+edit-siccip', methods=['GET', 'POST'])
+    @ldap_auth("Domain Admins")
+    def user_edit_siccip(username):
+        title = u"Editar Configuración SICC-IP"
+
+        if not ldap_user_exists(username=username):
+            abort(404)
+
+        user = ldap_get_user(username=username)
+        pager = user['pager'][0] if 'pager' in user else None
+        form = SICCIPEdit(request.form)
+        field_mapping = [       #('internet_type', form.internet_type),
+                         ('internet_quota', form.internet_quota),
+                         ('socialnetwork_quota', form.socialnetwork_quota),
+                         ('dansguardian_filter', form.dansguardian_filter),
+                         ('email_type', form.email_type),
+                         ('email_quota', form.email_quota)]
+
+        form.visible_fields = [field[1] for field in field_mapping]
+
+        if form.validate_on_submit():
+            try:
+                internet_type = 'F'
+                new_pager = 'I%s%f_%f|E%s%f|D%d' % (internet_type, form.internet_quota.data,
+                                                 form.socialnetwork_quota.data,
+                                                 form.email_type.data, form.email_quota.data,
+                                                 form.dansguardian_filter.data)
+                if pager != new_pager:
+                    ldap_update_attribute(user['distinguishedName'],"pager", new_pager)
+
+                flash(u"Perfil actualizado con éxito.", "success")
+                return redirect(url_for('user_overview',
+                                        username=username))
+            except ldap.LDAPError as e:
+                error = e.message['info'].split(":", 2)[-1].strip()
+                error = str(error[0].upper() + error[1:])
+                flash(error, "error")
+        elif form.errors:
+            flash(u"Falló la validación de los datos.", "error")
+
+        if not form.is_submitted():
+            if pager:
+                siccip_data = get_parsed_pager_attribute(pager)
+                if siccip_data is not None:
+                    form.internet_type.data = siccip_data['internet_type']
+                    form.internet_quota.data = siccip_data['internet_quota']
+                    form.socialnetwork_quota.data = siccip_data['socialnetwork_quota']
+                    form.email_type.data = siccip_data['email_type']
+                    form.email_quota.data = siccip_data['email_quota']
+                    form.dansguardian_filter.data = siccip_data['dansguardian_filter']
 
         return render_template("forms/basicform.html", form=form, title=title,
                                action="Salvar los cambios",

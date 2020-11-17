@@ -12,15 +12,14 @@
 {% if g.ldap['username'] == user['sAMAccountName'] or admin %}
         <p style="text-align: right;"><a href="{{ url_for('user_changepw', username=user['sAMAccountName']) }}" class="button">Cambiar contraseña</a></p>
 {% endif %}
-{% if admin%}
+{% if admin %}
         <p style="text-align: right;"><a href="{{ url_for('user_edit_profile', username=user['sAMAccountName']) }}" class="button">Editar usuario</a></p>
         <p style="text-align: right;"><a href="{{ url_for('user_delete', username=user['sAMAccountName']) }}" class="button">Eliminar usuario</a></p>
 {% endif %}
     </div>
     <h2>Profile</h2>
-{% if g.ldap['username'] == user['sAMAccountName'] or admin %}
+
     <table style='width:auto;'>
-{% endif %}
 {% for key, title in identity_fields %}
 {% if key in user %}
         <tr>
@@ -38,7 +37,7 @@
 {% endfor %}
 {% if 'userAccountControl' in user %}
         <tr>
-            <th style='padding-right:10px;'>Estado </th>
+            <th style='padding-right:10px;'>Banderas </th>
             <td>
                 <ul>
 {% for key, value in uac_values.items() %}
@@ -87,7 +86,7 @@
            {% if '__primaryGroup' in user and user['__primaryGroup'] == entry['distinguishedName'] %}
             <td></td>
            {% else %}
-            <td><a href="{{ url_for('group_delmember', groupname=entry['sAMAccountName'], member=user['sAMAccountName']) }}">(remover de este grupo)</a></td>
+            <td><a href="{{ url_for('group_delmember', groupname=entry['sAMAccountName'], member=user['sAMAccountName'], show_user=True) }}">(remover de este grupo)</a></td>
            {% endif %}
         {% endif %}
     </tr>
@@ -95,4 +94,52 @@
 </table>
 {% endif %}
 </div>
+<br><br>
+
+{% if g.siccip %}
+<hr>
+<div class="right">
+{% if admin %}
+   {% if siccip_data %}
+    <p style="text-align: right;"><a href="{{ url_for('user_edit_siccip', username=user['sAMAccountName']) }}" class="button">Editar SICC-IP Conf</a></p>
+   {% else %}
+    <p style="text-align: right;"><a href="{{ url_for('user_edit_siccip', username=user['sAMAccountName']) }}" class="button">Crear SICC-IP Conf</a></p>
+   {% endif %}
+{% endif %}
+</div>
+<h2>Configuración SICC-IP</h2>
+{% if siccip_data %}
+    <table style='width:auto;'>
+        <tr>
+            <th style='padding-right:10px;'>Cuota para Internet:</td>
+            <td>{{ siccip_data['internet_quota'] }} UM</td>
+        </tr>
+        <tr>
+            <th style='padding-right:10px;'>% de la cuota utilizable en redes sociales:</td>
+            <td>{{ siccip_data['socialnetwork_quota'] }} %</td>
+        </tr>
+        <tr>
+            <th style='padding-right:10px;'>Filtro Dansguardian:</td>
+            <td>{{ siccip_data['dansguardian_filter'] }}</td>
+        </tr>
+        <tr>
+            <th style='padding-right:10px;'>Tipo de cuenta de Correo:</td>
+            {% if siccip_data['email_type'] == 'F' %}
+            <td>Sin restricciones de entrega</td>
+            {% elif siccip_data['email_type'] == 'R' %}
+            <td>Con restricciones (envío y recepción a .cu)</td>
+            {% else %}
+            <td>Solo correo local</td>
+            {% endif %}
+        </tr>
+        <tr>
+            <th style='padding-right:10px;'>Cuota para el correo:</td>
+            <td>{{ siccip_data['email_quota'] }} UM</td>
+        </tr>
+</table>
+{% else %}
+    <p style='padding-right:10px;'>El usuario no tiene definida configuración compatible con SICC-IP</p>
+{% endif %}
+{% endif %}
+
 {% endblock %}
