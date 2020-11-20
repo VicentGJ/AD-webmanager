@@ -48,7 +48,6 @@ class UserProfileEdit(FlaskForm):
     display_name = StringField('Nombre Completo')
     user_name = StringField('Nombre de Usuario', [DataRequired()])
     mail = StringField(u'Dirección de correo')
-    aliases = FieldList(StringField(), label=u'Otras direcciones de correo - Aliases')
     uac_flags = SelectMultipleField('Estado', coerce=int)
 
 
@@ -118,7 +117,12 @@ def init(app):
                 attributes = {'objectClass': [b'top', b'person', b'organizationalPerson', b'user', b'inetOrgPerson'],
                               'UserPrincipalName': [upn.encode('utf-8')],
                               'accountExpires': [b"0"],
-                              'lockoutTime': [b"0"]}
+                              'lockoutTime': [b"0"],
+                              # TODO: delete the following lines for master branch
+                              'cUJAEPersonDNI': ['00000000000'.encode('utf-8')],
+                              'cUJAEPersonExternal': ['TRUE'.encode('utf-8')],
+                              'cUJAEPersonType': ['Worker'.encode('utf-8')],
+                              }
 
                 for attribute, field in field_mapping:
                     if attribute == 'userAccountControl':
@@ -129,9 +133,11 @@ def init(app):
                         attributes[attribute] = [str(current_uac).encode('utf-8')]
                     elif attribute and field.data:
                         attributes[attribute] = [field.data.encode('utf-8')]
-                attributes['displayName'] = attributes['givenName'] + attributes['sn']
+                if 'sn' in attributes:
+                    attributes['displayName'] = attributes['givenName'] + attributes['sn']
+                else:
+                    attributes['displayName'] = attributes['givenName']
 
-                print(attributes)
                 ldap_create_entry("cn=%s,%s" % (form.user_name.data, base), attributes)
                 ldap_change_password(None, form.password.data, form.user_name.data)
                 flash(u"Usuario creado con éxito.", "success")
@@ -142,10 +148,6 @@ def init(app):
                 flash(e['info'], "error")
         elif form.errors:
             flash("Some fields failed validation.", "error")
-
-        if len(form.aliases.entries) == 0:
-            for number in range(1,3):
-                form.aliases.append_entry()
 
         return render_template("forms/basicform.html", form=form, title=title,
                                action="Adicionar Usuario",
@@ -171,6 +173,10 @@ def init(app):
                                ('name', "Nombre del Registro"),
                                ('sAMAccountName', "Nombre de Usuario"),
                                ('mail', u"Dirección de Correo")]
+
+            if 'title' in user:
+                identity_fields.append(('title', "Ocupación"))
+
             group_fields = [('sAMAccountName', "Nombre"),
                             ('description', u"Descripción")]
 
@@ -356,11 +362,6 @@ def init(app):
             form.display_name.data = user.get('displayName')
             form.user_name.data = user.get('sAMAccountName')
             form.mail.data = user.get('mail')
-            aliases = user.get('otherMailbox')
-            if isinstance(aliases,list):
-                for alias in aliases:
-                    form.aliases.append_entry(alias)
-            form.aliases.append_entry()
             form.uac_flags.data = [key for key, flag in
                                    LDAP_AD_USERACCOUNTCONTROL_VALUES.items()
                                    if (flag[1] and
