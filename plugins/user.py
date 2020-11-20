@@ -21,7 +21,7 @@ from flask import abort, flash, g, render_template, redirect, request
 from flask_wtf import FlaskForm
 from wtforms import PasswordField, SelectMultipleField, TextAreaField, \
     TextField, StringField, FieldList, SelectField, DecimalField, IntegerField, BooleanField
-from wtforms.validators import Required,  EqualTo, Optional
+from wtforms.validators import DataRequired,  EqualTo, Optional
 
 
 from libs.ldap_func import ldap_auth, ldap_change_password, \
@@ -43,10 +43,10 @@ class UserAddGroup(FlaskForm):
 
 
 class UserProfileEdit(FlaskForm):
-    first_name = StringField('Nombre', [Required()])
-    last_name = StringField('Apellido', [Required()])
+    first_name = StringField('Nombre', [DataRequired()])
+    last_name = StringField('Apellido')
     display_name = StringField('Nombre Completo')
-    user_name = StringField('Nombre de Usuario', [Required()])
+    user_name = StringField('Nombre de Usuario', [DataRequired()])
     mail = StringField(u'Dirección de correo')
     aliases = FieldList(StringField(), label=u'Otras direcciones de correo - Aliases')
     uac_flags = SelectMultipleField('Estado', coerce=int)
@@ -68,23 +68,23 @@ class SICCIPEdit(FlaskForm):
 
 class UserAdd(UserProfileEdit):
     base = None
-    password = PasswordField(u'Contraseña', [Required()])
+    password = PasswordField(u'Contraseña', [DataRequired()])
     password_confirm = PasswordField(u'Repetir contraseña',
-                                     [Required(),
+                                     [DataRequired(),
                                       EqualTo('password',
                                               message=u'Las contraseñas deben coincidir')])
 
 
 class PasswordChange(FlaskForm):
-    password = PasswordField(u'Nueva Contraseña', [Required()])
+    password = PasswordField(u'Nueva Contraseña', [DataRequired()])
     password_confirm = PasswordField(u'Repetir Nueva Contraseña',
-                                     [Required(),
+                                     [DataRequired(),
                                       EqualTo('password',
                                               message=u'Las contraseñas deben coincidir')])
 
 
 class PasswordChangeUser(PasswordChange):
-    oldpassword = PasswordField(u'Contraseña actual', [Required()])
+    oldpassword = PasswordField(u'Contraseña actual', [DataRequired()])
 
 
 def init(app):
@@ -102,7 +102,6 @@ def init(app):
         form = UserAdd(request.form)
         field_mapping = [('givenName', form.first_name),
                          ('sn', form.last_name),
-                         ('displayName', form.display_name),
                          ('sAMAccountName', form.user_name),
                          ('mail', form.mail),
                          (None, form.password),
@@ -130,6 +129,7 @@ def init(app):
                         attributes[attribute] = [str(current_uac).encode('utf-8')]
                     elif attribute and field.data:
                         attributes[attribute] = [field.data.encode('utf-8')]
+                attributes['displayName'] = attributes['givenName'] + attributes['sn']
 
                 print(attributes)
                 ldap_create_entry("cn=%s,%s" % (form.user_name.data, base), attributes)
@@ -327,9 +327,11 @@ def init(app):
                         if attribute == 'sAMAccountName':
                             # Rename the account
                             ldap_update_attribute(user['distinguishedName'], "sAMAccountName", value)
-                            ldap_update_attribute(user['distinguishedName'], "userPrincipalName", "%s@%s" % (value, g.ldap['domain']))
+                            ldap_update_attribute(user['distinguishedName'], "userPrincipalName",
+                                                  "%s@%s" % (value, g.ldap['domain']))
                             # Finish by renaming the whole record
-                            ldap_update_attribute(user['distinguishedName'], "cn", value)
+                            # TODO: refactor this to use rename_s instead of update
+                            # ldap_update_attribute(user['distinguishedName'], "cn", value)
                             user = ldap_get_user(value)
                         elif attribute == 'userAccountControl':
                             current_uac = 512
