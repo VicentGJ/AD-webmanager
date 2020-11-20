@@ -28,13 +28,13 @@ TREE_BLACKLIST = ["CN=ForeignSecurityPrincipals",
 
 class FilterTreeView(FlaskForm):
     filter_str = StringField()
-    filter_select = SelectField(choices=['sAMAccountName', 'displayName', 'cUJAEPersonDNI'])
+    filter_select = SelectField(choices=[('sAMAccountName', 'Usuario'), ('displayName', 'Nombre')])
 
 
 def init(app):
     @app.route('/tree', methods=['GET', 'POST'] )
     @app.route('/tree/<base>', methods=['GET', 'POST'])
-    @ldap_auth("SM Admin")
+    @ldap_auth("Domain Admins")
     
     def tree_base(base=None):
 
@@ -43,7 +43,7 @@ def init(app):
         elif not base.lower().endswith(g.ldap['dn'].lower()):
             base += ",%s" % g.ldap['dn']
 
-        admin = ldap_in_group("SM Admin")
+        admin = ldap_in_group("Domain Admins")
         entry_fields = [('name', "Nombre"),
                         ('__description', u"Login/Descripción"),
                         ('__type', "Tipo"),
@@ -79,6 +79,7 @@ def init(app):
         users = ldap_get_entries("objectClass=top", base, scope, ignore_erros=True)
         users = filter(lambda entry: 'displayName' in entry, users)
         users = filter(lambda entry: 'sAMAccountName' in entry, users)
+        users = filter(lambda entry: filter_select in entry, users)
         users = filter(lambda entry: filter_str in entry[filter_select], users)
         users = sorted(users, key=lambda entry: entry['displayName'])
         if filter_str == "top":

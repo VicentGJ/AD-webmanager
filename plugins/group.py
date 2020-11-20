@@ -31,14 +31,14 @@ import ldap
 import struct
 
 class GroupDelMember(FlaskForm):
-    show_user = HiddenField()
-
+    pass
 
 class GroupAddMembers(FlaskForm):
     new_members = TextAreaField('Nuevos miembros')
 
 
 class GroupEdit(FlaskForm):
+    base = None
     name = TextField('Nombre', [Required()])
     description = TextField(u'Descripción')
     group_type = RadioField('Tipo',
@@ -54,9 +54,11 @@ def init(app):
     def group_add():
         title = "Adicionar grupo"
 
-        base = request.args.get('base')
-        if not base:
-            base = "OU=People,%s" % g.ldap['dn']
+        if not GroupEdit.base:
+            GroupEdit.base = request.args.get('base')
+
+        base = GroupEdit.base
+        print(base, "fist base")
 
         form = GroupEdit(request.form)
         field_mapping = [('sAMAccountName', form.name),
@@ -73,29 +75,24 @@ def init(app):
         if form.validate_on_submit():
             try:
                 # Default attributes
-                attributes = {'objectClass': "group"}
+                attributes = {'objectClass': b"group"}
 
                 for attribute, field in field_mapping:
                     if attribute == "groupType":
-                        group_type = int(form.group_type.data) + \
-                            int(form.group_flags.data)
-                        attributes[attribute] = str(
-                            struct.unpack("i",
-                                          struct.pack("I",
-                                                      int(group_type)))[0])
+                        group_type = int(form.group_type.data) + int(form.group_flags.data)
+                        attributes[attribute] = str(struct.unpack("i",struct.pack("I",int(group_type)))[0]).encode('utf-8')
                     elif attribute and field.data:
-                        attributes[attribute] = field.data
-
-                ldap_create_entry("cn=%s,%s" % (form.name.data, base),
-                                  attributes)
+                        attributes[attribute] = field.data.encode('utf-8')
+                print(attributes)
+                print("cn=%s,%s" % (form.name.data, base))
+                ldap_create_entry("cn=%s,%s" % (form.name.data, base), attributes)
 
                 flash(u"Grupo creado con éxito.", "success")
                 return redirect(url_for('group_overview',
                                         groupname=form.name.data))
             except ldap.LDAPError as e:
-                error = e.message['info'].split(":", 2)[-1].strip()
-                error = str(error[0].upper() + error[1:])
-                flash(error, "error")
+                e = dict(e.args[0])
+                flash(e['info'], "error")
         elif form.errors:
             flash(u"Falló la validación de los datos.", "error")
 
@@ -105,7 +102,7 @@ def init(app):
 
         return render_template("forms/basicform.html", form=form, title=title,
                                action="Adicionar grupo",
-                               parent=url_for('group_add'))
+                               parent=url_for('tree_base'))
 
     @app.route('/group/<groupname>')
     @ldap_auth("Domain Users")
@@ -155,7 +152,7 @@ def init(app):
         if not ldap_group_exists(groupname):
             abort(404)
 
-        form = Form(request.form)
+        form = FlaskForm(request.form)
 
         if form.validate_on_submit():
             try:
@@ -232,9 +229,8 @@ def init(app):
                 return redirect(url_for('group_overview',
                                         groupname=form.name.data))
             except ldap.LDAPError as e:
-                error = e.message['info'].split(":", 2)[-1].strip()
-                error = str(error[0].upper() + error[1:])
-                flash(error, "error")
+                e = dict(e.args[0])
+                flash(e['info'], "error")
         elif form.errors:
             flash(u"Falló la verificación de los datos.", "error")
 
@@ -286,9 +282,8 @@ def init(app):
                     return redirect(url_for('group_overview',
                                             groupname=groupname))
                 except ldap.LDAPError as e:
-                    error = e.message['info'].split(":", 2)[-1].strip()
-                    error = str(error[0].upper() + error[1:])
-                    flash(error, "error")
+                    e = dict(e.args[0])
+                    flash(e['info'], "error")
         elif form.errors:
             flash(u"Falló la validación de los datos.", "error")
 
@@ -314,36 +309,23 @@ def init(app):
         if not member['distinguishedName'] in group['member']:
             abort(404)
 
-        show_user = request.args.get('show_user','') if request.args.get('show_user','') != None else False
         form = GroupDelMember(request.form)
-        form.visible_fields = [form.show_user]
 
         if form.validate_on_submit():
             try:
-                show_user = True if form.show_user.data == "Show User" else False
                 members = group['member']
                 members.remove(member['distinguishedName'])
-                ldap_update_attribute(group['distinguishedName'],
-                                      "member", members)
-                flash("Miembro eliminado." if not show_user else
-                      "Membrecia al grupo %s eliminada" % group['sAMAccountName'], "success")
-                return redirect(url_for('group_overview', groupname=groupname) if not show_user
-                                else url_for('user_overview', username=member['sAMAccountName']))
+                ldap_update_attribute(group['distinguishedName'],"member", members)
+                flash("Membrecia al grupo %s eliminada" % group['sAMAccountName'], "success")
+                return redirect(url_for('user_overview', username=member['sAMAccountName']))
             except ldap.LDAPError as e:
-                error = e.message['info'].split(":", 2)[-1].strip()
-                error = str(error[0].upper() + error[1:])
-                flash(error, "error")
+                e = dict(e.args[0])
+                flash(e['info'], "error")
         elif form.errors:
                 flash(u"Falló la validación de los datos.", "error")
-
-        parent = url_for('group_overview', groupname=groupname) if not show_user else \
-            url_for('user_overview', username=member['sAMAccountName'])
-
-        if show_user:
-            form.show_user.data="Show User"
 
         return render_template("pages/group_delmember_es.html", title=title,
                                action="Eliminar miembro del grupo", form=form,
                                member=member['sAMAccountName'],
                                group=group['sAMAccountName'],
-                               parent=parent)
+                               parent=url_for('user_overview', username=member['sAMAccountName']))
