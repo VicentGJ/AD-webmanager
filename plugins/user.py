@@ -117,11 +117,7 @@ def init(app):
                 attributes = {'objectClass': [b'top', b'person', b'organizationalPerson', b'user', b'inetOrgPerson'],
                               'UserPrincipalName': [upn.encode('utf-8')],
                               'accountExpires': [b"0"],
-                              'lockoutTime': [b"0"],
-                              # TODO: delete the following lines for master branch
-                              'cUJAEPersonDNI': ['00000000000'.encode('utf-8')],
-                              'cUJAEPersonExternal': ['TRUE'.encode('utf-8')],
-                              'cUJAEPersonType': ['Worker'.encode('utf-8')],
+                              'lockoutTime': [b"0"]
                               }
 
                 for attribute, field in field_mapping:
