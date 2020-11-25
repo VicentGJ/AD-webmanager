@@ -48,6 +48,7 @@ class UserProfileEdit(FlaskForm):
     display_name = StringField('Nombre Completo')
     user_name = StringField('Nombre de Usuario', [DataRequired()])
     mail = StringField(u'Dirección de correo')
+    category = SelectField(choices=[('A', 'Categoria A'), ('B', 'Categoria B'), ('C', 'Categoria C')])
     uac_flags = SelectMultipleField('Estado', coerce=int)
 
 
@@ -176,6 +177,9 @@ def init(app):
 
             if 'title' in user:
                 identity_fields.append(('title', "Ocupación"))
+            # TODO: CUJAE specific, Remove for master
+            if 'pager' in user:
+                identity_fields.append(('pager', "Categoría"))
 
             group_fields = [('sAMAccountName', "Nombre"),
                             ('description', u"Descripción")]
@@ -319,6 +323,7 @@ def init(app):
                          ('displayName', form.display_name),
                          ('sAMAccountName', form.user_name),
                          ('mail', form.mail),
+                         ('pager', form.category),
                          ('userAccountControl', form.uac_flags)]
 
         form.uac_flags.choices = [(key, value[0]) for key, value in LDAP_AD_USERACCOUNTCONTROL_VALUES.items()]
