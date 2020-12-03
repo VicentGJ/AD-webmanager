@@ -169,7 +169,6 @@ def ldap_get_entry_simple(filter_dict):
         for key, value in filter_dict.items():
             fields += "(%s=%s)" % (key, value)
         ldap_filter = "(&%s)" % fields
-
     return ldap_get_entry(ldap_filter)
 
 
@@ -178,7 +177,6 @@ def ldap_get_entry(ldap_filter):
         Return the attributes for a single entry or None if it doesn't exist or
         if the filter matches multiple entries and False on errors.
     """
-
     entries = ldap_get_entries(ldap_filter)
     # Only allow a single entry
     if isinstance(entries,list) and len(entries) == 1:

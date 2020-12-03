@@ -26,9 +26,13 @@ from wtforms import StringField, SelectField
 TREE_BLACKLIST = ["CN=ForeignSecurityPrincipals",
                   "OU=sudoers"]
 
+
+# TODO: most here are CUJAE specific, refactor for master
 class FilterTreeView(FlaskForm):
     filter_str = StringField()
-    filter_select = SelectField(choices=[('sAMAccountName', 'Usuario'), ('displayName', 'Nombre')])
+    filter_select = SelectField(choices=[('cUJAEPersonDNI', 'Carné ID'),
+                                         ('sAMAccountName', 'Usuario'),
+                                         ('givenName', 'Nombre')])
 
 
 def init(app):
@@ -77,9 +81,7 @@ def init(app):
         entries = []
         
         users = ldap_get_entries("objectClass=top", base, scope, ignore_erros=True)
-        # TODO: this is a cujae specific thingy, erase in master
         users = filter(lambda entry: 'displayName' in entry, users)
-        ##############################################################
         users = filter(lambda entry: 'sAMAccountName' in entry, users)
         users = filter(lambda entry: filter_select in entry, users)
         users = filter(lambda entry: filter_str in entry[filter_select], users)

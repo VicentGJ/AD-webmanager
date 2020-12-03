@@ -139,8 +139,9 @@ def pre_request():
 
     g.ldap_cache = {}
 
-    #SICC-IP integrations
+    #   SICC-IP integrations
     g.siccip = app.config['SICCIP_AWARE']
+    g.extra_fields = app.config['EXTRA_FIELDS']
 
 if __name__ == '__main__':
     app.run(host='::', port=8080)

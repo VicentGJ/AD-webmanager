@@ -20,7 +20,7 @@ from libs.common import iri_for as url_for
 from flask import abort, flash, g, render_template, redirect, request
 from flask_wtf import FlaskForm
 from wtforms import PasswordField, SelectMultipleField, TextAreaField, \
-    TextField, StringField, FieldList, SelectField, DecimalField, IntegerField, BooleanField
+    StringField, SelectField, DecimalField, IntegerField, BooleanField
 from wtforms.validators import DataRequired,  EqualTo, Optional
 
 
@@ -48,7 +48,12 @@ class UserProfileEdit(FlaskForm):
     display_name = StringField('Nombre Completo')
     user_name = StringField('Nombre de Usuario', [DataRequired()])
     mail = StringField(u'Dirección de correo')
-    category = SelectField(choices=[('A', 'Categoria A'), ('B', 'Categoria B'), ('C', 'Categoria C')])
+    # TODO: Erase this for master
+    category = SelectField(choices=[('Auto', 'Automático'),
+                                    ('A', 'Categoria A'),
+                                    ('B', 'Categoria B'),
+                                    ('C', 'Categoria C'),
+                                    ('D', 'Sin Internet')])
     uac_flags = SelectMultipleField('Estado', coerce=int)
 
 
@@ -75,6 +80,12 @@ class UserAdd(UserProfileEdit):
                                               message=u'Las contraseñas deben coincidir')])
 
 
+class UserAddExtraFields(UserAdd):
+    manual = BooleanField(label="Usuario Manual", default="checked")
+    person_type = SelectField(label="Tipo de Persona", choices=[('Worker', "Trabajador"), ('Student', "Estudiante")])
+    dni = StringField(label='Carné Identidad', validators=[DataRequired()])
+
+
 class PasswordChange(FlaskForm):
     password = PasswordField(u'Nueva Contraseña', [DataRequired()])
     password_confirm = PasswordField(u'Repetir Nueva Contraseña',
@@ -99,14 +110,23 @@ def init(app):
         base = UserAdd.base
         print(base, "fist base")
 
-        form = UserAdd(request.form)
+        if g.extra_fields:
+            form = UserAddExtraFields(request.form)
+        else:
+            form = UserAdd(request.form)
         field_mapping = [('givenName', form.first_name),
                          ('sn', form.last_name),
                          ('sAMAccountName', form.user_name),
                          ('mail', form.mail),
+                         ('pager', form.category),
                          (None, form.password),
                          (None, form.password_confirm),
                          ('userAccountControl', form.uac_flags)]
+        if g.extra_fields:
+            extra_field_mapping = [('cUJAEPersonExternal', form.manual),
+                                   ('cUJAEPersonType', form.person_type),
+                                   ('cUJAEPersonDNI', form.dni)]
+            field_mapping += extra_field_mapping
 
         form.visible_fields = [field[1] for field in field_mapping]
         form.uac_flags.choices = [(key, value[0]) for key, value in LDAP_AD_USERACCOUNTCONTROL_VALUES.items()]
@@ -119,10 +139,6 @@ def init(app):
                               'UserPrincipalName': [upn.encode('utf-8')],
                               'accountExpires': [b"0"],
                               'lockoutTime': [b"0"],
-                              # TODO: delete the following lines for master branch
-                              'cUJAEPersonDNI': ['00000000000'.encode('utf-8')],
-                              'cUJAEPersonExternal': ['TRUE'.encode('utf-8')],
-                              'cUJAEPersonType': ['Worker'.encode('utf-8')],
                               }
 
                 for attribute, field in field_mapping:
@@ -133,9 +149,17 @@ def init(app):
                                 current_uac += key
                         attributes[attribute] = [str(current_uac).encode('utf-8')]
                     elif attribute and field.data:
-                        attributes[attribute] = [field.data.encode('utf-8')]
+                        if isinstance(field, BooleanField):
+                            if field.data:
+                                attributes[attribute] = 'TRUE'.encode('utf-8')
+                            else:
+                                attributes[attribute] = 'FALSE'.encode('utf-8')
+                        else:
+                            attributes[attribute] = [field.data.encode('utf-8')]
                 if 'sn' in attributes:
-                    attributes['displayName'] = attributes['givenName'] + attributes['sn']
+                    attributes['displayName'] = attributes['givenName'][0].decode('utf-8') + " " + attributes[
+                                                                                                'sn'][0].decode('utf-8')
+                    attributes['displayName'] = [attributes['displayName'].encode('utf-8')]
                 else:
                     attributes['displayName'] = attributes['givenName']
 
@@ -148,6 +172,7 @@ def init(app):
                 e = dict(e.args[0])
                 flash(e['info'], "error")
         elif form.errors:
+            print(form.errors)
             flash("Some fields failed validation.", "error")
 
         return render_template("forms/basicform.html", form=form, title=title,
@@ -180,6 +205,8 @@ def init(app):
             # TODO: CUJAE specific, Remove for master
             if 'pager' in user:
                 identity_fields.append(('pager', "Categoría"))
+            if 'telephoneNumber' in user:
+                identity_fields.append(('telephoneNumber', "Teléfono"))
 
             group_fields = [('sAMAccountName', "Nombre"),
                             ('description', u"Descripción")]
