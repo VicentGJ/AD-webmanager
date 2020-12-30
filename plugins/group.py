@@ -50,7 +50,7 @@ class GroupEdit(FlaskForm):
 
 def init(app):
     @app.route('/groups/+add', methods=['GET', 'POST'])
-    @ldap_auth("SM Admin")
+    @ldap_auth("SM Admins")
     def group_add():
         title = "Adicionar grupo"
 
@@ -119,12 +119,15 @@ def init(app):
                         ('description', u"Descripción")]
 
         group = ldap_get_group(groupname=groupname)
-        admin = ldap_in_group("SM Admin") and not group['groupType'] & 1
+        if g.delegate_control:
+            admin = ldap_in_group(g.admin_group) and not group['groupType'] & 1
+        else:
+            admin = ldap_in_group("Domain Admins") and not group['groupType'] & 1
         group_details = [ldap_get_group(entry, 'distinguishedName')
                          for entry in ldap_get_membership(groupname)]
 
-        groups = sorted(group_details, key=lambda entry:
-                        entry['sAMAccountName'])
+        group_details = list(filter(None, group_details))
+        groups = sorted(group_details, key=lambda entry: entry['sAMAccountName'])
 
         member_list = []
         for entry in ldap_get_members(groupname):
@@ -145,7 +148,7 @@ def init(app):
                                grouptype_values=LDAP_AD_GROUPTYPE_VALUES)
 
     @app.route('/group/<groupname>/+delete', methods=['GET', 'POST'])
-    @ldap_auth("SM Admin")
+    @ldap_auth("SM Admins")
     def group_delete(groupname):
         title = "Eliminar grupo"
 
@@ -174,7 +177,7 @@ def init(app):
                                               groupname=groupname))
 
     @app.route('/group/<groupname>/+edit', methods=['GET', 'POST'])
-    @ldap_auth("SM Admin")
+    @ldap_auth("SM Admins")
     def group_edit(groupname):
         title = "Editar grupo"
 
@@ -249,7 +252,7 @@ def init(app):
                                               groupname=groupname))
 
     @app.route('/group/<groupname>/+add-members', methods=['GET', 'POST'])
-    @ldap_auth("SM Admin")
+    @ldap_auth("SM Admins")
     def group_addmembers(groupname):
         title = "Adicionar miembros"
 
@@ -294,7 +297,7 @@ def init(app):
 
     @app.route('/group/<groupname>/+del-member/<member>',
                methods=['GET', 'POST'])
-    @ldap_auth("SM Admin")
+    @ldap_auth("SM Admins")
     def group_delmember(groupname, member):
         title = "Quitar del grupo"
 

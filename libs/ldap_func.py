@@ -181,17 +181,8 @@ def ldap_get_entry(ldap_filter):
     # Only allow a single entry
     if isinstance(entries,list) and len(entries) == 1:
         return entries[0]
-    
-    #raise Exception(entries)
+
     return None
-    # Only allow a single entry
- #   try:
- #       if entries == False:
- #           return None
- #   except:
- #       if len(entries) != 1:
- #           return None
- #   return entries[0]
 
 
 def ldap_get_entries(ldap_filter, base=None, scope=None, ignore_erros=False):
@@ -272,7 +263,6 @@ def ldap_get_membership(name=None):
     """
         Return the list of all groups the entry is a memberOf.
     """
-
     entry = ldap_get_entry_simple({'sAMAccountName': name})
     if not entry:
         return None
@@ -286,7 +276,6 @@ def ldap_get_membership(name=None):
     # Retrieve secondary groups for user
     if 'memberOf' in entry:
         groups += entry['memberOf']
-
     return groups
 
 
@@ -300,6 +289,9 @@ def ldap_in_group(groupname, username=None):
 
     group = ldap_get_group(groupname)
     groups = ldap_get_membership(username)
+
+    if group is None:
+        return False
     # Start by looking at direct membership
     if group['distinguishedName'] in groups:
         return True
@@ -311,6 +303,8 @@ def ldap_in_group(groupname, username=None):
     while to_check != checked:
         for entry in to_check - checked:
             attr = ldap_get_group(entry, "distinguishedName")
+            if attr is None:
+                return None
             if 'memberOf' in attr:
                 if group['distinguishedName'] in attr['memberOf']:
                     return True
@@ -318,6 +312,7 @@ def ldap_in_group(groupname, username=None):
             checked.add(entry)
 
     return group['distinguishedName'] in checked
+
 
 def ldap_update_attribute(dn, attribute, value=None, objectClass=None):
     """
