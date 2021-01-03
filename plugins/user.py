@@ -17,7 +17,7 @@
 # /usr/share/common-licenses/GPL-2
 
 from libs.common import iri_for as url_for
-from libs.common import parse_extra_settings as settings
+from libs.common import parse_settings as settings
 from flask import abort, flash, g, render_template, redirect, request
 from flask_wtf import FlaskForm
 from wtforms import PasswordField, SelectMultipleField, TextAreaField, \
@@ -189,10 +189,7 @@ def init(app):
             abort(404)
 
         user = ldap_get_user(username=username)
-        if g.delegate_control:
-            admin = ldap_in_group(g.admin_group)
-        else:
-            admin = ldap_in_group("Domain Admins")
+        admin = ldap_in_group(settings('ADMIN_GROUP'))
         logged_user = g.ldap['username']
         
         if logged_user == user['sAMAccountName'] or admin:
@@ -281,10 +278,7 @@ def init(app):
         if not ldap_user_exists(username=username):
             abort(404)
 
-        if g.delegate_control:
-            admin = ldap_in_group(g.admin_group)
-        else:
-            admin = ldap_in_group("Domain Admins")
+        admin = ldap_in_group(settings('ADMIN_GROUP'))
 
         if username != g.ldap['username'] and admin:
             form = PasswordChange(request.form)
@@ -319,7 +313,7 @@ def init(app):
                                               username=username))
 
     @app.route('/user/<username>/+delete', methods=['GET', 'POST'])
-    @ldap_auth("SM Admins") # TODO: Change this for master
+    @ldap_auth(settings('ADMIN_GROUP'))  # TODO: Change this for master
     def user_delete(username):
         title = "Borrar Usuario"
 
@@ -347,7 +341,7 @@ def init(app):
                                               username=username))
 
     @app.route('/user/<username>/+edit-profile', methods=['GET', 'POST'])
-    @ldap_auth("SM Admins") # TODO: Change this for master
+    @ldap_auth(settings('ADMIN_GROUP'))  # TODO: Change this for master
     def user_edit_profile(username):
         title = "Editar usuario"
 
@@ -416,7 +410,7 @@ def init(app):
                                               username=username))
 
     @app.route('/user/<username>/+edit-siccip', methods=['GET', 'POST'])
-    @ldap_auth("SM Admins") # TODO: Change this for master
+    @ldap_auth(settings('ADMIN_GROUP'))  # TODO: Change this for master
     def user_edit_siccip(username):
         title = u"Editar Configuración SICC-IP"
 
@@ -472,9 +466,8 @@ def init(app):
                                parent=url_for('user_overview',
                                               username=username))
 
-
     @app.route('/user/<username>/+edit-ssh', methods=['GET', 'POST'])
-    @ldap_auth("SM Admins") # TODO: Change this for master
+    @ldap_auth(settings('ADMIN_GROUP'))  # TODO: Change this for master
     def user_edit_ssh(username):
         title = "Editar llaves SSH"
 
@@ -512,7 +505,7 @@ def init(app):
 
 
     # @app.route('/user/<username>/+edit-groups', methods=['GET', 'POST'])
-    # @ldap_auth("SM Admins") # TODO: Change this for master
+    # @ldap_auth(settings('ADMIN_GROUP')) # TODO: Change this for master
     # def user_edit_groups(username):
     #     title = "Editar pertenencia a Grupos"
     #

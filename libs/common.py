@@ -18,6 +18,7 @@
 
 from flask import url_for
 from werkzeug.urls import uri_to_iri
+from configparser import SafeConfigParser
 
 
 class ReverseProxied(object):
@@ -57,7 +58,7 @@ def get_parsed_pager_attribute(pager):
     D its Dansguaridan
 
     For example a user with Full Internet access, 25.50 Units of quota for Internet, with Full email access and
-    40 quota units for email and whos user should be filtered acording with dansguardian group 2 will have a pager
+    40 quota units for email and who's user should be filtered according with dansguardian group 2 will have a pager
     attribute like the following
 
     IF25.50|EF40.0|D2
@@ -77,9 +78,15 @@ def get_parsed_pager_attribute(pager):
         email_type = letter_type if letter_type == 'F' or letter_type == 'R' else 'L'
         email_quota = float(pager_parts[1][2:])
         dansguardian_filter_number = int(pager_parts[2][1:])
-        return {'internet_type':internet_type, 'internet_quota':internet_quota,
-                'socialnetwork_quota': socialnetwork_quota, 'email_type':email_type,
-        'email_quota' : email_quota, 'dansguardian_filter':dansguardian_filter_number}
+        return {'internet_type': internet_type, 'internet_quota': internet_quota,
+                'socialnetwork_quota': socialnetwork_quota, 'email_type': email_type,
+                'email_quota': email_quota, 'dansguardian_filter': dansguardian_filter_number}
     except ValueError:
         return None
 
+
+def parse_settings(setting):
+    parser = SafeConfigParser()
+
+    parser.read('settings.cfg')
+    return parser.get('SETTINGS', setting)

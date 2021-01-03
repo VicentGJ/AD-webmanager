@@ -17,6 +17,7 @@
 # /usr/share/common-licenses/GPL-2
 
 from libs.common import iri_for as url_for
+from libs.common import parse_settings as settings
 from flask import g, render_template, request, redirect, abort
 from libs.ldap_func import ldap_auth, ldap_get_entries, ldap_in_group
 from flask_wtf import FlaskForm
@@ -45,10 +46,7 @@ def init(app):
         elif not base.lower().endswith(g.ldap['dn'].lower()):
             base += ",%s" % g.ldap['dn']
 
-        if g.delegate_control:
-            admin = ldap_in_group("SM Admins")
-        else:
-            admin = ldap_in_group("Domain Admins")
+        admin = ldap_in_group(settings('ADMIN_GROUP'))
 
         if not admin:
             abort(401)
@@ -150,7 +148,6 @@ def init(app):
                     entry['__type'] = "Built-in"
                 else:
                     entry['__type'] = "Desconocido"
-
 
                 entries.append(entry)
         return entries
