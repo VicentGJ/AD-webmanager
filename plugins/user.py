@@ -17,7 +17,7 @@
 # /usr/share/common-licenses/GPL-2
 
 from libs.common import iri_for as url_for
-from libs.common import parse_settings as settings
+from settings import Settings
 from flask import abort, flash, g, render_template, redirect, request
 from flask_wtf import FlaskForm
 from wtforms import PasswordField, SelectMultipleField, TextAreaField, \
@@ -101,7 +101,7 @@ class PasswordChangeUser(PasswordChange):
 
 def init(app):
     @app.route('/users/+add', methods=['GET', 'POST'])
-    @ldap_auth(settings("ADMIN_GROUP"))  # TODO: Change this for master
+    @ldap_auth(Settings.ADMIN_GROUP)
     def user_add():
         title = "Adicionar Usuario"
 
@@ -189,7 +189,7 @@ def init(app):
             abort(404)
 
         user = ldap_get_user(username=username)
-        admin = ldap_in_group(settings('ADMIN_GROUP'))
+        admin = ldap_in_group(Settings.ADMIN_GROUP)
         logged_user = g.ldap['username']
         
         if logged_user == user['sAMAccountName'] or admin:
@@ -278,7 +278,7 @@ def init(app):
         if not ldap_user_exists(username=username):
             abort(404)
 
-        admin = ldap_in_group(settings('ADMIN_GROUP'))
+        admin = ldap_in_group(Settings.ADMIN_GROUP)
 
         if username != g.ldap['username'] and admin:
             form = PasswordChange(request.form)
@@ -313,7 +313,7 @@ def init(app):
                                               username=username))
 
     @app.route('/user/<username>/+delete', methods=['GET', 'POST'])
-    @ldap_auth(settings('ADMIN_GROUP'))  # TODO: Change this for master
+    @ldap_auth(Settings.ADMIN_GROUP)
     def user_delete(username):
         title = "Borrar Usuario"
 
@@ -341,7 +341,7 @@ def init(app):
                                               username=username))
 
     @app.route('/user/<username>/+edit-profile', methods=['GET', 'POST'])
-    @ldap_auth(settings('ADMIN_GROUP'))  # TODO: Change this for master
+    @ldap_auth(Settings.ADMIN_GROUP)
     def user_edit_profile(username):
         title = "Editar usuario"
 
@@ -410,7 +410,7 @@ def init(app):
                                               username=username))
 
     @app.route('/user/<username>/+edit-siccip', methods=['GET', 'POST'])
-    @ldap_auth(settings('ADMIN_GROUP'))  # TODO: Change this for master
+    @ldap_auth(Settings.ADMIN_GROUP)
     def user_edit_siccip(username):
         title = u"Editar Configuración SICC-IP"
 
@@ -467,7 +467,7 @@ def init(app):
                                               username=username))
 
     @app.route('/user/<username>/+edit-ssh', methods=['GET', 'POST'])
-    @ldap_auth(settings('ADMIN_GROUP'))  # TODO: Change this for master
+    @ldap_auth(Settings.ADMIN_GROUP)
     def user_edit_ssh(username):
         title = "Editar llaves SSH"
 
@@ -505,7 +505,7 @@ def init(app):
 
 
     # @app.route('/user/<username>/+edit-groups', methods=['GET', 'POST'])
-    # @ldap_auth(settings('ADMIN_GROUP')) # TODO: Change this for master
+    # @ldap_auth(Settings.ADMIN_GROUP)
     # def user_edit_groups(username):
     #     title = "Editar pertenencia a Grupos"
     #

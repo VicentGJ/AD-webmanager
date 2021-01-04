@@ -17,7 +17,7 @@
 # /usr/share/common-licenses/GPL-2
 
 from libs.common import iri_for as url_for
-from libs.common import parse_settings as settings
+from settings import Settings
 from flask import abort, flash, g, render_template, redirect, request
 from flask_wtf import FlaskForm
 from wtforms import RadioField, TextAreaField, TextField, HiddenField
@@ -31,8 +31,10 @@ from libs.ldap_func import ldap_auth, ldap_create_entry, ldap_delete_entry, \
 import ldap
 import struct
 
+
 class GroupDelMember(FlaskForm):
     pass
+
 
 class GroupAddMembers(FlaskForm):
     new_members = TextAreaField('Nuevos miembros')
@@ -51,7 +53,7 @@ class GroupEdit(FlaskForm):
 
 def init(app):
     @app.route('/groups/+add', methods=['GET', 'POST'])
-    @ldap_auth(settings('ADMIN_GROUP'))
+    @ldap_auth(Settings.ADMIN_GROUP)
     def group_add():
         title = "Adicionar grupo"
 
@@ -149,7 +151,7 @@ def init(app):
                                grouptype_values=LDAP_AD_GROUPTYPE_VALUES)
 
     @app.route('/group/<groupname>/+delete', methods=['GET', 'POST'])
-    @ldap_auth(settings('ADMIN_GROUP'))
+    @ldap_auth(Settings.ADMIN_GROUP)
     def group_delete(groupname):
         title = "Eliminar grupo"
 
@@ -178,7 +180,7 @@ def init(app):
                                               groupname=groupname))
 
     @app.route('/group/<groupname>/+edit', methods=['GET', 'POST'])
-    @ldap_auth(settings('ADMIN_GROUP'))
+    @ldap_auth(Settings.ADMIN_GROUP)
     def group_edit(groupname):
         title = "Editar grupo"
 
@@ -253,7 +255,7 @@ def init(app):
                                               groupname=groupname))
 
     @app.route('/group/<groupname>/+add-members', methods=['GET', 'POST'])
-    @ldap_auth(settings('ADMIN_GROUP'))
+    @ldap_auth(Settings.ADMIN_GROUP)
     def group_addmembers(groupname):
         title = "Adicionar miembros"
 
@@ -298,7 +300,7 @@ def init(app):
 
     @app.route('/group/<groupname>/+del-member/<member>',
                methods=['GET', 'POST'])
-    @ldap_auth(settings('ADMIN_GROUP'))
+    @ldap_auth(Settings.ADMIN_GROUP)
     def group_delmember(groupname, member):
         title = "Quitar del grupo"
 

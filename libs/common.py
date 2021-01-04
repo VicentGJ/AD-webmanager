@@ -83,10 +83,3 @@ def get_parsed_pager_attribute(pager):
                 'email_quota': email_quota, 'dansguardian_filter': dansguardian_filter_number}
     except ValueError:
         return None
-
-
-def parse_settings(setting):
-    parser = SafeConfigParser()
-
-    parser.read('settings.cfg')
-    return parser.get('SETTINGS', setting)

@@ -17,7 +17,7 @@
 # /usr/share/common-licenses/GPL-2
 
 from libs.common import iri_for as url_for
-from libs.common import parse_settings as settings
+from settings import Settings
 from flask import g, render_template, request, redirect, abort
 from libs.ldap_func import ldap_auth, ldap_get_entries, ldap_in_group
 from flask_wtf import FlaskForm
@@ -31,9 +31,7 @@ TREE_BLACKLIST = ["CN=ForeignSecurityPrincipals",
 # TODO: most here are CUJAE specific, refactor for master
 class FilterTreeView(FlaskForm):
     filter_str = StringField()
-    filter_select = SelectField(choices=[('cUJAEPersonDNI', 'Carné ID'),
-                                         ('sAMAccountName', 'Usuario'),
-                                         ('givenName', 'Nombre')])
+    filter_select = SelectField(choices=Settings.SEARCH_ATTRS)
 
 
 def init(app):
@@ -46,7 +44,7 @@ def init(app):
         elif not base.lower().endswith(g.ldap['dn'].lower()):
             base += ",%s" % g.ldap['dn']
 
-        admin = ldap_in_group(settings('ADMIN_GROUP'))
+        admin = ldap_in_group(Settings.ADMIN_GROUP)
 
         if not admin:
             abort(401)
