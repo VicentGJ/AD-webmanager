@@ -122,10 +122,9 @@ def init(app):
                         ('description', u"Descripción")]
 
         group = ldap_get_group(groupname=groupname)
-        if g.delegate_control:
-            admin = ldap_in_group(g.admin_group) and not group['groupType'] & 1
-        else:
-            admin = ldap_in_group("Domain Admins") and not group['groupType'] & 1
+
+        admin = ldap_in_group(Settings.ADMIN_GROUP) and not group['groupType'] & 1
+
         group_details = [ldap_get_group(entry, 'distinguishedName')
                          for entry in ldap_get_membership(groupname)]
 
