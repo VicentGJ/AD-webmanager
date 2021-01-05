@@ -35,7 +35,7 @@ class FilterTreeView(FlaskForm):
 
 
 def init(app):
-    @app.route('/tree', methods=['GET', 'POST'] )
+    @app.route('/tree', methods=['GET', 'POST'])
     @app.route('/tree/<base>', methods=['GET', 'POST'])
     @ldap_auth("Domain Users")
     def tree_base(base=None):

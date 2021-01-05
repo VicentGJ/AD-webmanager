@@ -105,11 +105,12 @@ def init(app):
     def user_add():
         title = "Adicionar Usuario"
 
-        if not UserAdd.base:
-            UserAdd.base = request.args.get('base')
-
+        request_dict = dict(request.args)
+        print(request_dict)
+        if "base" in request_dict:
+            UserAdd.base = request.args.get("base")
         base = UserAdd.base
-        print(base, "fist base")
+        print(base)
 
         if g.extra_fields:
             form = UserAddExtraFields(request.form)
@@ -167,15 +168,13 @@ def init(app):
                 ldap_create_entry("cn=%s,%s" % (form.user_name.data, base), attributes)
                 ldap_change_password(None, form.password.data, form.user_name.data)
                 flash(u"Usuario creado con éxito.", "success")
-                return redirect(url_for('user_overview',
-                                        username=form.user_name.data))
+                return redirect(url_for('user_overview', username=form.user_name.data))
             except ldap.LDAPError as e:
                 e = dict(e.args[0])
                 flash(e['info'], "error")
         elif form.errors:
             print(form.errors)
             flash("Some fields failed validation.", "error")
-
         return render_template("forms/basicform.html", form=form, title=title,
                                action="Adicionar Usuario",
                                parent=url_for('tree_base'))
