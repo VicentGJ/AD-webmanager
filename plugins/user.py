@@ -82,7 +82,7 @@ class UserAdd(UserProfileEdit):
 
 
 class UserAddExtraFields(UserAdd):
-    manual = BooleanField(label="Usuario Manual", default="checked")
+    manual = BooleanField(label="Usuario Manual", validators=[DataRequired()])
     person_type = SelectField(label="Tipo de Persona", choices=[('Worker', "Trabajador"), ('Student', "Estudiante")])
     dni = StringField(label='Carné Identidad', validators=[DataRequired()])
 
