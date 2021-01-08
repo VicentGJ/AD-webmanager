@@ -18,7 +18,7 @@
 
 from libs.common import iri_for as url_for
 from settings import Settings
-from flask import abort, flash, g, render_template, redirect, request
+from flask import abort, flash, g, render_template, redirect, request, session
 from flask_wtf import FlaskForm
 from wtforms import PasswordField, SelectMultipleField, TextAreaField, \
     StringField, SelectField, DecimalField, IntegerField, BooleanField
@@ -105,12 +105,7 @@ def init(app):
     def user_add():
         title = "Adicionar Usuario"
 
-        request_dict = dict(request.args)
-        print(request_dict)
-        if "base" in request_dict:
-            UserAdd.base = request.args.get("base")
-        base = UserAdd.base
-        print(base)
+
 
         if g.extra_fields:
             form = UserAddExtraFields(request.form)
@@ -135,6 +130,8 @@ def init(app):
 
         if form.validate_on_submit():
             try:
+                base = request.args.get("b'base")
+                base = base.rstrip("'")
                 # Default attributes
                 upn = "%s@%s" % (form.user_name.data, g.ldap['domain'])
                 attributes = {'objectClass': [b'top', b'person', b'organizationalPerson', b'user', b'inetOrgPerson'],
