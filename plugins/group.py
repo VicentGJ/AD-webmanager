@@ -41,7 +41,6 @@ class GroupAddMembers(FlaskForm):
 
 
 class GroupEdit(FlaskForm):
-    base = None
     name = TextField('Nombre', [DataRequired()])
     description = TextField(u'Descripción')
     group_type = RadioField('Tipo',
@@ -57,12 +56,6 @@ def init(app):
     def group_add():
         title = "Adicionar grupo"
 
-        if not GroupEdit.base:
-            GroupEdit.base = request.args.get('base')
-
-        base = GroupEdit.base
-        print(base, "fist base")
-
         form = GroupEdit(request.form)
         field_mapping = [('sAMAccountName', form.name),
                          ('description', form.description),
@@ -77,13 +70,16 @@ def init(app):
 
         if form.validate_on_submit():
             try:
+                base = request.args.get("b'base")
+                base = base.rstrip("'")
                 # Default attributes
                 attributes = {'objectClass': b"group"}
 
                 for attribute, field in field_mapping:
                     if attribute == "groupType":
                         group_type = int(form.group_type.data) + int(form.group_flags.data)
-                        attributes[attribute] = str(struct.unpack("i",struct.pack("I",int(group_type)))[0]).encode('utf-8')
+                        attributes[attribute] = str(struct.unpack("i",
+                                                                  struct.pack("I", int(group_type)))[0]).encode('utf-8')
                     elif attribute and field.data:
                         attributes[attribute] = field.data.encode('utf-8')
                 print(attributes)
