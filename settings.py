@@ -9,4 +9,5 @@ class Settings:
     EXTRA_FIELDS = True
     ADMIN_GROUP = "SM Admins"
     SEARCH_ATTRS = [('cUJAEPersonDNI', 'Carné ID'), ('sAMAccountName', 'Usuario'), ('givenName', 'Nombre'),
-                    ('cUJAEDataProvider', 'Fuente'), ('cUJAEPersonType', 'Tipo')]
+                    ('cUJAEDataProvider', 'Fuente'), ('cUJAEPersonType', 'Tipo'), ('cUJAEStudentYear', 'Año'),
+                    ('cUJAEStudentGroup', 'Grupo')]
