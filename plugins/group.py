@@ -17,6 +17,7 @@
 # /usr/share/common-licenses/GPL-2
 
 from libs.common import iri_for as url_for
+from settings import Settings
 from flask import abort, flash, g, render_template, redirect, request
 from flask_wtf import FlaskForm
 from wtforms import RadioField, TextAreaField, TextField, HiddenField
@@ -30,15 +31,16 @@ from libs.ldap_func import ldap_auth, ldap_create_entry, ldap_delete_entry, \
 import ldap
 import struct
 
+
 class GroupDelMember(FlaskForm):
     pass
+
 
 class GroupAddMembers(FlaskForm):
     new_members = TextAreaField('Nuevos miembros')
 
 
 class GroupEdit(FlaskForm):
-    base = None
     name = TextField('Nombre', [DataRequired()])
     description = TextField(u'Descripción')
     group_type = RadioField('Tipo',
@@ -50,15 +52,9 @@ class GroupEdit(FlaskForm):
 
 def init(app):
     @app.route('/groups/+add', methods=['GET', 'POST'])
-    @ldap_auth("SM Admin")
+    @ldap_auth(Settings.ADMIN_GROUP)
     def group_add():
         title = "Adicionar grupo"
-
-        if not GroupEdit.base:
-            GroupEdit.base = request.args.get('base')
-
-        base = GroupEdit.base
-        print(base, "fist base")
 
         form = GroupEdit(request.form)
         field_mapping = [('sAMAccountName', form.name),
@@ -74,13 +70,16 @@ def init(app):
 
         if form.validate_on_submit():
             try:
+                base = request.args.get("b'base")
+                base = base.rstrip("'")
                 # Default attributes
                 attributes = {'objectClass': b"group"}
 
                 for attribute, field in field_mapping:
                     if attribute == "groupType":
                         group_type = int(form.group_type.data) + int(form.group_flags.data)
-                        attributes[attribute] = str(struct.unpack("i",struct.pack("I",int(group_type)))[0]).encode('utf-8')
+                        attributes[attribute] = str(struct.unpack("i",
+                                                                  struct.pack("I", int(group_type)))[0]).encode('utf-8')
                     elif attribute and field.data:
                         attributes[attribute] = field.data.encode('utf-8')
                 print(attributes)
@@ -119,12 +118,14 @@ def init(app):
                         ('description', u"Descripción")]
 
         group = ldap_get_group(groupname=groupname)
-        admin = ldap_in_group("SM Admin") and not group['groupType'] & 1
+
+        admin = ldap_in_group(Settings.ADMIN_GROUP) and not group['groupType'] & 1
+
         group_details = [ldap_get_group(entry, 'distinguishedName')
                          for entry in ldap_get_membership(groupname)]
 
-        groups = sorted(group_details, key=lambda entry:
-                        entry['sAMAccountName'])
+        group_details = list(filter(None, group_details))
+        groups = sorted(group_details, key=lambda entry: entry['sAMAccountName'])
 
         member_list = []
         for entry in ldap_get_members(groupname):
@@ -145,7 +146,7 @@ def init(app):
                                grouptype_values=LDAP_AD_GROUPTYPE_VALUES)
 
     @app.route('/group/<groupname>/+delete', methods=['GET', 'POST'])
-    @ldap_auth("SM Admin")
+    @ldap_auth(Settings.ADMIN_GROUP)
     def group_delete(groupname):
         title = "Eliminar grupo"
 
@@ -174,7 +175,7 @@ def init(app):
                                               groupname=groupname))
 
     @app.route('/group/<groupname>/+edit', methods=['GET', 'POST'])
-    @ldap_auth("SM Admin")
+    @ldap_auth(Settings.ADMIN_GROUP)
     def group_edit(groupname):
         title = "Editar grupo"
 
@@ -249,7 +250,7 @@ def init(app):
                                               groupname=groupname))
 
     @app.route('/group/<groupname>/+add-members', methods=['GET', 'POST'])
-    @ldap_auth("SM Admin")
+    @ldap_auth(Settings.ADMIN_GROUP)
     def group_addmembers(groupname):
         title = "Adicionar miembros"
 
@@ -294,7 +295,7 @@ def init(app):
 
     @app.route('/group/<groupname>/+del-member/<member>',
                methods=['GET', 'POST'])
-    @ldap_auth("SM Admin")
+    @ldap_auth(Settings.ADMIN_GROUP)
     def group_delmember(groupname, member):
         title = "Quitar del grupo"
 

@@ -17,65 +17,65 @@
 # /usr/share/common-licenses/GPL-2
 
 from libs.common import iri_for as url_for
-from flask import g, render_template, request, redirect
+from settings import Settings
+from flask import g, render_template, request, redirect, abort
 from libs.ldap_func import ldap_auth, ldap_get_entries, ldap_in_group
 from flask_wtf import FlaskForm
 from wtforms import StringField, SelectField
 
 
-TREE_BLACKLIST = ["CN=ForeignSecurityPrincipals",
-                  "OU=sudoers"]
-
 class FilterTreeView(FlaskForm):
     filter_str = StringField()
-    filter_select = SelectField(choices=[('sAMAccountName', 'Usuario'), ('displayName', 'Nombre')])
+    filter_select = SelectField(choices=Settings.SEARCH_ATTRS)
 
 
 def init(app):
-    @app.route('/tree', methods=['GET', 'POST'] )
+    @app.route('/tree', methods=['GET', 'POST'])
     @app.route('/tree/<base>', methods=['GET', 'POST'])
-    @ldap_auth("Domain Admins")
-    
+    @ldap_auth("Domain Users")
     def tree_base(base=None):
-
         if not base:
             base = g.ldap['dn']
         elif not base.lower().endswith(g.ldap['dn'].lower()):
             base += ",%s" % g.ldap['dn']
 
-        admin = ldap_in_group("Domain Admins")
-        entry_fields = [('name', "Nombre"),
-                        ('__description', u"Login/Descripción"),
-                        ('__type', "Tipo"),
-                        ('active', "Estado")]
+        admin = ldap_in_group(Settings.ADMIN_GROUP)
 
-        form = FilterTreeView(request.form)
-
-        if form.validate_on_submit():
-            filter_str = form.filter_str.data
-            filter_select = form.filter_select.data
-            scope = "subtree"
-            entries = get_entries(filter_str, filter_select, base, scope)
+        if not admin:
+            abort(401)
         else:
-            filter_str = None
-            scope = "onelevel"
-            entries = get_entries("top", "objectClass", base, scope)
-                    
-        parent = None
-        base_split = base.split(',')
-        if not base_split[0].lower().startswith("dc"):
-            parent = ",".join(base_split[1:])
+            entry_fields = [('name', "Nombre"),
+                            ('__description', u"Login/Descripción"),
+                            ('__type', "Tipo"),
+                            ('active', "Estado")]
 
-        return render_template("pages/tree_base_es.html", form=form, parent=parent,
-                               admin=admin, base=base, entries=entries,
-                               entry_fields=entry_fields)
+            form = FilterTreeView(request.form)
+
+            if form.validate_on_submit():
+                filter_str = form.filter_str.data
+                filter_select = form.filter_select.data
+                scope = "subtree"
+                entries = get_entries(filter_str, filter_select, base, scope)
+            else:
+                filter_str = None
+                scope = "onelevel"
+                entries = get_entries("top", "objectClass", base, scope)
+
+            parent = None
+            base_split = base.split(',')
+            if not base_split[0].lower().startswith("dc"):
+                parent = ",".join(base_split[1:])
+
+            return render_template("pages/tree_base_es.html", form=form, parent=parent,
+                                   admin=admin, base=base, entries=entries,
+                                   entry_fields=entry_fields)
 
     def get_entries(filter_str, filter_select, base, scope):
         """
         Get all entries that will be displayed in the tree
         """
         entries = []
-        
+
         users = ldap_get_entries("objectClass=top", base, scope, ignore_erros=True)
         users = filter(lambda entry: 'displayName' in entry, users)
         users = filter(lambda entry: 'sAMAccountName' in entry, users)
@@ -100,7 +100,7 @@ def init(app):
             entry['name'] = entry['displayName']
             entry['__type'] = "Usuario"
             entry['__target'] = url_for('user_overview', username=entry['sAMAccountName'])
-            
+
             if 'user' in entry['objectClass']:
                 if entry['userAccountControl'] == 512:
                     entry['active'] = "Activo"
@@ -109,16 +109,10 @@ def init(app):
             else:
                 entry['active'] = "No disponible"
 
-            if 'showInAdvancedViewOnly' in entry \
-               and entry['showInAdvancedViewOnly']:
+            if 'showInAdvancedViewOnly' in entry and entry['showInAdvancedViewOnly']:
                 continue
-
-            for blacklist in TREE_BLACKLIST:
-                if entry['distinguishedName'].startswith(blacklist):
-                    break
-
             entries.append(entry)
-        
+
         for entry in other_entries:
             if entry not in users:
                 if 'description' not in entry:
@@ -126,7 +120,7 @@ def init(app):
                         entry['__description'] = entry['sAMAccountName']
                 else:
                     entry['__description'] = entry['description']
-                
+
                 entry['__target'] = url_for('tree_base', base=entry['distinguishedName'])
 
                 if 'group' in entry['objectClass']:
@@ -141,7 +135,8 @@ def init(app):
                     entry['__type'] = "Built-in"
                 else:
                     entry['__type'] = "Desconocido"
-
-                
                 entries.append(entry)
+                for blacklist in Settings.TREE_BLACKLIST:
+                    if entry['distinguishedName'].startswith(blacklist):
+                        entries.remove(entry)
         return entries

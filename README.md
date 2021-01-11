@@ -9,7 +9,7 @@ The goal is to be able to do most common directory operations directly
 through this web interface rather than have to rely on command tools or
 Windows interfaces.
 
-Its compatible with both Windows AD y Samba4 domain controllers.
+Its compatible with both Windows Active Directory and Samba4 domain controllers.
 
 # History
 This project is a fork of samba4-manager, created by Stéphane Graber
@@ -32,13 +32,14 @@ and we will love to receive all kinds of feedback and contributions.
 
 # Using
 
- * Copy manager.cfg.example to manager.cfg
+ * Access settings.py to configure
  * Put a random string in SECRET\_KEY
- * Set LDAP\_DOMAIN to your Samba4 domain
+ * Set LDAP\_DOMAIN to your Directory domain
+ * Set LDAP\_SERVER to your Domain Controller IP
  * Start the server with:
 
 ```
-./samba4-manager
+./ADwebmanager.py
 ```
 
 You may then connect through: [http://localhost:8080](http://localhost:8080)

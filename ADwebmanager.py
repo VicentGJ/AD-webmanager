@@ -20,23 +20,17 @@
 import argparse
 import os
 
-config_file = "/opt/samba4-manager-master/manager.cfg"
 app_prefix = "/opt/samba4-manager-master/"
 
 # Check if running from bzr
-for path in ('manager.cfg', 'libs', 'plugins', 'static', 'templates'):
+for path in ('libs', 'plugins', 'static', 'templates'):
     if not os.path.exists(path):
         break
 else:
-    config_file = "%s/manager.cfg" % os.getcwd()
     app_prefix = "."
 
 parser = argparse.ArgumentParser(description="Samba4 Gestor Web")
-parser.add_argument("--config", metavar="CONFIG", default=config_file)
 args = parser.parse_args()
-
-if not os.path.exists(args.config):
-    raise Exception("Missing configuration file: %s" % args.config)
 
 if not os.path.exists(app_prefix):
     raise Exception("Missing app dir: %s" % app_prefix)
@@ -53,14 +47,14 @@ sys.path.append(app_prefix)
 # Import our modules
 from libs.common import ReverseProxied
 from libs.common import iri_for as url_for
+from settings import Settings
 
 # Prepare the web server
 app = Flask(__name__,
             static_folder="%s/static" % app_prefix,
             template_folder="%s/templates" % app_prefix)
 
-app.config.from_pyfile(args.config)
-
+app.config.from_object(Settings)
 app.jinja_env.globals['url_for'] = url_for
 
 if 'URL_PREFIX' in app.config:
@@ -129,18 +123,18 @@ def pre_request():
     g.menu.append((url_for("core_logout"), "Log out"))
 
     # LDAP connection settings
-    g.ldap = {}
-    g.ldap['domain'] = app.config['LDAP_DOMAIN']
-    g.ldap['dn'] = app.config['LDAP_DN']
-    g.ldap['server'] = app.config['LDAP_SERVER']
-    g.ldap['search_dn'] = app.config['SEARCH_DN']
+    g.ldap = {'domain': app.config['LDAP_DOMAIN'], 'dn': app.config['LDAP_DN'], 'server': app.config['LDAP_SERVER'],
+              'search_dn': app.config['SEARCH_DN']}
 
     # The various caches
 
     g.ldap_cache = {}
 
-    #SICC-IP integrations
+    #   SICC-IP integrations
     g.siccip = app.config['SICCIP_AWARE']
+    # Extra fields form
+    g.extra_fields = app.config['EXTRA_FIELDS']
+
 
 if __name__ == '__main__':
     app.run(host='::', port=8080)
