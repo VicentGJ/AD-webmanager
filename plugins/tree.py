@@ -24,10 +24,6 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, SelectField
 
 
-TREE_BLACKLIST = ["CN=ForeignSecurityPrincipals",
-                  "OU=sudoers"]
-
-
 # TODO: most here are CUJAE specific, refactor for master
 class FilterTreeView(FlaskForm):
     filter_str = StringField()
@@ -114,14 +110,8 @@ def init(app):
             else:
                 entry['active'] = "No disponible"
 
-            if 'showInAdvancedViewOnly' in entry \
-               and entry['showInAdvancedViewOnly']:
+            if 'showInAdvancedViewOnly' in entry and entry['showInAdvancedViewOnly']:
                 continue
-
-            for blacklist in TREE_BLACKLIST:
-                if entry['distinguishedName'].startswith(blacklist):
-                    break
-
             entries.append(entry)
 
         for entry in other_entries:
@@ -146,6 +136,8 @@ def init(app):
                     entry['__type'] = "Built-in"
                 else:
                     entry['__type'] = "Desconocido"
-
                 entries.append(entry)
+                for blacklist in Settings.TREE_BLACKLIST:
+                    if entry['distinguishedName'].startswith(blacklist):
+                        entries.remove(entry)
         return entries
