@@ -49,7 +49,6 @@ class UserProfileEdit(FlaskForm):
     display_name = StringField('Nombre Completo')
     user_name = StringField('Nombre de Usuario', [DataRequired()])
     mail = StringField(u'Dirección de correo')
-    # TODO: Erase this for master
     category = SelectField(choices=[('Auto', 'Automático'),
                                     ('A', 'Categoria A'),
                                     ('B', 'Categoria B'),
@@ -199,9 +198,6 @@ def init(app):
 
             if 'title' in user:
                 identity_fields.append(('title', "Ocupación"))
-            # TODO: CUJAE specific, Remove for master
-            if 'pager' in user:
-                identity_fields.append(('pager', "Categoría"))
             if 'telephoneNumber' in user:
                 identity_fields.append(('telephoneNumber', "Teléfono"))
 

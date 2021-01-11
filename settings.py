@@ -11,6 +11,4 @@ class Settings:
     SICCIP_AWARE = False
     EXTRA_FIELDS = True
     ADMIN_GROUP = "SM Admins"
-    SEARCH_ATTRS = [('cUJAEPersonDNI', 'Carné ID'), ('sAMAccountName', 'Usuario'), ('givenName', 'Nombre'),
-                    ('cUJAEDataProvider', 'Fuente'), ('cUJAEPersonType', 'Tipo'), ('cUJAEStudentYear', 'Año'),
-                    ('cUJAEStudentGroup', 'Grupo')]
+    SEARCH_ATTRS = [('sAMAccountName', 'Usuario'), ('givenName', 'Nombre')]

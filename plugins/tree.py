@@ -24,7 +24,6 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, SelectField
 
 
-# TODO: most here are CUJAE specific, refactor for master
 class FilterTreeView(FlaskForm):
     filter_str = StringField()
     filter_select = SelectField(choices=Settings.SEARCH_ATTRS)
