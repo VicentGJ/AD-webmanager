@@ -22,7 +22,7 @@ from flask import abort, flash, g, render_template, redirect, request, session
 from flask_wtf import FlaskForm
 from wtforms import PasswordField, SelectMultipleField, TextAreaField, \
     StringField, SelectField, DecimalField, IntegerField, BooleanField
-from wtforms.validators import DataRequired,  EqualTo, Optional
+from wtforms.validators import DataRequired,  EqualTo, Optional, Length
 
 
 from libs.ldap_func import ldap_auth, ldap_change_password, \
@@ -44,11 +44,11 @@ class UserAddGroup(FlaskForm):
 
 
 class UserProfileEdit(FlaskForm):
-    first_name = StringField('Nombre', [DataRequired()])
-    last_name = StringField('Apellido')
-    display_name = StringField('Nombre Completo')
-    user_name = StringField('Nombre de Usuario', [DataRequired()])
-    mail = StringField(u'Dirección de correo')
+    first_name = StringField('Nombre', [DataRequired(), Length(max=30)])
+    last_name = StringField('Apellido', [Length(max=30)])
+    display_name = StringField('Nombre Completo', [Length(max=30)])
+    user_name = StringField('Nombre de Usuario', [DataRequired(), Length(max=30)])
+    mail = StringField(u'Dirección de correo', [Length(max=30)])
     category = SelectField(choices=[('Auto', 'Automático'),
                                     ('A', 'Categoria A'),
                                     ('B', 'Categoria B'),
@@ -81,9 +81,9 @@ class UserAdd(UserProfileEdit):
 
 
 class UserAddExtraFields(UserAdd):
-    manual = BooleanField(label="Usuario Manual", validators=[DataRequired()])
+    manual = BooleanField(label="Usuario Manual", validators=[DataRequired()], render_kw={'checked': True})
     person_type = SelectField(label="Tipo de Persona", choices=[('Worker', "Trabajador"), ('Student', "Estudiante")])
-    dni = StringField(label='Carné Identidad', validators=[DataRequired()])
+    dni = StringField(label='Carné Identidad', validators=[DataRequired(), Length(min=11,max=11)])
 
 
 class PasswordChange(FlaskForm):
