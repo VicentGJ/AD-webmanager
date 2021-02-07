@@ -84,6 +84,23 @@ class UserAddExtraFields(UserAdd):
     manual = BooleanField(label="Usuario Manual", validators=[DataRequired()], render_kw={'checked': True})
     person_type = SelectField(label="Tipo de Persona", choices=[('Worker', "Trabajador"), ('Student', "Estudiante")])
     dni = StringField(label='Carné Identidad', validators=[DataRequired(), Length(min=11,max=11)])
+    i=0
+    for extra in Settings.extra_fields:
+        if extra[2] is 'boolean':  #extra[0]:label, extra[1]:ldap field, extra[2]: data type, extra[3]:choices
+            var1 = BooleanField(label= extra[0]) 
+        elif extra[2] is 'string':
+            var2 = StringField(label= extra[0], validators=[Length(max=30)])
+        elif extra[2] is 'integer':
+            var3 = IntegerField(label= extra[0])
+        elif extra[2] is 'decimal':
+            var4 = DecimalField(label= extra[0])
+        elif extra[2] is 'select':
+            var5 = SelectField(label= extra[0], choices= extra[3])
+        elif extra[2] is 'text':
+            var6 = TextField(label= extra[0])
+        elif extra[2] is 'text area':
+            var7 = TextAreaField(label= extra[0])
+        i += 1
 
 
 class PasswordChange(FlaskForm):
@@ -122,6 +139,22 @@ def init(app):
             extra_field_mapping = [('cUJAEPersonExternal', form.manual),
                                    ('cUJAEPersonType', form.person_type),
                                    ('cUJAEPersonDNI', form.dni)]
+            for extra in Settings.extra_fields:
+                if extra[2] is 'boolean':
+                    extra_field_mapping.append((extra[1], form.var1))
+                if extra[2] is 'string':
+                    extra_field_mapping.append((extra[1], form.var2))
+                if extra[2] is 'integer':
+                    extra_field_mapping.append((extra[1], form.var3))
+                if extra[2] is 'decimal':
+                    extra_field_mapping.append((extra[1], form.var4))
+                if extra[2] is 'select':
+                    extra_field_mapping.append((extra[1], form.var5))
+                if extra[2] is 'text':
+                    extra_field_mapping.append((extra[1], form.var6))
+                if extra[2] is 'teax area':
+                    extra_field_mapping.append((extra[1], form.var7))
+
             field_mapping += extra_field_mapping
 
         form.visible_fields = [field[1] for field in field_mapping]

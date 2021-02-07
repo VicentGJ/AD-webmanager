@@ -133,7 +133,7 @@ def pre_request():
     #   SICC-IP integrations
     g.siccip = app.config['SICCIP_AWARE']
     # Extra fields form
-    g.extra_fields = app.config['EXTRA_FIELDS']
+    # g.extra_fields = app.config['EXTRA_FIELDS']
 
 
 if __name__ == '__main__':
