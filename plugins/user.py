@@ -81,10 +81,6 @@ class UserAdd(UserProfileEdit):
 
 
 class UserAddExtraFields(UserAdd):
-    manual = BooleanField(label="Usuario Manual", validators=[DataRequired()], render_kw={'checked': True})
-    person_type = SelectField(label="Tipo de Persona", choices=[('Worker', "Trabajador"), ('Student', "Estudiante")])
-    dni = StringField(label='Carné Identidad', validators=[DataRequired(), Length(min=11,max=11)])
-    i=0
     for extra in Settings.extra_fields:
         if extra[2] is 'boolean':  # extra[0]:label, extra[1]:ldap field, extra[2]: data type, extra[3]:choices
             var1 = BooleanField(label= extra[0]) 
@@ -98,7 +94,6 @@ class UserAddExtraFields(UserAdd):
             var5 = SelectField(label= extra[0], choices= extra[3])
         elif extra[2] is 'text area':
             var7 = TextAreaField(label= extra[0])
-        i += 1
 
 
 class PasswordChange(FlaskForm):
