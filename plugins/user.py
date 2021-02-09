@@ -86,7 +86,7 @@ class UserAddExtraFields(UserAdd):
     dni = StringField(label='Carné Identidad', validators=[DataRequired(), Length(min=11,max=11)])
     i=0
     for extra in Settings.extra_fields:
-        if extra[2] is 'boolean':  #extra[0]:label, extra[1]:ldap field, extra[2]: data type, extra[3]:choices
+        if extra[2] is 'boolean':  # extra[0]:label, extra[1]:ldap field, extra[2]: data type, extra[3]:choices
             var1 = BooleanField(label= extra[0]) 
         elif extra[2] is 'string':
             var2 = StringField(label= extra[0], validators=[Length(max=30)])
@@ -96,8 +96,6 @@ class UserAddExtraFields(UserAdd):
             var4 = DecimalField(label= extra[0])
         elif extra[2] is 'select':
             var5 = SelectField(label= extra[0], choices= extra[3])
-        elif extra[2] is 'text':
-            var6 = TextField(label= extra[0])
         elif extra[2] is 'text area':
             var7 = TextAreaField(label= extra[0])
         i += 1
@@ -121,9 +119,7 @@ def init(app):
     def user_add():
         title = "Adicionar Usuario"
 
-
-
-        if g.extra_fields:
+        if Settings.EXTRA_FIELDS:
             form = UserAddExtraFields(request.form)
         else:
             form = UserAdd(request.form)

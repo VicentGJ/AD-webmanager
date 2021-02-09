@@ -10,20 +10,18 @@ class Settings:
                       "CN=System", "OU=Domain Controllers"]
     SICCIP_AWARE = False
     
-    #Data format for auto-generate form fields:
+    # Data format for auto-generate form fields:
     # ['label','ldadField','dataType']
     # if dataType is 'select'
     # ['label','ldadField','dataType',[('choice1LDAP', "choice1Label"), ('ChoiceNLDAP', "ChoiceNLabel")]]]
 
     # example:
-    # extra_fields = [
-    #     ['Usuario Manual','cUJAEPersonExternal', 'boolean'],
-    #     ['Tipo de Persona','cUJAEPersonType', 'select',[('Worker', "Trabajador"), ('Student', "Estudiante")]],
-    #     ['Carné Identidad','cUJAEPersonDNI', 'string']
-    # ]
-    extra_fields = []
+    extra_fields = [
+         ['Usuario Manual', 'cUJAEPersonExternal', 'boolean'],
+         ['Tipo de Persona', 'cUJAEPersonType', 'select', [('Worker', "Trabajador"), ('Student', "Estudiante")]],
+         ['Carné Identidad', 'cUJAEPersonDNI', 'string']
+    ]
     EXTRA_FIELDS = True
 
-    EXTRA_FIELDS = True
     ADMIN_GROUP = "SM Admins"
     SEARCH_ATTRS = [('sAMAccountName', 'Usuario'), ('givenName', 'Nombre')]
