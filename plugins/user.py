@@ -82,17 +82,17 @@ class UserAdd(UserProfileEdit):
 
 class UserAddExtraFields(UserAdd):
     for extra in Settings.extra_fields:
-        if extra[2] is 'boolean':  # extra[0]:label, extra[1]:ldap field, extra[2]: data type, extra[3]:choices
+        if extra[2] == 'boolean':  # extra[0]:label, extra[1]:ldap field, extra[2]: data type, extra[3]:choices
             var1 = BooleanField(label=extra[0])
-        elif extra[2] is 'string':
+        elif extra[2] == 'string':
             var2 = StringField(label=extra[0], validators=[Length(max=30)])
-        elif extra[2] is 'integer':
+        elif extra[2] == 'integer':
             var3 = IntegerField(label=extra[0])
-        elif extra[2] is 'decimal':
+        elif extra[2] == 'decimal':
             var4 = DecimalField(label=extra[0])
-        elif extra[2] is 'select':
+        elif extra[2] == 'select':
             var5 = SelectField(label=extra[0], choices=extra[3])
-        elif extra[2] is 'text area':
+        elif extra[2] == 'text area':
             var7 = TextAreaField(label=extra[0])
 
 
@@ -127,9 +127,7 @@ def init(app):
                          (None, form.password_confirm),
                          ('userAccountControl', form.uac_flags)]
         if Settings.EXTRA_FIELDS:
-            extra_field_mapping = [('cUJAEPersonExternal', form.manual),
-                                   ('cUJAEPersonType', form.person_type),
-                                   ('cUJAEPersonDNI', form.dni)]
+            extra_field_mapping = []
             for extra in Settings.extra_fields:
                 if extra[2] is 'boolean':
                     extra_field_mapping.append((extra[1], form.var1))
