@@ -131,7 +131,7 @@ def init(app):
                          (None, form.password),
                          (None, form.password_confirm),
                          ('userAccountControl', form.uac_flags)]
-        if g.extra_fields:
+        if Settings.EXTRA_FIELDS:
             extra_field_mapping = [('cUJAEPersonExternal', form.manual),
                                    ('cUJAEPersonType', form.person_type),
                                    ('cUJAEPersonDNI', form.dni)]
