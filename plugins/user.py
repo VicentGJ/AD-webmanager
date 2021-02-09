@@ -83,17 +83,17 @@ class UserAdd(UserProfileEdit):
 class UserAddExtraFields(UserAdd):
     for extra in Settings.extra_fields:
         if extra[2] is 'boolean':  # extra[0]:label, extra[1]:ldap field, extra[2]: data type, extra[3]:choices
-            var1 = BooleanField(label= extra[0]) 
+            var1 = BooleanField(label=extra[0])
         elif extra[2] is 'string':
-            var2 = StringField(label= extra[0], validators=[Length(max=30)])
+            var2 = StringField(label=extra[0], validators=[Length(max=30)])
         elif extra[2] is 'integer':
-            var3 = IntegerField(label= extra[0])
+            var3 = IntegerField(label=extra[0])
         elif extra[2] is 'decimal':
-            var4 = DecimalField(label= extra[0])
+            var4 = DecimalField(label=extra[0])
         elif extra[2] is 'select':
-            var5 = SelectField(label= extra[0], choices= extra[3])
+            var5 = SelectField(label=extra[0], choices=extra[3])
         elif extra[2] is 'text area':
-            var7 = TextAreaField(label= extra[0])
+            var7 = TextAreaField(label=extra[0])
 
 
 class PasswordChange(FlaskForm):
@@ -236,7 +236,7 @@ def init(app):
 
             group_details = list(filter(None, group_details))
 
-            groups = sorted(group_details, key=lambda entry: entry['sAMAccountName'] )
+            groups = sorted(group_details, key=lambda entry: entry['sAMAccountName'])
 
             siccip_data = None
             if 'pager' in user:
@@ -274,7 +274,7 @@ def init(app):
                     e = dict(e.args[0])
                     flash(e['info'], "error")
             elif form.errors:
-                    flash(u"Falló la validación de los datos.", "error")
+                flash(u"Falló la validación de los datos.", "error")
 
             parent = ",".join(user['distinguishedName'].split(',')[1:])
         
@@ -436,7 +436,7 @@ def init(app):
         user = ldap_get_user(username=username)
         pager = user['pager'][0] if 'pager' in user else None
         form = SICCIPEdit(request.form)
-        field_mapping = [       #('internet_type', form.internet_type),
+        field_mapping = [  # ('internet_type', form.internet_type),
                          ('internet_quota', form.internet_quota),
                          ('socialnetwork_quota', form.socialnetwork_quota),
                          ('dansguardian_filter', form.dansguardian_filter),
@@ -449,9 +449,9 @@ def init(app):
             try:
                 internet_type = 'F'
                 new_pager = 'I%s%f_%f|E%s%f|D%d' % (internet_type, form.internet_quota.data,
-                                                 form.socialnetwork_quota.data,
-                                                 form.email_type.data, form.email_quota.data,
-                                                 form.dansguardian_filter.data)
+                                                    form.socialnetwork_quota.data,
+                                                    form.email_type.data, form.email_quota.data,
+                                                    form.dansguardian_filter.data)
                 if pager != new_pager:
                     ldap_update_attribute(user['distinguishedName'], "pager", new_pager)
                     print(new_pager)
@@ -460,9 +460,8 @@ def init(app):
                 return redirect(url_for('user_overview',
                                         username=username))
             except ldap.LDAPError as e:
-                error = e.message['info'].split(":", 2)[-1].strip()
-                error = str(error[0].upper() + error[1:])
-                flash(error, "error")
+                e = dict(e.args[0])
+                flash(e['info'], "error")
         elif form.errors:
             flash(u"Falló la validación de los datos.", "error")
 
@@ -518,7 +517,6 @@ def init(app):
                                action="Salvar los cambios",
                                parent=url_for('user_overview',
                                               username=username))
-
 
     # @app.route('/user/<username>/+edit-groups', methods=['GET', 'POST'])
     # @ldap_auth(Settings.ADMIN_GROUP)
