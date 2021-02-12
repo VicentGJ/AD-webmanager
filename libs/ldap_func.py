@@ -16,12 +16,13 @@
 # You can find the license on Debian systems in the file
 # /usr/share/common-licenses/GPL-2
 
-from flask import request, Response, g, session
+from flask import request, Response, g, session, abort
 from functools import wraps
 import ldap
 from ldap import modlist
 import struct
 import uuid
+from settings import Settings
 
 LDAP_SCOPES = {"base": ldap.SCOPE_BASE,
                "onelevel": ldap.SCOPE_ONELEVEL,
@@ -465,19 +466,23 @@ def _ldap_connect(username, password):
     for server in servers:
         connection = ldap.initialize("ldaps://%s:636" % server)
         try:
-            connection.simple_bind_s("%s@%s" % (username, g.ldap['domain']),
-                                     password)
+            if username in Settings.auth_admins and (str(request.remote_addr) in Settings.auth_admins[username] or '10.71.' in Settings.auth_admins[username]) or username not in Settings.auth_admins:
+                connection.simple_bind_s("%s@%s" % (username, g.ldap['domain']),
+                                        password)
 
-            g.ldap['connection'] = connection
-            g.ldap['server'] = server
-            g.ldap['username'] = username
+                g.ldap['connection'] = connection
+                g.ldap['server'] = server
+                g.ldap['username'] = username
 
-            # Get domain SID
-            # Can't go through ldap_get_entry as it requires domain_sid be set.
-            result = connection.search_s(g.ldap['dn'], ldap.SCOPE_BASE)
-            g.ldap['domain_sid'] = _ldap_decode_attribute("objectSid", result[0][1]['objectSid'])
+                # Get domain SID
+                # Can't go through ldap_get_entry as it requires domain_sid be set.
+                result = connection.search_s(g.ldap['dn'], ldap.SCOPE_BASE)
+                g.ldap['domain_sid'] = _ldap_decode_attribute("objectSid", result[0][1]['objectSid'])
 
-            return True
+                return True
+            else:
+                abort(401)  
+ 
         except ldap.INVALID_CREDENTIALS:
             return False
         #except:
