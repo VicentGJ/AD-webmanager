@@ -419,6 +419,24 @@ def ldap_update_attribute_old(dn, attribute, value, objectclass=None):
     return True
 
 
+def ldap_add_users_to_group(dn, attribute, value):
+    
+    if 'connection' not in g.ldap:
+        return False
+
+    connection = g.ldap['connection']
+    mod_attrs = []
+    new_values = []
+    
+    for i in value:
+        a = i.encode('utf-8')
+        new_values.append(a)
+            
+    mod_attrs.append((ldap.MOD_DELETE, attribute, None))        
+    mod_attrs.append((ldap.MOD_ADD, attribute, new_values))
+    if len(mod_attrs) != 0:
+        connection.modify(dn, mod_attrs)
+
 def ldap_user_exists(username=None):
     """
         Return True if the user exists. False otherwise.
