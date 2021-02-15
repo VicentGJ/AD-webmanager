@@ -431,9 +431,8 @@ def ldap_add_users_to_group(dn, attribute, value):
     for i in value:
         a = i.encode('utf-8')
         new_values.append(a)
-            
-    mod_attrs.append((ldap.MOD_DELETE, attribute, None))        
-    mod_attrs.append((ldap.MOD_ADD, attribute, new_values))
+                   
+    mod_attrs.append((ldap.MOD_REPLACE, attribute, new_values))
     if len(mod_attrs) != 0:
         connection.modify(dn, mod_attrs)
 
