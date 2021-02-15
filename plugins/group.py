@@ -26,10 +26,11 @@ from wtforms.validators import DataRequired
 from libs.ldap_func import ldap_auth, ldap_create_entry, ldap_delete_entry, \
     ldap_get_entry_simple, ldap_get_members, ldap_get_membership, \
     ldap_get_group, ldap_in_group, ldap_update_attribute, ldap_group_exists, \
-    LDAP_AD_GROUPTYPE_VALUES
+    LDAP_AD_GROUPTYPE_VALUES, ldap_add_users_to_group
 
 import ldap
 import struct
+import asyncio
 
 
 class GroupDelMember(FlaskForm):
@@ -277,7 +278,7 @@ def init(app):
                 entries.add(entry['distinguishedName'])
             else:
                 try:
-                    ldap_update_attribute(group['distinguishedName'],
+                    ldap_add_users_to_group(group['distinguishedName'],
                                           "member", list(entries))
                     flash("Usuarios adicionados.", "success")
                     return redirect(url_for('group_overview',
