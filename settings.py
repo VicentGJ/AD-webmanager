@@ -11,5 +11,5 @@ class Settings:
     SICCIP_AWARE = False
     EXTRA_FIELDS = True
     ADMIN_GROUP = "SM Admins"
-    auth_admins = {'acarturodc': ['10.8.2.200'], 'acivan':['10.8.5.11','10.71.']}
+    auth_admins = {}
     SEARCH_ATTRS = [('sAMAccountName', 'Usuario'), ('givenName', 'Nombre')]

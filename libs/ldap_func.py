@@ -434,7 +434,7 @@ def ldap_add_users_to_group(dn, attribute, value):
                    
     mod_attrs.append((ldap.MOD_REPLACE, attribute, new_values))
     if len(mod_attrs) != 0:
-        connection.modify(dn, mod_attrs)
+        connection.modify_s(dn, mod_attrs)
 
 def ldap_user_exists(username=None):
     """

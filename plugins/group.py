@@ -30,7 +30,6 @@ from libs.ldap_func import ldap_auth, ldap_create_entry, ldap_delete_entry, \
 
 import ldap
 import struct
-import asyncio
 
 
 class GroupDelMember(FlaskForm):
