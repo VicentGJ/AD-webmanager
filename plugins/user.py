@@ -44,11 +44,11 @@ class UserAddGroup(FlaskForm):
 
 
 class UserProfileEdit(FlaskForm):
-    first_name = StringField('Nombre', [DataRequired(), Length(max=30)])
-    last_name = StringField('Apellido', [Length(max=30)])
-    display_name = StringField('Nombre Completo', [Length(max=30)])
-    user_name = StringField('Nombre de Usuario', [DataRequired(), Length(max=30)])
-    mail = StringField(u'Dirección de correo', [Length(max=30)])
+    first_name = StringField('Nombre', [DataRequired(), Length(max=64)])
+    last_name = StringField('Apellido', [Length(max=64)])
+    display_name = StringField('Nombre Completo', [Length(max=256)])
+    user_name = StringField('Nombre de Usuario', [DataRequired(), Length(max=20)])
+    mail = StringField(u'Dirección de correo', [Length(max=256)])
     category = SelectField(choices=[('Auto', 'Automático'),
                                     ('A', 'Categoria A'),
                                     ('B', 'Categoria B'),
