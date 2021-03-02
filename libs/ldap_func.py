@@ -352,8 +352,7 @@ def ldap_update_attribute(dn, attribute, value=None, objectClass=None):
             for i in value:
                 a = i.encode('utf-8')
                 new_values.append(a)
-                mod_attrs.append((ldap.MOD_DELETE, attribute, None))
-                mod_attrs.append((ldap.MOD_ADD, attribute, new_values))
+            mod_attrs.append((ldap.MOD_REPLACE, attribute, new_values))
         else:
             mod_attrs.append((ldap.MOD_DELETE, attribute, None))
 
@@ -483,7 +482,7 @@ def _ldap_connect(username, password):
     for server in servers:
         connection = ldap.initialize("ldaps://%s:636" % server)
         try:
-            if username in Settings.auth_admins and (str(request.remote_addr) in Settings.auth_admins[username] or '10.71.' in Settings.auth_admins[username]) or username not in Settings.auth_admins:
+            if username in Settings.auth_admins and (str(request.remote_addr) in Settings.auth_admins[username] or '10.71.' in str(request.remote_addr)) or username not in Settings.auth_admins:
                 connection.simple_bind_s("%s@%s" % (username, g.ldap['domain']),
                                         password)
 
