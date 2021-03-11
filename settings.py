@@ -13,3 +13,4 @@ class Settings:
     ADMIN_GROUP = "SM Admins"
     auth_admins = {}
     SEARCH_ATTRS = [('sAMAccountName', 'Usuario'), ('givenName', 'Nombre')]
+    USER_ATTRIBUTES = [["cUJAEStudentYear", "Año"], ["cUJAEDataProvider", "Fuente"], ["cUJAEPersonType", "Tipo"], ["whenCreated", "Fecha de Creación", "time"], ["whenChanged", "Fecha de Modificación", "time"]]
