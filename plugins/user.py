@@ -201,8 +201,8 @@ def init(app):
             if 'telephoneNumber' in user:
                 identity_fields.append(('telephoneNumber', "Teléfono"))
 
-            if Settings.USER_ATTRIBUTE:
-                for item in Settings.USER_ATTRIBUTE:
+            if Settings.USER_ATTRIBUTES:
+                for item in Settings.USER_ATTRIBUTES:
                     if item[0] in user:
                         if len(item) == 3 and item[2] == 'time':
                             user[item[0]] = user[item[0]][6:8] + '/' + user[item[0]][4:6] + '/' + user[item[0]][0:4]
