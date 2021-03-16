@@ -78,7 +78,12 @@ class UserAdd(UserProfileEdit):
                                      [DataRequired(),
                                       EqualTo('password',
                                               message=u'Las contraseñas deben coincidir')])
-
+    
+    category = SelectField(choices=[('D', 'Sin Internet'),
+                                    ('A', 'Categoria A'),
+                                    ('B', 'Categoria B'),
+                                    ('C', 'Categoria C'),
+                                    ('Auto', 'Automático')])
 
 class UserAddExtraFields(UserAdd):
     manual = BooleanField(label="Usuario Manual", validators=[DataRequired()], render_kw={'checked': True})
