@@ -14,3 +14,4 @@ class Settings:
     auth_admins = {}
     SEARCH_ATTRS = [('sAMAccountName', 'Usuario'), ('givenName', 'Nombre')]
     USER_ATTRIBUTES = [["cUJAEStudentYear", "Año"], ["cUJAEDataProvider", "Fuente"], ["cUJAEPersonType", "Tipo"], ["whenCreated", "Fecha de Creación", "time"], ["whenChanged", "Fecha de Modificación", "time"]]
+    TREE_ATTRIBUTES = [['mail', "Email"], ['__type', "Tipo"], ['active', "Estado"]]

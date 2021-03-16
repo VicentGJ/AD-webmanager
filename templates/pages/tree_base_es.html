@@ -45,9 +45,9 @@
 {% if key == "name" and key in entry %}
             <td style='padding-right:10px;white-space:nowrap;'><a href="{{ entry['__target'] }}">{{ entry[key] }}</a></td>
 {% elif key == "__type" and key in entry %}
-            <td style='white-space:nowrap;'>{{ entry[key] }}</td>
+            <td>{{ entry[key] }}</td>
 {% elif key in entry %}
-            <td>{{ entry[key]|truncate(70) }}</td>
+            <td>{{ entry[key]|truncate(40) }}</td>
 {% else %}
             <td>&nbsp;</td>
 {% endif %}

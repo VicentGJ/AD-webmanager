@@ -45,9 +45,11 @@ def init(app):
             abort(401)
         else:
             entry_fields = [('name', "Nombre"),
-                            ('__description', u"Login/Descripción"),
-                            ('__type', "Tipo"),
-                            ('active', "Estado")]
+                            ('__description', u"Login/Descripción")]
+            
+            if Settings.TREE_ATTRIBUTES:
+                for item in Settings.TREE_ATTRIBUTES:
+                    entry_fields.append((item[0], item[1])) 
 
             form = FilterTreeView(request.form)
 
