@@ -145,8 +145,6 @@ def init(app):
                               }
 
                 for attribute, field in field_mapping:
-                    if attribute == "pager" and field.data == "Auto":
-                        attributes[attribute] = "D"
                     if attribute == 'userAccountControl':
                         current_uac = 512
                         for key, flag in (LDAP_AD_USERACCOUNTCONTROL_VALUES.items()):
