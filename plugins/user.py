@@ -145,8 +145,6 @@ def init(app):
                               }
 
                 for attribute, field in field_mapping:
-                    if attribute == "pager" and field.data == "Auto":
-                        attributes[attribute] = "D"
                     if attribute == 'userAccountControl':
                         current_uac = 512
                         for key, flag in (LDAP_AD_USERACCOUNTCONTROL_VALUES.items()):
@@ -212,7 +210,8 @@ def init(app):
                 for item in Settings.USER_ATTRIBUTES:
                     if item[0] in user:
                         if len(item) == 3 and item[2] == 'time':
-                            user[item[0]] = user[item[0]][6:8] + '/' + user[item[0]][4:6] + '/' + user[item[0]][0:4]
+                            user[item[0]] = (user[item[0]][6:8] + '/' + user[item[0]][4:6] + '/' + user[item[0]][0:4] 
+                            + ' ' + user[item[0]][8:10] + ':' + user[item[0]][10:12] + ':' + user[item[0]][12:14] )
                         identity_fields.append((item[0], item[1])) 
 
             group_fields = [('sAMAccountName', "Nombre"),
