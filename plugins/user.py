@@ -23,6 +23,8 @@ from flask_wtf import FlaskForm
 from wtforms import PasswordField, SelectMultipleField, TextAreaField, \
     StringField, SelectField, DecimalField, IntegerField, BooleanField
 from wtforms.validators import DataRequired,  EqualTo, Optional, Length
+from datetime import datetime
+from pytz import timezone
 
 
 from libs.ldap_func import ldap_auth, ldap_change_password, \
@@ -210,8 +212,11 @@ def init(app):
                 for item in Settings.USER_ATTRIBUTES:
                     if item[0] in user:
                         if len(item) == 3 and item[2] == 'time':
-                            user[item[0]] = (user[item[0]][6:8] + '/' + user[item[0]][4:6] + '/' + user[item[0]][0:4] 
-                            + ' ' + user[item[0]][8:10] + ':' + user[item[0]][10:12] + ':' + user[item[0]][12:14] )
+                            datetime_field = (user[item[0]][6:8] + '/' + user[item[0]][4:6] + '/' + user[item[0]][0:4] 
+                                            + ' ' + user[item[0]][8:10] + ':' + user[item[0]][10:12] + ':' 
+                                            + user[item[0]][12:14] )
+                            datetime_field = datetime.strptime(datetime_field, '%d/%m/%Y %H:%M:%S')
+                            user[item[0]] = datetime_field.astimezone(timezone(Settings.TIMEZONE))
                         identity_fields.append((item[0], item[1])) 
 
             group_fields = [('sAMAccountName', "Nombre"),
