@@ -23,6 +23,8 @@ from flask_wtf import FlaskForm
 from wtforms import PasswordField, SelectMultipleField, TextAreaField, \
     StringField, SelectField, DecimalField, IntegerField, BooleanField
 from wtforms.validators import DataRequired,  EqualTo, Optional, Length
+from datetime import datetime
+from pytz import timezone
 
 
 from libs.ldap_func import ldap_auth, ldap_change_password, \
@@ -46,7 +48,7 @@ class UserAddGroup(FlaskForm):
 class UserProfileEdit(FlaskForm):
     first_name = StringField('Nombre', [DataRequired(), Length(max=64)])
     last_name = StringField('Apellido', [Length(max=64)])
-    display_name = StringField('Nombre Completo', [Length(max=256)])
+    display_name = StringField('Nombre Completo', [DataRequired(), Length(max=256)])
     user_name = StringField('Nombre de Usuario', [DataRequired(), Length(max=20)])
     mail = StringField(u'Dirección de correo', [Length(max=256)])
     category = SelectField(choices=[('Auto', 'Automático'),
@@ -210,8 +212,11 @@ def init(app):
                 for item in Settings.USER_ATTRIBUTES:
                     if item[0] in user:
                         if len(item) == 3 and item[2] == 'time':
-                            user[item[0]] = (user[item[0]][6:8] + '/' + user[item[0]][4:6] + '/' + user[item[0]][0:4] 
-                            + ' ' + user[item[0]][8:10] + ':' + user[item[0]][10:12] + ':' + user[item[0]][12:14] )
+                            datetime_field = (user[item[0]][6:8] + '/' + user[item[0]][4:6] + '/' + user[item[0]][0:4] 
+                                            + ' ' + user[item[0]][8:10] + ':' + user[item[0]][10:12] + ':' 
+                                            + user[item[0]][12:14] )
+                            datetime_field = datetime.strptime(datetime_field, '%d/%m/%Y %H:%M:%S')
+                            user[item[0]] = datetime_field.astimezone(timezone(Settings.TIMEZONE))
                         identity_fields.append((item[0], item[1])) 
 
             group_fields = [('sAMAccountName', "Nombre"),
