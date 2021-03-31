@@ -48,7 +48,7 @@ class UserAddGroup(FlaskForm):
 class UserProfileEdit(FlaskForm):
     first_name = StringField('Nombre', [DataRequired(), Length(max=64)])
     last_name = StringField('Apellido', [Length(max=64)])
-    display_name = StringField('Nombre Completo', [DataRequired(), Length(max=256)])
+    display_name = StringField('Nombre Completo', [Length(max=256)])
     user_name = StringField('Nombre de Usuario', [DataRequired(), Length(max=20)])
     mail = StringField(u'Dirección de correo', [Length(max=256)])
     category = SelectField(choices=[('Auto', 'Automático'),
@@ -362,7 +362,6 @@ def init(app):
         form = UserProfileEdit(request.form)
         field_mapping = [('givenName', form.first_name),
                          ('sn', form.last_name),
-                         ('displayName', form.display_name),
                          ('sAMAccountName', form.user_name),
                          ('mail', form.mail),
                          ('pager', form.category),
@@ -376,6 +375,8 @@ def init(app):
             try:
                 for attribute, field in field_mapping:
                     value = field.data
+                    given_name = user.get('givenName')
+                    last_name = user.get('lastName')
                     if value != user.get(attribute):
                         if attribute == 'sAMAccountName':
                             # Rename the account
@@ -392,9 +393,18 @@ def init(app):
                                 if flag[1] and key in field.data:
                                     current_uac += key
                             ldap_update_attribute(user['distinguishedName'], attribute, str(current_uac)) 
+                        elif attribute == 'givenName':
+                            given_name = value
+                            ldap_update_attribute(user['distinguishedName'], attribute, value)
+                            displayName = given_name + ' ' + last_name
+                            ldap_update_attribute(user['distinguishedName'], 'displayName', displayName)
+                        elif attribute == 'sn':
+                            last_name = value
+                            ldap_update_attribute(user['distinguishedName'], attribute, value)
+                            displayName = given_name + ' ' + last_name
+                            ldap_update_attribute(user['distinguishedName'], 'displayName', displayName)
                         else:
                             ldap_update_attribute(user['distinguishedName'], attribute, value)
-
                 flash(u"Perfil actualizado con éxito.", "success")
                 return redirect(url_for('user_overview', username=form.user_name.data))
             except ldap.LDAPError as e:
