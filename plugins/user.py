@@ -362,7 +362,6 @@ def init(app):
         form = UserProfileEdit(request.form)
         field_mapping = [('givenName', form.first_name),
                          ('sn', form.last_name),
-                         ('displayName', form.display_name),
                          ('sAMAccountName', form.user_name),
                          ('mail', form.mail),
                          ('pager', form.category),
@@ -376,6 +375,8 @@ def init(app):
             try:
                 for attribute, field in field_mapping:
                     value = field.data
+                    given_name = user.get('givenName')
+                    last_name = user.get('lastName')
                     if value != user.get(attribute):
                         if attribute == 'sAMAccountName':
                             # Rename the account
@@ -392,6 +393,16 @@ def init(app):
                                 if flag[1] and key in field.data:
                                     current_uac += key
                             ldap_update_attribute(user['distinguishedName'], attribute, str(current_uac)) 
+                        elif attribute == 'givenName':
+                            given_name = value
+                            ldap_update_attribute(user['distinguishedName'], attribute, value)
+                            displayName = given_name + ' ' + last_name
+                            ldap_update_attribute(user['distinguishedName'], 'displayName', displayName)
+                        elif attribute == 'sn':
+                            last_name = value
+                            ldap_update_attribute(user['distinguishedName'], attribute, value)
+                            displayName = given_name + ' ' + last_name
+                            ldap_update_attribute(user['distinguishedName'], 'displayName', displayName)
                         else:
                             ldap_update_attribute(user['distinguishedName'], attribute, value)
 
