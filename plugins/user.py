@@ -25,6 +25,7 @@ from wtforms import PasswordField, SelectMultipleField, TextAreaField, \
 from wtforms.validators import DataRequired,  EqualTo, Optional, Length
 from datetime import datetime
 from pytz import timezone
+import base64
 
 
 from libs.ldap_func import ldap_auth, ldap_change_password, \
@@ -217,6 +218,9 @@ def init(app):
                                             + user[item[0]][12:14] )
                             datetime_field = datetime.strptime(datetime_field, '%d/%m/%Y %H:%M:%S')
                             user[item[0]] = datetime_field.astimezone(timezone(Settings.TIMEZONE))
+                        if item[0] == 'jpegPhoto':
+                            imgbase64 = base64.b64encode(user[item[0]]).decode()
+                            user[item[0]] = 'data:image/jpeg;base64,' + imgbase64
                         identity_fields.append((item[0], item[1])) 
 
             group_fields = [('sAMAccountName', "Nombre"),

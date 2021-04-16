@@ -29,6 +29,10 @@
                     {{ alias }},
                  {% endfor %}
             </td>
+{% elif key == "jpegPhoto" %}
+            <td>
+                <img src={{ user[key] }} alt="photo" width="90" height="90">
+            </td>
 {% else %}
             <td>{{ user[key] }}</td>
 {% endif %}
