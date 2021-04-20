@@ -50,7 +50,7 @@ class UserProfileEdit(FlaskForm):
     first_name = StringField('Nombre', [DataRequired(), Length(max=64)])
     last_name = StringField('Apellido', [Length(max=64)])
     display_name = StringField('Nombre Completo', [Length(max=256)])
-    user_name = StringField('Nombre de Usuario', [DataRequired(), Length(max=20)])
+    user_name = StringField('Nombre de Usuario', [Length(max=20)])
     mail = StringField(u'Dirección de correo', [Length(max=256)])
     category = SelectField(choices=[('Auto', 'Automático'),
                                     ('A', 'Categoria A'),
@@ -81,7 +81,7 @@ class UserAdd(UserProfileEdit):
                                      [DataRequired(),
                                       EqualTo('password',
                                               message=u'Las contraseñas deben coincidir')])
-    
+    user_name = StringField('Nombre de Usuario', [DataRequired(), Length(max=20)])
     category = SelectField(choices=[('D', 'Sin Internet'),
                                     ('A', 'Categoria A'),
                                     ('B', 'Categoria B'),
@@ -366,7 +366,6 @@ def init(app):
         form = UserProfileEdit(request.form)
         field_mapping = [('givenName', form.first_name),
                          ('sn', form.last_name),
-                         ('sAMAccountName', form.user_name),
                          ('mail', form.mail),
                          ('pager', form.category),
                          ('userAccountControl', form.uac_flags)]
@@ -377,10 +376,10 @@ def init(app):
 
         if form.validate_on_submit():
             try:
+                given_name = user.get('givenName')
+                last_name = user.get('sn')
                 for attribute, field in field_mapping:
                     value = field.data
-                    given_name = user.get('givenName')
-                    last_name = user.get('lastName')
                     if value != user.get(attribute):
                         if attribute == 'sAMAccountName':
                             # Rename the account
@@ -400,7 +399,10 @@ def init(app):
                         elif attribute == 'givenName':
                             given_name = value
                             ldap_update_attribute(user['distinguishedName'], attribute, value)
-                            displayName = given_name + ' ' + last_name
+                            if last_name == None:
+                                displayName = given_name
+                            else:
+                                displayName = given_name + ' ' + last_name
                             ldap_update_attribute(user['distinguishedName'], 'displayName', displayName)
                         elif attribute == 'sn':
                             last_name = value
@@ -411,7 +413,7 @@ def init(app):
                             ldap_update_attribute(user['distinguishedName'], attribute, value)
 
                 flash(u"Perfil actualizado con éxito.", "success")
-                return redirect(url_for('user_overview', username=form.user_name.data))
+                return redirect(url_for('user_overview', username=username))
             except ldap.LDAPError as e:
                 e = dict(e.args[0])
                 flash(e['info'], "error")
