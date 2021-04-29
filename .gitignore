@@ -1,2 +1,4 @@
 manager.cfg
 *.pyc
+Pipfile.lock
+.vscode/
