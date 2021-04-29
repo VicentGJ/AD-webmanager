@@ -1,4 +1,4 @@
 manager.cfg
 *.pyc
+.vscode/settings.json
 Pipfile.lock
-.vscode/
