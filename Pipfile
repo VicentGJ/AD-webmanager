@@ -7,6 +7,9 @@ name = "pypi"
 flask = "*"
 wtforms = "*"
 python-ldap = "*"
+dnspython = "*"
+flask-wtf = "*"
+pytz = "*"
 
 [dev-packages]
 
