@@ -39,78 +39,78 @@ import ldap
 
 
 class UserSSHEdit(FlaskForm):
-    ssh_keys = TextAreaField('Llaves SSH')
+    ssh_keys = TextAreaField('SSH keys')
 
 
 class UserAddGroup(FlaskForm):
-    available_groups = SelectField('Grupos')
+    available_groups = SelectField('Groups')
 
 
 class UserProfileEdit(FlaskForm):
-    first_name = StringField('Nombre', [DataRequired(), Length(max=64)])
-    last_name = StringField('Apellido', [Length(max=64)])
-    display_name = StringField('Nombre Completo', [DataRequired(), Length(max=256)])
-    user_name = StringField('Nombre de Usuario', [DataRequired(), Length(max=20)])
-    mail = StringField(u'Dirección de correo', [Length(max=256)])
-    category = SelectField(choices=[('Auto', 'Automático'),
-                                    ('A', 'Categoria A'),
-                                    ('B', 'Categoria B'),
-                                    ('C', 'Categoria C'),
-                                    ('D', 'Sin Internet')])
+    first_name = StringField('Name', [DataRequired(), Length(max=64)])
+    last_name = StringField('Last Name', [Length(max=64)])
+    display_name = StringField('Full Name', [DataRequired(), Length(max=256)])
+    user_name = StringField('Username', [DataRequired(), Length(max=20)])
+    mail = StringField(u'Email address', [Length(max=256)])
+    category = SelectField(choices=[('Auto', 'Automatic'),
+                                    ('A', 'Category A'),
+                                    ('B', 'Category B'),
+                                    ('C', 'Category C'),
+                                    ('D', 'Without Internet')])
     uac_flags = SelectMultipleField('Estado', coerce=int)
 
 
 class SICCIPEdit(FlaskForm):
-    internet_type = SelectField(u'Tipo de acceso a Internet', [Optional()],
+    internet_type = SelectField(u'Internet access type', [Optional()],
                                 choices=[('F',u'Acceso Total'),
-                                         ('R', u'Acceso con restricciones'),
-                                         ('L', u'Solo navegación local')])
-    internet_quota = DecimalField('Cuota para Internet en UM')
-    socialnetwork_quota = DecimalField('% de la cuota utilizable para redes sociales')
-    email_type = SelectField(u'Tipo de cuenta de correo', choices=[('F',u'Sin restrcciones'),
-                                                                   ('R', u'Envío y recepción restringidos (.cu)'),
-                                                                   ('L', u'Solo correo local')])
-    email_quota = DecimalField('Cuota de correo en UM')
-    dansguardian_filter = IntegerField(u'Número del filtro de contenido')
+                                         ('R', u'Restricted access'),
+                                         ('L', u'Local navigation only')])
+    internet_quota = DecimalField('Quota for Internet in UM')
+    socialnetwork_quota = DecimalField('% of the usable quota for social networks')
+    email_type = SelectField(u'Email account type', choices=[('F',u'No restrictions'),
+                                                                   ('R', u'Restricted sending and receiving'),
+                                                                   ('L', u'Local mail only')])
+    email_quota = DecimalField('Mail quota in UM')
+    dansguardian_filter = IntegerField(u'Content filter number')
 
 
 class UserAdd(UserProfileEdit):
     base = None
-    password = PasswordField(u'Contraseña', [DataRequired()])
-    password_confirm = PasswordField(u'Repetir contraseña',
+    password = PasswordField(u'Password', [DataRequired()])
+    password_confirm = PasswordField(u'Repeat password',
                                      [DataRequired(),
                                       EqualTo('password',
-                                              message=u'Las contraseñas deben coincidir')])
+                                              message=u'Passwords must match')])
     
-    category = SelectField(choices=[('D', 'Sin Internet'),
-                                    ('A', 'Categoria A'),
-                                    ('B', 'Categoria B'),
-                                    ('C', 'Categoria C'),
-                                    ('Auto', 'Automático')])
+    category = SelectField(choices=[('D', 'Without Internet'),
+                                    ('A', 'Category A'),
+                                    ('B', 'Category B'),
+                                    ('C', 'Category C'),
+                                    ('Auto', 'Automatic')])
 
 class UserAddExtraFields(UserAdd):
-    manual = BooleanField(label="Usuario Manual", validators=[DataRequired()], render_kw={'checked': True})
-    person_type = SelectField(label="Tipo de Persona", choices=[('Worker', "Trabajador"), ('Student', "Estudiante")])
-    dni = StringField(label='Carné Identidad', validators=[DataRequired(), Length(min=11,max=11)])
+    manual = BooleanField(label="User Manual", validators=[DataRequired()], render_kw={'checked': True})
+    person_type = SelectField(label="Type of person", choices=[('Worker', "Worker"), ('Student', "Student")])
+    dni = StringField(label='Identity Card', validators=[DataRequired(), Length(min=11,max=11)])
 
 
 class PasswordChange(FlaskForm):
-    password = PasswordField(u'Nueva Contraseña', [DataRequired()])
-    password_confirm = PasswordField(u'Repetir Nueva Contraseña',
+    password = PasswordField(u'New Password', [DataRequired()])
+    password_confirm = PasswordField(u'Repeat New Password',
                                      [DataRequired(),
                                       EqualTo('password',
-                                              message=u'Las contraseñas deben coincidir')])
+                                              message=u'Passwords must match')])
 
 
 class PasswordChangeUser(PasswordChange):
-    oldpassword = PasswordField(u'Contraseña actual', [DataRequired()])
+    oldpassword = PasswordField(u'Current password', [DataRequired()])
 
 
 def init(app):
     @app.route('/users/+add', methods=['GET', 'POST'])
     @ldap_auth(Settings.ADMIN_GROUP)
     def user_add():
-        title = "Adicionar Usuario"
+        title = "Add User"
 
 
 
@@ -171,7 +171,7 @@ def init(app):
 
                 ldap_create_entry("cn=%s,%s" % (form.user_name.data, base), attributes)
                 ldap_change_password(None, form.password.data, form.user_name.data)
-                flash(u"Usuario creado con éxito.", "success")
+                flash(u"User created successfully.", "success")
                 return redirect(url_for('user_overview', username=form.user_name.data))
             except ldap.LDAPError as e:
                 e = dict(e.args[0])
@@ -186,7 +186,7 @@ def init(app):
     @app.route('/user/<username>', methods=['GET', 'POST'])
     @ldap_auth("Domain Users")
     def user_overview(username):
-        title = "Detalles del Usuario - %s" % username
+        title = "User details - %s" % username
 
         if not ldap_user_exists(username=username):
             abort(404)
@@ -197,17 +197,17 @@ def init(app):
         
         if logged_user == user['sAMAccountName'] or admin:
 
-            identity_fields = [('givenName', "Nombre"),
-                               ('sn', "Apellidos"),
-                               ('displayName', "Nombre Completo"),
-                               ('name', "Nombre del Registro"),
-                               ('sAMAccountName', "Nombre de Usuario"),
-                               ('mail', u"Dirección de Correo")]
+            identity_fields = [('givenName', "Name"),
+                               ('sn', "Last Name"),
+                               ('displayName', "Full Name"),
+                               ('name', "Registry Name"),
+                               ('sAMAccountName', "Username"),
+                               ('mail', u"Email address")]
 
             if 'title' in user:
-                identity_fields.append(('title', "Ocupación"))
+                identity_fields.append(('title', "Occupation"))
             if 'telephoneNumber' in user:
-                identity_fields.append(('telephoneNumber', "Teléfono"))
+                identity_fields.append(('telephoneNumber', "Telephone"))
 
             if Settings.USER_ATTRIBUTES:
                 for item in Settings.USER_ATTRIBUTES:
@@ -223,8 +223,8 @@ def init(app):
                             user[item[0]] = 'data:image/jpeg;base64,' + imgbase64
                         identity_fields.append((item[0], item[1])) 
 
-            group_fields = [('sAMAccountName', "Nombre"),
-                            ('description', u"Descripción")]
+            group_fields = [('sAMAccountName', "Name"),
+                            ('description', u"Description")]
 
             user = ldap_get_user(username=username)
             group_details = []
@@ -242,7 +242,7 @@ def init(app):
                 print(siccip_data)
 
             available_groups = ldap_get_entries(ldap_filter="(objectclass=group)", scope="subtree")
-            group_choices = [("_","Seleccione un Grupo")]
+            group_choices = [("_","Select a Group")]
             for group_entry in available_groups:
                 if not ldap_in_group(group_entry['sAMAccountName'], username):
                     group_choices += [(group_entry['distinguishedName'], group_entry['sAMAccountName'])]
@@ -257,7 +257,7 @@ def init(app):
                 try:
                     group_to_add = form.available_groups.data
                     if group_to_add == "_":
-                        flash(u"Debe escoger un grupo de la lista desplegable.", "error")
+                        flash(u"You must choose a group from the drop-down list.", "error")
                     else:
                         group = ldap_get_entry_simple({'objectClass': 'group', 'distinguishedName': group_to_add})
                         if 'member' in group:
@@ -266,13 +266,13 @@ def init(app):
                             entries = set()
                         entries.add(user['distinguishedName'])
                         ldap_update_attribute(group_to_add, "member", list(entries))
-                        flash(u"Usuario añadido con éxito al grupo.", "success")
+                        flash(u"User successfully added to group.", "success")
                     return redirect(url_for('user_overview',username=username))
                 except ldap.LDAPError as e:
                     e = dict(e.args[0])
                     flash(e['info'], "error")
             elif form.errors:
-                    flash(u"Falló la validación de los datos.", "error")
+                    flash(u"Data validation failed.", "error")
 
             parent = ",".join(user['distinguishedName'].split(',')[1:])
         
@@ -287,7 +287,7 @@ def init(app):
     @app.route('/user/<username>/+changepw', methods=['GET', 'POST'])
     @ldap_auth("Domain Users")
     def user_changepw(username):
-        title = u"Cambiar contraseña"
+        title = u"Change Password"
 
         if not ldap_user_exists(username=username):
             abort(404)
@@ -313,23 +313,23 @@ def init(app):
                     ldap_change_password(form.oldpassword.data,
                                          form.password.data,
                                          username=username)
-                flash(u"La contraseña se cambió con éxito.", "success")
+                flash(u"The password was changed successfully.", "success")
                 return redirect(url_for('user_overview', username=username))
             except ldap.LDAPError as e:
                 e = dict(e.args[0])
                 flash(e['info'], "error")
         elif form.errors:
-                flash(u"Falló la validación de los datos.", "error")
+                flash(u"Data validation failed.", "error")
 
         return render_template("forms/basicform.html", form=form, title=title,
-                               action=u"Cambiar contraseña",
+                               action=u"Change Password",
                                parent=url_for('user_overview',
                                               username=username))
 
     @app.route('/user/<username>/+delete', methods=['GET', 'POST'])
     @ldap_auth(Settings.ADMIN_GROUP)
     def user_delete(username):
-        title = "Borrar Usuario"
+        title = "Delete User"
 
         if not ldap_user_exists(username=username):
             abort(404)
@@ -340,16 +340,16 @@ def init(app):
             try:
                 user = ldap_get_user(username=username)
                 ldap_delete_entry(user['distinguishedName'])
-                flash(u"Usuario borrado con éxito.", "success")
+                flash(u"User deleted successfully.", "success")
                 return redirect(url_for('core_index'))
             except ldap.LDAPError as e:
                 e = dict(e.args[0])
                 flash(e['info'], "error")
         elif form.errors:
-                flash(u"Falló la validación de los datos.", "error")
+                flash(u"Data validation failed.", "error")
 
         return render_template("pages/user_delete_es.html", title=title,
-                               action="Borrar Usuario", form=form,
+                               action="Delete User", form=form,
                                username=username,
                                parent=url_for('user_overview',
                                               username=username))
@@ -357,7 +357,7 @@ def init(app):
     @app.route('/user/<username>/+edit-profile', methods=['GET', 'POST'])
     @ldap_auth(Settings.ADMIN_GROUP)
     def user_edit_profile(username):
-        title = "Editar usuario"
+        title = "Edit user"
 
         if not ldap_user_exists(username=username):
             abort(404)
@@ -410,13 +410,13 @@ def init(app):
                         else:
                             ldap_update_attribute(user['distinguishedName'], attribute, value)
 
-                flash(u"Perfil actualizado con éxito.", "success")
+                flash(u"Profile updated successfully.", "success")
                 return redirect(url_for('user_overview', username=form.user_name.data))
             except ldap.LDAPError as e:
                 e = dict(e.args[0])
                 flash(e['info'], "error")
         elif form.errors:
-            flash(u"Falló la validación de los datos.", "error")
+            flash(u"Data validation failed.", "error")
 
         if not form.is_submitted():
             form.first_name.data = user.get('givenName')
@@ -430,14 +430,14 @@ def init(app):
                                        user['userAccountControl'] & key)]
 
         return render_template("forms/basicform.html", form=form, title=title,
-                               action="Salvar los cambios",
+                               action="Save changes",
                                parent=url_for('user_overview',
                                               username=username))
 
     @app.route('/user/<username>/+edit-siccip', methods=['GET', 'POST'])
     @ldap_auth(Settings.ADMIN_GROUP)
     def user_edit_siccip(username):
-        title = u"Editar Configuración SICC-IP"
+        title = u"Edit SICC-IP Configuration"
 
         if not ldap_user_exists(username=username):
             abort(404)
@@ -465,7 +465,7 @@ def init(app):
                     ldap_update_attribute(user['distinguishedName'], "pager", new_pager)
                     print(new_pager)
 
-                flash(u"Perfil actualizado con éxito.", "success")
+                flash(u"Profile updated successfully.", "success")
                 return redirect(url_for('user_overview',
                                         username=username))
             except ldap.LDAPError as e:
@@ -473,7 +473,7 @@ def init(app):
                 error = str(error[0].upper() + error[1:])
                 flash(error, "error")
         elif form.errors:
-            flash(u"Falló la validación de los datos.", "error")
+            flash(u"Data validation failed.", "error")
 
         if not form.is_submitted():
             if pager:
@@ -494,7 +494,7 @@ def init(app):
     @app.route('/user/<username>/+edit-ssh', methods=['GET', 'POST'])
     @ldap_auth(Settings.ADMIN_GROUP)
     def user_edit_ssh(username):
-        title = "Editar llaves SSH"
+        title = "Edit SSH keys"
 
         if not ldap_user_exists(username=username):
             abort(404)
@@ -517,14 +517,14 @@ def init(app):
                 e = dict(e.args[0])
                 flash(e['info'], "error")
         elif form.errors:
-            flash(u"Falló la validación de los datos.", "error")
+            flash(u"Data validation failed.", "error")
 
         if not form.is_submitted():
             if 'sshPublicKey' in user:
                 form.ssh_keys.data = "\n".join(user['sshPublicKey'])
 
         return render_template("forms/basicform.html", form=form, title=title,
-                               action="Salvar los cambios",
+                               action="Save changes",
                                parent=url_for('user_overview',
                                               username=username))
 

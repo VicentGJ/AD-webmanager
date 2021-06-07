@@ -44,8 +44,8 @@ def init(app):
         if not admin:
             abort(401)
         else:
-            entry_fields = [('name', "Nombre"),
-                            ('__description', u"Login/Descripción")]
+            entry_fields = [('name', "Name"),
+                            ('__description', u"Login/Description")]
             
             if Settings.TREE_ATTRIBUTES:
                 for item in Settings.TREE_ATTRIBUTES:

@@ -37,24 +37,24 @@ class GroupDelMember(FlaskForm):
 
 
 class GroupAddMembers(FlaskForm):
-    new_members = TextAreaField('Nuevos miembros')
+    new_members = TextAreaField('New members')
 
 
 class GroupEdit(FlaskForm):
-    name = TextField('Nombre', [DataRequired()])
-    description = TextField(u'Descripción')
-    group_type = RadioField('Tipo',
-                            choices=[(2147483648, 'Grupo de Seguridad'),
-                                     (0, u'Lista de Distribución')],
+    name = TextField('Name', [DataRequired()])
+    description = TextField(u'Description')
+    group_type = RadioField('Type',
+                            choices=[(2147483648, 'Security Group'),
+                                     (0, u'Distribution list')],
                             coerce=int)
-    group_flags = RadioField(u'Ámbito', coerce=int)
+    group_flags = RadioField(u'Ambit', coerce=int)
 
 
 def init(app):
     @app.route('/groups/+add', methods=['GET', 'POST'])
     @ldap_auth(Settings.ADMIN_GROUP)
     def group_add():
-        title = "Adicionar grupo"
+        title = "Add group"
 
         form = GroupEdit(request.form)
         field_mapping = [('sAMAccountName', form.name),
@@ -86,27 +86,27 @@ def init(app):
                 print("cn=%s,%s" % (form.name.data, base))
                 ldap_create_entry("cn=%s,%s" % (form.name.data, base), attributes)
 
-                flash(u"Grupo creado con éxito.", "success")
+                flash(u"Group created successfully.", "success")
                 return redirect(url_for('group_overview',
                                         groupname=form.name.data))
             except ldap.LDAPError as e:
                 e = dict(e.args[0])
                 flash(e['info'], "error")
         elif form.errors:
-            flash(u"Falló la validación de los datos.", "error")
+            flash(u"Data validation failed.", "error")
 
         if not form.is_submitted():
             form.group_type.data = 2147483648
             form.group_flags.data = 2
 
         return render_template("forms/basicform.html", form=form, title=title,
-                               action="Adicionar grupo",
+                               action="Add group",
                                parent=url_for('tree_base'))
 
     @app.route('/group/<groupname>')
     @ldap_auth("Domain Users")
     def group_overview(groupname):
-        title = "Detalles del Grupo - %s" % groupname
+        title = "Group details - %s" % groupname
 
         if not ldap_group_exists(groupname=groupname):
             abort(404)
@@ -148,7 +148,7 @@ def init(app):
     @app.route('/group/<groupname>/+delete', methods=['GET', 'POST'])
     @ldap_auth(Settings.ADMIN_GROUP)
     def group_delete(groupname):
-        title = "Eliminar grupo"
+        title = "Delete group"
 
         if not ldap_group_exists(groupname):
             abort(404)
@@ -159,17 +159,17 @@ def init(app):
             try:
                 group = ldap_get_group(groupname=groupname)
                 ldap_delete_entry(group['distinguishedName'])
-                flash(u"Grupo eliminado con éxito.", "success")
+                flash(u"Group removed successfully.", "success")
                 return redirect(url_for('core_index'))
             except ldap.LDAPError as e:
                 error = e.message['info'].split(":", 2)[-1].strip()
                 error = str(error[0].upper() + error[1:])
                 flash(error, "error")
         elif form.errors:
-                flash(u"Falló la validación de los datos.", "error")
+                flash(u"Data validation failed.", "error")
 
         return render_template("pages/group_delete_es.html", title=title,
-                               action="Eliminar grupo", form=form,
+                               action="Delete group", form=form,
                                groupname=groupname,
                                parent=url_for('group_overview',
                                               groupname=groupname))
@@ -177,7 +177,7 @@ def init(app):
     @app.route('/group/<groupname>/+edit', methods=['GET', 'POST'])
     @ldap_auth(Settings.ADMIN_GROUP)
     def group_edit(groupname):
-        title = "Editar grupo"
+        title = "Edit group"
 
         if not ldap_group_exists(groupname):
             abort(404)
@@ -226,14 +226,14 @@ def init(app):
                             ldap_update_attribute(group['distinguishedName'],
                                                   attribute, value)
 
-                flash(u"Grupo modificado con éxito.", "success")
+                flash(u"Successfully modified group.", "success")
                 return redirect(url_for('group_overview',
                                         groupname=form.name.data))
             except ldap.LDAPError as e:
                 e = dict(e.args[0])
                 flash(e['info'], "error")
         elif form.errors:
-            flash(u"Falló la verificación de los datos.", "error")
+            flash(u"Data verification failed.", "error")
 
         if not form.is_submitted():
             form.name.data = group.get('sAMAccountName')
@@ -245,14 +245,14 @@ def init(app):
                     form.group_flags.data += key
 
         return render_template("forms/basicform.html", form=form, title=title,
-                               action="Salvar los cambios",
+                               action="Save changes",
                                parent=url_for('group_overview',
                                               groupname=groupname))
 
     @app.route('/group/<groupname>/+add-members', methods=['GET', 'POST'])
     @ldap_auth(Settings.ADMIN_GROUP)
     def group_addmembers(groupname):
-        title = "Adicionar miembros"
+        title = "Add members"
 
         if not ldap_group_exists(groupname):
             abort(404)
@@ -270,7 +270,7 @@ def init(app):
             for line in form.new_members.data.split("\n"):
                 entry = ldap_get_entry_simple({'sAMAccountName': line.strip()})
                 if not entry:
-                    error = u"Nombre de usuario inválido: %s" % line
+                    error = u"Invalid username: %s" % line
                     flash(error, "error")
                     break
 
@@ -279,14 +279,14 @@ def init(app):
                 try:
                     ldap_add_users_to_group(group['distinguishedName'],
                                           "member", list(entries))
-                    flash("Usuarios adicionados.", "success")
+                    flash("Added users.", "success")
                     return redirect(url_for('group_overview',
                                             groupname=groupname))
                 except ldap.LDAPError as e:
                     e = dict(e.args[0])
                     flash(e['info'], "error")
         elif form.errors:
-            flash(u"Falló la validación de los datos.", "error")
+            flash(u"Data validation failed.", "error")
 
         return render_template("forms/basicform.html", form=form, title=title,
                                action="Adicionar miembros",
@@ -297,7 +297,7 @@ def init(app):
                methods=['GET', 'POST'])
     @ldap_auth(Settings.ADMIN_GROUP)
     def group_delmember(groupname, member):
-        title = "Quitar del grupo"
+        title = "Remove from group"
 
         group = ldap_get_group(groupname)
         if not group or 'member' not in group:
@@ -317,16 +317,16 @@ def init(app):
                 members = group['member']
                 members.remove(member['distinguishedName'])
                 ldap_update_attribute(group['distinguishedName'],"member", members)
-                flash("Membrecia al grupo %s eliminada" % group['sAMAccountName'], "success")
+                flash("Member of group X %s eliminated" % group['sAMAccountName'], "success")
                 return redirect(url_for('user_overview', username=member['sAMAccountName']))
             except ldap.LDAPError as e:
                 e = dict(e.args[0])
                 flash(e['info'], "error")
         elif form.errors:
-                flash(u"Falló la validación de los datos.", "error")
+                flash(u"Data validation failed.", "error")
 
         return render_template("pages/group_delmember_es.html", title=title,
-                               action="Eliminar miembro del grupo", form=form,
+                               action="Remove member from group", form=form,
                                member=member['sAMAccountName'],
                                group=group['sAMAccountName'],
                                parent=url_for('user_overview', username=member['sAMAccountName']))
