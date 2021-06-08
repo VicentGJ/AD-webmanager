@@ -5,7 +5,7 @@
     <form method="post" action="?" class="form">
         {{ form.csrf_token }}
         <p>
-            Está seguro de que desea quitar al usuario '{{ member }}' del grupo '{{ group }}'?
+            Are you sure you want to remove '{{ member }}' from group '{{ group }}'?
         </p>
         <ul>
         {% for field in form.visible_fields %}
@@ -13,7 +13,7 @@
         {% endfor %}
         </ul>
         {% if parent %}
-        <a class="link-button" href="{{ parent }}">Cancelar</a>
+        <a class="link-button" href="{{ parent }}">Cancel</a>
         {% endif %}
         <input class="right" type="submit" value="{{ action }}" />
     </form>

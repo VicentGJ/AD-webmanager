@@ -5,8 +5,8 @@
     <form method="post" action="?" class="form">
         {{ form.csrf_token }}
         <p>
-            Si continua el grupo: '{{ groupname }}' se borrará permanentemente.<br />
-            Está seguro?
+            If you continue the group: '{{ groupname }}' will be permanently deleted.<br />
+            Are you sure?
         </p>
         <ul>
         {% for field in form.visible_fields %}
@@ -14,7 +14,7 @@
         {% endfor %}
         </ul>
         {% if parent %}
-        <a class="link-button" href="{{ parent }}">Cancelar</a>
+        <a class="link-button" href="{{ parent }}">Cancel</a>
         {% endif %}
         <input class="right" type="submit" value="{{ action }}" />
     </form>

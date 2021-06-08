@@ -13,24 +13,24 @@
             {{ form.csrf_token }}
             {{ form.filter_select }}
             {{ form.filter_str }}
-            <input type="submit" value="Buscar">
+            <input type="submit" value="Search">
         
         </form>
     </div>
 {% endif %}
 
 {% if parent %}
-            <a href="{{ url_for('tree_base', base=parent) }}" class="button">Subir un nivel</a>
+            <a href="{{ url_for('tree_base', base=parent) }}" class="button">Up a level</a>
 {% endif %}
 {% if admin %}
-            <a href="{{ url_for('group_add', base=base) }}" class="button">Adicionar grupo</a>
-            <a href="{{ url_for('user_add', base=base) }}" class="button">Adicionar usuario</a>
-            <!--<a href="{{ url_for('core_index') }}" class="button">Crear contenedor</a>-->
+            <a href="{{ url_for('group_add', base=base) }}" class="button">Add group</a>
+            <a href="{{ url_for('user_add', base=base) }}" class="button">Add user</a>
+            <!--<a href="{{ url_for('core_index') }}" class="button">Create container</a>-->
 {% endif %}
 
         </p>
     </div>
-    <h2>Registros</h2>
+    <h2>Register</h2>
 
     <table>
         <tr>

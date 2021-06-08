@@ -28,21 +28,21 @@ LDAP_SCOPES = {"base": ldap.SCOPE_BASE,
                "onelevel": ldap.SCOPE_ONELEVEL,
                "subtree": ldap.SCOPE_SUBTREE}
 
-LDAP_AD_GROUPTYPE_VALUES = {1: ('Sistema', False),
+LDAP_AD_GROUPTYPE_VALUES = {1: ('Sistem', False),
                             2: ('Global', True),
-                            4: ('Dominio local', True),
+                            4: ('Local Domain', True),
                             8: ('Universal', True),
                             16: ('APP_BASIC', False),
                             32: ('APP_QUERY', False)}
 
 #!!! This need editing for open-source release
-LDAP_AD_USERACCOUNTCONTROL_VALUES = {2: (u"Cuenta Deshabilitada", True),
-                                     64: (u"El usuario no puede cambiar la contraseña", False),
-                                     512: ("Cuenta Normal", False),
-                                     4096: ("Cuenta de confianza de PC", False),
-                                     8192: ("Cuenta de confianza de Servidor", False),
-                                     65536: (u"La contraseña no expira nunca", True),
-                                     8388608: (u"La contraseña expiró", False)
+LDAP_AD_USERACCOUNTCONTROL_VALUES = {2: (u"Deactivated", True),
+                                     64: (u"User can't change password", False),
+                                     512: ("Normal Account", False),
+                                     4096: ("PC Trusted Account", False),
+                                     8192: ("Server Trusted Account", False),
+                                     65536: (u"Password does not expire", True),
+                                     8388608: (u"Password expired", False)
                                      }
 
 LDAP_AD_BOOL_ATTRIBUTES = ['showInAdvancedViewOnly']

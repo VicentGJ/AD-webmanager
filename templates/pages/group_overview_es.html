@@ -3,18 +3,18 @@
 {% block content %}
 
 {% if parent %}
-            <a href="{{ url_for('tree_base', base=parent) }}" class="button">Regresar a: {{ parent }}</a>
+            <a href="{{ url_for('tree_base', base=parent) }}" class="button">Return to: {{ parent }}</a>
 {% endif %}
 
 <div class="group_profile" style="min-height:10em;">
     <div class="right">
 {% if admin %}
-        <p style="text-align: right;"><a href="{{ url_for('group_edit', groupname=group['sAMAccountName']) }}" class="button">Editar grupo</a></p>
-        <p style="text-align: right;"><a href="{{ url_for('group_delete', groupname=group['sAMAccountName']) }}" class="button">Eliminar grupo</a></p>
-        <p style="text-align: right;"><a href="{{ url_for('group_addmembers', groupname=group['sAMAccountName']) }}" class="button">Adicionar miembros</a></p>
+        <p style="text-align: right;"><a href="{{ url_for('group_edit', groupname=group['sAMAccountName']) }}" class="button">Edit group</a></p>
+        <p style="text-align: right;"><a href="{{ url_for('group_delete', groupname=group['sAMAccountName']) }}" class="button">Delete group</a></p>
+        <p style="text-align: right;"><a href="{{ url_for('group_addmembers', groupname=group['sAMAccountName']) }}" class="button">Add member</a></p>
 {% endif %}
     </div>
-    <h2>Propiedades</h2>
+    <h2>Properties</h2>
 
     <table style='width:auto;'>
 {% for key, title in identity_fields %}
@@ -37,14 +37,14 @@
 {% endfor %}
 {% if 'groupType' in group %}
         <tr>
-            <th style='padding-right:10px;'>Tipo</th>
+            <th style='padding-right:10px;'>Type</th>
 {% if group['groupType'].__and__(2147483648) %}
-            <td>Grupo de Seguridad</td>
+            <td>Security Group</td>
 {% else %}
-            <td>Lista de Distribución</td>
+            <td>Distribution List</td>
 {% endif %}
         <tr>
-            <th style='padding-right:10px;'>Banderas del Grupo</th>
+            <th style='padding-right:10px;'>Group Flags</th>
             <td>
                 <ul>
 {% for key, value in grouptype_values.items() %}
@@ -60,7 +60,7 @@
 </div>
 
 {% if groups %}
-<h2>Membrecía del grupo</h2>
+<h2>Group membership</h2>
 <table>
     <tr>
 {% for key, title in group_fields %}
@@ -84,13 +84,13 @@
 </table>
 {% endif %}
 
-<h2>Miembros</h2>
+<h2>Members</h2>
 <table>
     <tr>
 {% for key, title in group_fields %}
         <th>{{ title }}</th>
 {% endfor %}
-        <th>Operación</th>
+        <th>Operation</th>
     </tr>
 
 {% for entry in members %}
@@ -110,7 +110,7 @@
                         <td>&nbsp;</td>
                 {% endif %}
         {% endfor %}
-        <td><a href="{{ url_for('group_delmember', groupname=group['sAMAccountName'], member=entry['sAMAccountName']) }}">(remover de este grupo)</a></td>
+        <td><a href="{{ url_for('group_delmember', groupname=group['sAMAccountName'], member=entry['sAMAccountName']) }}">(remove from group)</a></td>
 </tr>
 {% endfor %}
 </table>

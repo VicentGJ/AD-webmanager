@@ -3,18 +3,18 @@
 {% block content %}
 
 {% if parent %}
-            <a href="{{ url_for('tree_base', base=parent) }}" class="button">Regresar a: {{ parent }}</a>
+            <a href="{{ url_for('tree_base', base=parent) }}" class="button">Return to: {{ parent }}</a>
 {% endif %}
 
 
 <div class="user_profile" style="min-height:10em;">
     <div class="right">
 {% if g.ldap['username'] == user['sAMAccountName'] or admin %}
-        <p style="text-align: right;"><a href="{{ url_for('user_changepw', username=user['sAMAccountName']) }}" class="button">Cambiar contraseña</a></p>
+        <p style="text-align: right;"><a href="{{ url_for('user_changepw', username=user['sAMAccountName']) }}" class="button">Change Password</a></p>
 {% endif %}
 {% if admin %}
-        <p style="text-align: right;"><a href="{{ url_for('user_edit_profile', username=user['sAMAccountName']) }}" class="button">Editar usuario</a></p>
-        <p style="text-align: right;"><a href="{{ url_for('user_delete', username=user['sAMAccountName']) }}" class="button">Eliminar usuario</a></p>
+        <p style="text-align: right;"><a href="{{ url_for('user_edit_profile', username=user['sAMAccountName']) }}" class="button">Edit user</a></p>
+        <p style="text-align: right;"><a href="{{ url_for('user_delete', username=user['sAMAccountName']) }}" class="button">Remove user</a></p>
 {% endif %}
     </div>
     <h2>Profile</h2>
@@ -41,7 +41,7 @@
 {% endfor %}
 {% if 'userAccountControl' in user %}
         <tr>
-            <th style='padding-right:10px;'>Banderas </th>
+            <th style='padding-right:10px;'>Flags </th>
             <td>
                 <ul>
 {% for key, value in uac_values.items() %}
@@ -64,12 +64,12 @@
      <form method="post" action="?" class="form">
         {{ form.csrf_token }}
         {{ form.available_groups }}
-        <input type="submit" value="Adicionar" />
+        <input type="submit" value="Add" />
     </form>
     </p>
    {% endif %}
 </div>
-<h2>Pertenencia a Grupos</h2>
+<h2>Group Membership</h2>
 <table>
     <tr>
 {% for key, title in group_fields %}
@@ -90,7 +90,7 @@
            {% if '__primaryGroup' in user and user['__primaryGroup'] == entry['distinguishedName'] %}
             <td></td>
            {% else %}
-            <td><a href="{{ url_for('group_delmember', groupname=entry['sAMAccountName'], member=user['sAMAccountName'], show_user=True) }}">(remover de este grupo)</a></td>
+            <td><a href="{{ url_for('group_delmember', groupname=entry['sAMAccountName'], member=user['sAMAccountName'], show_user=True) }}">(remove from group)</a></td>
            {% endif %}
         {% endif %}
     </tr>
@@ -105,9 +105,9 @@
 <div class="right">
 {% if admin %}
    {% if siccip_data %}
-    <p style="text-align: right;"><a href="{{ url_for('user_edit_siccip', username=user['sAMAccountName']) }}" class="button">Editar SICC-IP Conf</a></p>
+    <p style="text-align: right;"><a href="{{ url_for('user_edit_siccip', username=user['sAMAccountName']) }}" class="button">Edit SICC-IP Conf</a></p>
    {% else %}
-    <p style="text-align: right;"><a href="{{ url_for('user_edit_siccip', username=user['sAMAccountName']) }}" class="button">Crear SICC-IP Conf</a></p>
+    <p style="text-align: right;"><a href="{{ url_for('user_edit_siccip', username=user['sAMAccountName']) }}" class="button">Create SICC-IP Conf</a></p>
    {% endif %}
 {% endif %}
 </div>
@@ -115,8 +115,8 @@
 {% if siccip_data %}
     <table style='width:auto;'>
         <tr>
-            <th style='padding-right:10px;'>Cuota para Internet:</td>
-            <td>{{ siccip_data['internet_quota'] }} UM</td>
+            <th style='padding-right:10px;'>Internet Quote:</td>
+            <td>{{ siccip_data['internet_quota'] }} MU</td>
         </tr>
         <tr>
             <th style='padding-right:10px;'>% de la cuota utilizable en redes sociales:</td>

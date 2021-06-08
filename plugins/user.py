@@ -52,12 +52,7 @@ class UserProfileEdit(FlaskForm):
     display_name = StringField('Full Name', [DataRequired(), Length(max=256)])
     user_name = StringField('Username', [DataRequired(), Length(max=20)])
     mail = StringField(u'Email address', [Length(max=256)])
-    category = SelectField(choices=[('Auto', 'Automatic'),
-                                    ('A', 'Category A'),
-                                    ('B', 'Category B'),
-                                    ('C', 'Category C'),
-                                    ('D', 'Without Internet')])
-    uac_flags = SelectMultipleField('Estado', coerce=int)
+    uac_flags = SelectMultipleField('Flags', coerce=int)
 
 
 class SICCIPEdit(FlaskForm):
@@ -81,12 +76,6 @@ class UserAdd(UserProfileEdit):
                                      [DataRequired(),
                                       EqualTo('password',
                                               message=u'Passwords must match')])
-    
-    category = SelectField(choices=[('D', 'Without Internet'),
-                                    ('A', 'Category A'),
-                                    ('B', 'Category B'),
-                                    ('C', 'Category C'),
-                                    ('Auto', 'Automatic')])
 
 class UserAddExtraFields(UserAdd):
     manual = BooleanField(label="User Manual", validators=[DataRequired()], render_kw={'checked': True})
@@ -122,7 +111,6 @@ def init(app):
                          ('sn', form.last_name),
                          ('sAMAccountName', form.user_name),
                          ('mail', form.mail),
-                         ('pager', form.category),
                          (None, form.password),
                          (None, form.password_confirm),
                          ('userAccountControl', form.uac_flags)]
@@ -368,7 +356,6 @@ def init(app):
                          ('sn', form.last_name),
                          ('sAMAccountName', form.user_name),
                          ('mail', form.mail),
-                         ('pager', form.category),
                          ('userAccountControl', form.uac_flags)]
 
         form.uac_flags.choices = [(key, value[0]) for key, value in LDAP_AD_USERACCOUNTCONTROL_VALUES.items()]

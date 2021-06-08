@@ -1,8 +1,8 @@
 class Settings:
     SECRET_KEY = "AHDGIWIWBQSBKQYUQXBXKGAsdhahdflkjfgierqhs"
-#    LDAP_DOMAIN = "your.domain"
-#    SEARCH_DN = "dc=your,dc=search,dc=dn"
-#    LDAP_SERVER = "your.ldap.server"
+    LDAP_DOMAIN = "cujae.edu.cu"
+    SEARCH_DN = "dc=cujae,dc=edu,dc=cu"
+    LDAP_SERVER = "10.8.1.125"
     DEBUG = True
     # URL_PREFIX = "/domain"
     TREE_BLACKLIST = [
@@ -15,13 +15,11 @@ class Settings:
     EXTRA_FIELDS = False
     ADMIN_GROUP = "Domain Admins"
     auth_admins = {}
-    SEARCH_ATTRS = [('sAMAccountName', 'Usuario'), ('givenName', 'Nombre')]
+    SEARCH_ATTRS = [('sAMAccountName', 'Username'), ('givenName', 'Name')]
     USER_ATTRIBUTES = [
-        ["jpegPhoto", "Foto"],
-        ["whenCreated", "Fecha de Creación", "time"],
-        ["whenChanged", "Fecha de Modificación", "time"]
+        ["jpegPhoto", "Photo"],
     ]
     TREE_ATTRIBUTES = [
-        ['mail', "Email"], ['__type', "Tipo"], ['active', "Estado"]
+        ['mail', "Email"], ['__type', "Type"], ['active', "Status"]
     ]
 #    TIMEZONE = "Your/Timezone"

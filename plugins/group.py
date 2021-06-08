@@ -111,11 +111,11 @@ def init(app):
         if not ldap_group_exists(groupname=groupname):
             abort(404)
 
-        identity_fields = [('sAMAccountName', "Nombre"),
-                           ('description', u"Descripción")]
+        identity_fields = [('sAMAccountName', "Name"),
+                           ('description', u"Description")]
 
-        group_fields = [('sAMAccountName', "Nombre"),
-                        ('description', u"Descripción")]
+        group_fields = [('sAMAccountName', "Name"),
+                        ('description', u"Description")]
 
         group = ldap_get_group(groupname=groupname)
 
