@@ -53,6 +53,7 @@ class UserProfileEdit(FlaskForm):
     user_name = StringField('Username', [DataRequired(), Length(max=20)])
     mail = StringField(u'Email address', [Length(max=256)])
     uac_flags = SelectMultipleField('Flags', coerce=int)
+    phone = StringField(label='Teléfono')
 
 
 class SICCIPEdit(FlaskForm):
@@ -81,7 +82,7 @@ class UserAddExtraFields(UserAdd):
     manual = BooleanField(label="User Manual", validators=[DataRequired()], render_kw={'checked': True})
     person_type = SelectField(label="Type of person", choices=[('Worker', "Worker"), ('Student', "Student")])
     dni = StringField(label='Identity Card', validators=[DataRequired(), Length(min=11,max=11)])
-
+    phone = StringField(label='Teléfono')
 
 class PasswordChange(FlaskForm):
     password = PasswordField(u'New Password', [DataRequired()])
@@ -117,7 +118,8 @@ def init(app):
         if g.extra_fields:
             extra_field_mapping = [('cUJAEPersonExternal', form.manual),
                                    ('cUJAEPersonType', form.person_type),
-                                   ('cUJAEPersonDNI', form.dni)]
+                                   ('cUJAEPersonDNI', form.dni),
+                                   ('telephoneNumber', form.phone)]
             field_mapping += extra_field_mapping
 
         form.visible_fields = [field[1] for field in field_mapping]
@@ -358,6 +360,10 @@ def init(app):
                          ('mail', form.mail),
                          ('userAccountControl', form.uac_flags)]
 
+        if user['cUJAEPersonExternal'] == 'TRUE':
+            extra_field_mapping = [('telephoneNumber', form.phone)]
+            field_mapping += extra_field_mapping
+
         form.uac_flags.choices = [(key, value[0]) for key, value in LDAP_AD_USERACCOUNTCONTROL_VALUES.items()]
 
         form.visible_fields = [field[1] for field in field_mapping]
@@ -411,6 +417,7 @@ def init(app):
             form.display_name.data = user.get('displayName')
             form.user_name.data = user.get('sAMAccountName')
             form.mail.data = user.get('mail')
+            form.phone.data = user.get('telephoneNumber')
             form.uac_flags.data = [key for key, flag in
                                    LDAP_AD_USERACCOUNTCONTROL_VALUES.items()
                                    if (flag[1] and
