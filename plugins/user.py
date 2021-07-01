@@ -49,7 +49,7 @@ class UserAddGroup(FlaskForm):
 class UserProfileEdit(FlaskForm):
     first_name = StringField('Nombre', [DataRequired(), Length(max=64)])
     last_name = StringField('Apellido', [Length(max=64)])
-    display_name = StringField('Nombre Completo', [DataRequired(), Length(max=256)])
+    display_name = StringField('Nombre Completo', [Length(max=256)])
     user_name = StringField('Nombre de Usuario', [DataRequired(), Length(max=20)])
     mail = StringField(u'Dirección de correo', [Length(max=256)])
     category = SelectField(choices=[('Auto', 'Automático'),
@@ -58,6 +58,7 @@ class UserProfileEdit(FlaskForm):
                                     ('C', 'Categoria C'),
                                     ('D', 'Sin Internet')])
     uac_flags = SelectMultipleField('Estado', coerce=int)
+    phone = StringField(label='Teléfono')
 
 
 class SICCIPEdit(FlaskForm):
@@ -92,7 +93,7 @@ class UserAddExtraFields(UserAdd):
     manual = BooleanField(label="Usuario Manual", validators=[DataRequired()], render_kw={'checked': True})
     person_type = SelectField(label="Tipo de Persona", choices=[('Worker', "Trabajador"), ('Student', "Estudiante")])
     dni = StringField(label='Carné Identidad', validators=[DataRequired(), Length(min=11,max=11)])
-
+    phone = StringField(label='Teléfono')
 
 class PasswordChange(FlaskForm):
     password = PasswordField(u'Nueva Contraseña', [DataRequired()])
@@ -129,7 +130,8 @@ def init(app):
         if g.extra_fields:
             extra_field_mapping = [('cUJAEPersonExternal', form.manual),
                                    ('cUJAEPersonType', form.person_type),
-                                   ('cUJAEPersonDNI', form.dni)]
+                                   ('cUJAEPersonDNI', form.dni),
+                                   ('telephoneNumber', form.phone)]
             field_mapping += extra_field_mapping
 
         form.visible_fields = [field[1] for field in field_mapping]
@@ -371,6 +373,10 @@ def init(app):
                          ('pager', form.category),
                          ('userAccountControl', form.uac_flags)]
 
+        if user['cUJAEPersonExternal'] == 'TRUE':
+            extra_field_mapping = [('telephoneNumber', form.phone)]
+            field_mapping += extra_field_mapping
+
         form.uac_flags.choices = [(key, value[0]) for key, value in LDAP_AD_USERACCOUNTCONTROL_VALUES.items()]
 
         form.visible_fields = [field[1] for field in field_mapping]
@@ -424,6 +430,7 @@ def init(app):
             form.display_name.data = user.get('displayName')
             form.user_name.data = user.get('sAMAccountName')
             form.mail.data = user.get('mail')
+            form.phone.data = user.get('telephoneNumber')
             form.uac_flags.data = [key for key, flag in
                                    LDAP_AD_USERACCOUNTCONTROL_VALUES.items()
                                    if (flag[1] and
