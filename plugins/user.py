@@ -47,12 +47,17 @@ class UserAddGroup(FlaskForm):
 
 
 class UserProfileEdit(FlaskForm):
-    first_name = StringField('Name', [DataRequired(), Length(max=64)])
-    last_name = StringField('Last Name', [Length(max=64)])
-    display_name = StringField('Full Name', [DataRequired(), Length(max=256)])
-    user_name = StringField('Username', [DataRequired(), Length(max=20)])
-    mail = StringField(u'Email address', [Length(max=256)])
-    uac_flags = SelectMultipleField('Flags', coerce=int)
+    first_name = StringField('Nombre', [DataRequired(), Length(max=64)])
+    last_name = StringField('Apellido', [Length(max=64)])
+    display_name = StringField('Nombre Completo', [Length(max=256)])
+    user_name = StringField('Nombre de Usuario', [DataRequired(), Length(max=20)])
+    mail = StringField(u'Dirección de correo', [Length(max=256)])
+    category = SelectField(choices=[('Auto', 'Automático'),
+                                    ('A', 'Categoria A'),
+                                    ('B', 'Categoria B'),
+                                    ('C', 'Categoria C'),
+                                    ('D', 'Sin Internet')])
+    uac_flags = SelectMultipleField('Estado', coerce=int)
     phone = StringField(label='Teléfono')
 
 
@@ -79,9 +84,9 @@ class UserAdd(UserProfileEdit):
                                               message=u'Passwords must match')])
 
 class UserAddExtraFields(UserAdd):
-    manual = BooleanField(label="User Manual", validators=[DataRequired()], render_kw={'checked': True})
-    person_type = SelectField(label="Type of person", choices=[('Worker', "Worker"), ('Student', "Student")])
-    dni = StringField(label='Identity Card', validators=[DataRequired(), Length(min=11,max=11)])
+    manual = BooleanField(label="Usuario Manual", validators=[DataRequired()], render_kw={'checked': True})
+    person_type = SelectField(label="Tipo de Persona", choices=[('Worker', "Trabajador"), ('Student', "Estudiante")])
+    dni = StringField(label='Carné Identidad', validators=[DataRequired(), Length(min=11,max=11)])
     phone = StringField(label='Teléfono')
 
 class PasswordChange(FlaskForm):
