@@ -100,16 +100,16 @@ def init(app):
             entry['__target'] = url_for('tree_base', base=entry['distinguishedName'])
 
             entry['name'] = entry['displayName']
-            entry['__type'] = "Usuario"
+            entry['__type'] = "User"
             entry['__target'] = url_for('user_overview', username=entry['sAMAccountName'])
 
             if 'user' in entry['objectClass']:
                 if entry['userAccountControl'] == 512:
-                    entry['active'] = "Activo"
+                    entry['active'] = "Active"
                 else:
-                    entry['active'] = "Desactivado"
+                    entry['active'] = "Deactivated"
             else:
-                entry['active'] = "No disponible"
+                entry['active'] = "No available"
 
             if 'showInAdvancedViewOnly' in entry and entry['showInAdvancedViewOnly']:
                 continue
@@ -126,17 +126,17 @@ def init(app):
                 entry['__target'] = url_for('tree_base', base=entry['distinguishedName'])
 
                 if 'group' in entry['objectClass']:
-                    entry['__type'] = "Grupo"
+                    entry['__type'] = "Group"
                     entry['__target'] = url_for('group_overview',
                                                 groupname=entry['sAMAccountName'])
                 elif 'organizationalUnit' in entry['objectClass']:
-                    entry['__type'] = "Unidad Organizativa"
+                    entry['__type'] = "Organization Unit"
                 elif 'container' in entry['objectClass']:
-                    entry['__type'] = "Contenedor"
+                    entry['__type'] = "Container"
                 elif 'builtinDomain' in entry['objectClass']:
                     entry['__type'] = "Built-in"
                 else:
-                    entry['__type'] = "Desconocido"
+                    entry['__type'] = "Unknown"
                 entries.append(entry)
                 for blacklist in Settings.TREE_BLACKLIST:
                     if entry['distinguishedName'].startswith(blacklist):
