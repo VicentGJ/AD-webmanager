@@ -22,16 +22,11 @@ versions of Python and supporting libraries.
 We will keep updating the project for our organization and the community, 
 and we will love to receive all kinds of feedback and contributions.
 
-# Dependencies
- * python
- * python-dnspython
- * python-flask
- * python-flaskext.wtf,
- * python-ldap
- * python-wtforms
+# Running
+This repo uses pipenv for dependencies and virtual environment magnament.
 
-# Using
-
+ * Run ```pipenv install``` in the project root folder
+ * Run ```pipenv shell``` to activate the virtual environment
  * Access settings.py to configure
  * Put a random string in SECRET\_KEY
  * Set LDAP\_DOMAIN to your Directory domain
