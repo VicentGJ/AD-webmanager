@@ -11,14 +11,17 @@ Windows interfaces.
 
 Its compatible with both Windows Active Directory and Samba4 domain controllers.
 
+The current version is a total overhoul of the original codebase, design to 
+comply with more modern standars in web development. This repo currently host
+a light backend API, and its not the final product.
+
 # History
 This project is a fork of samba4-manager, created by Stéphane Graber
 and the Edubuntu community.
 This project was pick up for internal use at Havana's Technology University (CUJAE)
 in 2017, and since it has received numerous updates, additions, and changes.
-We decided to release our version as a fork since the original project has 
-not been updated in the last four years and is incompatible with the latest 
-versions of Python and supporting libraries.
+We decided to release our version as a fork since the original project is
+no longer in active development.
 We will keep updating the project for our organization and the community, 
 and we will love to receive all kinds of feedback and contributions.
 
