@@ -1,24 +1,10 @@
-# -*- coding: utf-8 -*-
-
-# Copyright (C) 2012-2015 Stéphane Graber
-# Author: Stéphane Graber <stgraber@ubuntu.com>
-
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You can find the license on Debian systems in the file
-# /usr/share/common-licenses/GPL-2
-
+from flask import json
+from flask.json import jsonify
+from flask.wrappers import Response
+from werkzeug.exceptions import HTTPException
 from libs.common import iri_for as url_for
 from settings import Settings
-from flask import abort, flash, g, render_template, redirect, request, session, jsonify
+from flask import abort, flash, g, render_template, redirect, request, session
 from flask_wtf import FlaskForm
 from wtforms import PasswordField, SelectMultipleField, TextAreaField, \
     StringField, SelectField, DecimalField, IntegerField, BooleanField
@@ -26,7 +12,6 @@ from wtforms.validators import DataRequired,  EqualTo, Optional, Length
 from datetime import datetime
 from pytz import timezone
 import base64
-
 
 from libs.ldap_func import ldap_auth, ldap_change_password, \
     ldap_create_entry, ldap_delete_entry, ldap_get_user, \
@@ -37,141 +22,56 @@ from libs.common import get_parsed_pager_attribute
 
 import ldap
 
-
-class UserSSHEdit(FlaskForm):
-    ssh_keys = TextAreaField('SSH keys')
-
-
-class UserAddGroup(FlaskForm):
-    available_groups = SelectField('Groups')
-
-
-class UserProfileEdit(FlaskForm):
-    first_name = StringField('Name', [DataRequired(), Length(max=64)])
-    last_name = StringField('Last Name', [Length(max=64)])
-    display_name = StringField('Full Name', [DataRequired(), Length(max=256)])
-    user_name = StringField('Username', [DataRequired(), Length(max=20)])
-    mail = StringField(u'Email address', [Length(max=256)])
-    uac_flags = SelectMultipleField('Flags', coerce=int)
-
-
-class SICCIPEdit(FlaskForm):
-    internet_type = SelectField(u'Internet access type', [Optional()],
-                                choices=[('F',u'Acceso Total'),
-                                         ('R', u'Restricted access'),
-                                         ('L', u'Local navigation only')])
-    internet_quota = DecimalField('Quota for Internet in UM')
-    socialnetwork_quota = DecimalField('% of the usable quota for social networks')
-    email_type = SelectField(u'Email account type', choices=[('F',u'No restrictions'),
-                                                                   ('R', u'Restricted sending and receiving'),
-                                                                   ('L', u'Local mail only')])
-    email_quota = DecimalField('Mail quota in UM')
-    dansguardian_filter = IntegerField(u'Content filter number')
-
-
-class UserAdd(UserProfileEdit):
-    base = None
-    password = PasswordField(u'Password', [DataRequired()])
-    password_confirm = PasswordField(u'Repeat password',
-                                     [DataRequired(),
-                                      EqualTo('password',
-                                              message=u'Passwords must match')])
-
-class UserAddExtraFields(UserAdd):
-    manual = BooleanField(label="User Manual", validators=[DataRequired()], render_kw={'checked': True})
-    person_type = SelectField(label="Type of person", choices=[('Worker', "Worker"), ('Student', "Student")])
-    dni = StringField(label='Identity Card', validators=[DataRequired(), Length(min=11,max=11)])
-
-
-class PasswordChange(FlaskForm):
-    password = PasswordField(u'New Password', [DataRequired()])
-    password_confirm = PasswordField(u'Repeat New Password',
-                                     [DataRequired(),
-                                      EqualTo('password',
-                                              message=u'Passwords must match')])
-
-
-class PasswordChangeUser(PasswordChange):
-    oldpassword = PasswordField(u'Current password', [DataRequired()])
-
-
 def init(app):
-    @app.route('/users/+add', methods=['GET', 'POST'])
+    @app.route('/user/+add', methods=['POST'])
     @ldap_auth(Settings.ADMIN_GROUP)
     def user_add():
-        title = "Add User"
-
-
-
-        if g.extra_fields:
-            form = UserAddExtraFields(request.form)
-        else:
-            form = UserAdd(request.form)
-        field_mapping = [('givenName', form.first_name),
-                         ('sn', form.last_name),
-                         ('sAMAccountName', form.user_name),
-                         ('mail', form.mail),
-                         (None, form.password),
-                         (None, form.password_confirm),
-                         ('userAccountControl', form.uac_flags)]
-        if g.extra_fields:
-            extra_field_mapping = [('cUJAEPersonExternal', form.manual),
-                                   ('cUJAEPersonType', form.person_type),
-                                   ('cUJAEPersonDNI', form.dni)]
-            field_mapping += extra_field_mapping
-
-        form.visible_fields = [field[1] for field in field_mapping]
-        form.uac_flags.choices = [(key, value[0]) for key, value in LDAP_AD_USERACCOUNTCONTROL_VALUES.items()]
-
-        if form.validate_on_submit():
-            try:
-                base = request.args.get("b'base")
-                base = base.rstrip("'")
-                # Default attributes
-                upn = "%s@%s" % (form.user_name.data, g.ldap['domain'])
-                attributes = {'objectClass': [b'top', b'person', b'organizationalPerson', b'user', b'inetOrgPerson'],
-                              'UserPrincipalName': [upn.encode('utf-8')],
-                              'accountExpires': [b"0"],
-                              'lockoutTime': [b"0"],
-                              }
-
-                for attribute, field in field_mapping:
-                    if attribute == 'userAccountControl':
-                        current_uac = 512
-                        for key, flag in (LDAP_AD_USERACCOUNTCONTROL_VALUES.items()):
-                            if flag[1] and key in field.data:
-                                current_uac += key
-                        attributes[attribute] = [str(current_uac).encode('utf-8')]
-                    elif attribute and field.data:
-                        if isinstance(field, BooleanField):
-                            if field.data:
-                                attributes[attribute] = 'TRUE'.encode('utf-8')
-                            else:
-                                attributes[attribute] = 'FALSE'.encode('utf-8')
+        try:
+            data: dict = request.json
+            base = data["base"]
+            password = data["unicodePwd"]
+            data.pop("base")
+            data.pop("unicodePwd")
+            # Default attributes
+            upn = "%s@%s" % (data["sAMAccountName"], g.ldap['domain'])
+            attributes = {
+                'objectClass': [b'top', b'person', b'organizationalPerson', b'user', b'inetOrgPerson'],
+                'UserPrincipalName': [upn.encode('utf-8')],
+                'accountExpires': [b"0"],
+                'lockoutTime': [b"0"],
+            }
+            for attribute, field in data.items():
+                if attribute == 'userAccountControl':
+                    current_uac = 512
+                    for key, flag in (LDAP_AD_USERACCOUNTCONTROL_VALUES.items()):
+                        if flag[1] and key in field:
+                            current_uac += key
+                    attributes[attribute] = [str(current_uac).encode('utf-8')]
+                elif attribute and field:
+                    if isinstance(field, bool):
+                        if field.data:
+                            attributes[attribute] = 'TRUE'.encode('utf-8')
                         else:
-                            attributes[attribute] = [field.data.encode('utf-8')]
-                if 'sn' in attributes:
-                    attributes['displayName'] = attributes['givenName'][0].decode('utf-8') + " " + attributes[
+                            attributes[attribute] = 'FALSE'.encode('utf-8')
+                    else:
+                        attributes[attribute] = [field.encode('utf-8')]
+            if 'sn' in attributes:
+                attributes['displayName'] = attributes['givenName'][0].decode('utf-8') + " " + attributes[
                                                                                                 'sn'][0].decode('utf-8')
-                    attributes['displayName'] = [attributes['displayName'].encode('utf-8')]
-                else:
-                    attributes['displayName'] = attributes['givenName']
+                attributes['displayName'] = [attributes['displayName'].encode('utf-8')]
+            else:
+                attributes['displayName'] = attributes['givenName']
 
-                ldap_create_entry("cn=%s,%s" % (form.user_name.data, base), attributes)
-                ldap_change_password(None, form.password.data, form.user_name.data)
-                flash(u"User created successfully.", "success")
-                return redirect(url_for('user_overview', username=form.user_name.data))
-            except ldap.LDAPError as e:
-                e = dict(e.args[0])
-                flash(e['info'], "error")
-        elif form.errors:
-            print(form.errors)
-            flash("Some fields failed validation.", "error")
-        return render_template("forms/basicform.html", form=form, title=title,
-                               action="Adicionar Usuario",
-                               parent=url_for('tree_base'))
+            ldap_create_entry("cn=%s,%s" % (data["sAMAccountName"], base), attributes)
+            ldap_change_password(None, password, data["sAMAccountName"])
+            return jsonify({"response": "ok"}) # TODO: Improve this
+        except ldap.LDAPError as e:
+           return jsonify({"response": str(e)})
+        except KeyError as e:
+           print(e)
+           return jsonify({"response": "Missing key {0}".format(str(e))})
 
-    @app.route('/user/<username>', methods=['GET', 'POST'])
+    @app.route('/user/<username>', methods=['GET'])
     @ldap_auth("Domain Users")
     def user_overview(username):
         title = "Detalles del Usuario - %s" % username
@@ -244,280 +144,93 @@ def init(app):
 
         return jsonify({"user": user, "groups": groups, "siccip_data": siccip_data})
 
-    @app.route('/user/<username>/+changepw', methods=['GET', 'POST'])
+    @app.route('/user/<username>/+changepw', methods=['POST'])
     @ldap_auth("Domain Users")
     def user_changepw(username):
-        title = u"Change Password"
 
         if not ldap_user_exists(username=username):
             abort(404)
 
         admin = ldap_in_group(Settings.ADMIN_GROUP)
 
-        if username != g.ldap['username'] and admin:
-            form = PasswordChange(request.form)
-            form.visible_fields = []
-        else:
-            form = PasswordChangeUser(request.form)
-            form.visible_fields = [form.oldpassword]
+        try:
+            data = request.json
+            if username != g.ldap['username'] and admin:
+                ldap_change_password(None, data["new_password"],
+                                     username=username)
+            else:
+                ldap_change_password(None, data["old_password"],
+                                     data["new_password"], username=username)
+            return jsonify({"response": "success"})
+        except ldap.LDAPError as e:
+            e = dict(e.args[0])
+            return jsonify(e)
+        except KeyError as e:
+           print(e)
+           return jsonify({"response": "Missing key {0}".format(str(e))})
 
-        form.visible_fields += [form.password, form.password_confirm]
-
-        if form.validate_on_submit():
-            try:
-                if username != g.ldap['username'] and admin:
-                    ldap_change_password(None,
-                                         form.password.data,
-                                         username=username)
-                else:
-                    ldap_change_password(form.oldpassword.data,
-                                         form.password.data,
-                                         username=username)
-                flash(u"The password was changed successfully.", "success")
-                return redirect(url_for('user_overview', username=username))
-            except ldap.LDAPError as e:
-                e = dict(e.args[0])
-                flash(e['info'], "error")
-        elif form.errors:
-                flash(u"Data validation failed.", "error")
-
-        return render_template("forms/basicform.html", form=form, title=title,
-                               action=u"Change Password",
-                               parent=url_for('user_overview',
-                                              username=username))
-
-    @app.route('/user/<username>/+delete', methods=['GET', 'POST'])
+    @app.route('/user/<username>', methods=['DELETE'])
     @ldap_auth(Settings.ADMIN_GROUP)
     def user_delete(username):
-        title = "Delete User"
+        title = "Borrar Usuario"
 
         if not ldap_user_exists(username=username):
             abort(404)
 
-        form = FlaskForm(request.form)
+        try:
+            user = ldap_get_user(username=username)
+            ldap_delete_entry(user['distinguishedName'])
+            return jsonify({"response": "success"})
+        except ldap.LDAPError as e:
+            e = dict(e.args[0])
+            return jsonify(e)
 
-        if form.validate_on_submit():
-            try:
-                user = ldap_get_user(username=username)
-                ldap_delete_entry(user['distinguishedName'])
-                flash(u"User deleted successfully.", "success")
-                return redirect(url_for('core_index'))
-            except ldap.LDAPError as e:
-                e = dict(e.args[0])
-                flash(e['info'], "error")
-        elif form.errors:
-                flash(u"Data validation failed.", "error")
-
-        return render_template("pages/user_delete_es.html", title=title,
-                               action="Delete User", form=form,
-                               username=username,
-                               parent=url_for('user_overview',
-                                              username=username))
-
-    @app.route('/user/<username>/+edit-profile', methods=['GET', 'POST'])
+    @app.route('/user/<username>', methods=['PUT'])
     @ldap_auth(Settings.ADMIN_GROUP)
     def user_edit_profile(username):
-        title = "Edit user"
+        title = "Editar usuario"
 
         if not ldap_user_exists(username=username):
             abort(404)
 
         user = ldap_get_user(username=username)
-        form = UserProfileEdit(request.form)
-        field_mapping = [('givenName', form.first_name),
-                         ('sn', form.last_name),
-                         ('sAMAccountName', form.user_name),
-                         ('mail', form.mail),
-                         ('userAccountControl', form.uac_flags)]
-
-        form.uac_flags.choices = [(key, value[0]) for key, value in LDAP_AD_USERACCOUNTCONTROL_VALUES.items()]
-
-        form.visible_fields = [field[1] for field in field_mapping]
-
-        if form.validate_on_submit():
-            try:
-                for attribute, field in field_mapping:
-                    value = field.data
-                    given_name = user.get('givenName')
-                    last_name = user.get('lastName')
-                    if value != user.get(attribute):
-                        if attribute == 'sAMAccountName':
-                            # Rename the account
-                            ldap_update_attribute(user['distinguishedName'], "sAMAccountName", value)
-                            ldap_update_attribute(user['distinguishedName'], "userPrincipalName",
+        data = request.json
+        
+        try:
+            for attribute, field in data.items():
+                value = field
+                given_name = user.get('givenName')
+                last_name = user.get('lastName')
+                if value != user.get(attribute):
+                    if attribute == 'sAMAccountName':
+                        # Rename the account
+                        ldap_update_attribute(user['distinguishedName'], "sAMAccountName", value)
+                        ldap_update_attribute(user['distinguishedName'], "userPrincipalName",
                                                   "%s@%s" % (value, g.ldap['domain']))
-                            # Finish by renaming the whole record
-                            # TODO: refactor this to use rename_s instead of update
-                            # ldap_update_attribute(user['distinguishedName'], "cn", value)
-                            user = ldap_get_user(value)
-                        elif attribute == 'userAccountControl':
-                            current_uac = 512
-                            for key, flag in (LDAP_AD_USERACCOUNTCONTROL_VALUES.items()):
-                                if flag[1] and key in field.data:
-                                    current_uac += key
-                            ldap_update_attribute(user['distinguishedName'], attribute, str(current_uac)) 
-                        elif attribute == 'givenName':
-                            given_name = value
-                            ldap_update_attribute(user['distinguishedName'], attribute, value)
-                            displayName = given_name + ' ' + last_name
-                            ldap_update_attribute(user['distinguishedName'], 'displayName', displayName)
-                        elif attribute == 'sn':
-                            last_name = value
-                            ldap_update_attribute(user['distinguishedName'], attribute, value)
-                            displayName = given_name + ' ' + last_name
-                            ldap_update_attribute(user['distinguishedName'], 'displayName', displayName)
-                        else:
-                            ldap_update_attribute(user['distinguishedName'], attribute, value)
+                        # Finish by renaming the whole record
+                        # TODO: refactor this to use rename_s instead of update
+                        # ldap_update_attribute(user['distinguishedName'], "cn", value)
+                        user = ldap_get_user(value)
+                    elif attribute == 'userAccountControl':
+                        current_uac = 512
+                        for key, flag in (LDAP_AD_USERACCOUNTCONTROL_VALUES.items()):
+                            if flag[1] and key in field:
+                                current_uac += key
+                        ldap_update_attribute(user['distinguishedName'], attribute, str(current_uac)) 
+                    elif attribute == 'givenName':
+                        given_name = value
+                        ldap_update_attribute(user['distinguishedName'], attribute, value)
+                        displayName = given_name + ' ' + last_name
+                        ldap_update_attribute(user['distinguishedName'], 'displayName', displayName)
+                    elif attribute == 'sn':
+                        last_name = value
+                        ldap_update_attribute(user['distinguishedName'], attribute, value)
+                        displayName = given_name + ' ' + last_name
+                        ldap_update_attribute(user['distinguishedName'], 'displayName', displayName)
+                    else:
+                        ldap_update_attribute(user['distinguishedName'], attribute, value)
 
-                flash(u"Profile updated successfully.", "success")
-                return redirect(url_for('user_overview', username=form.user_name.data))
-            except ldap.LDAPError as e:
-                e = dict(e.args[0])
-                flash(e['info'], "error")
-        elif form.errors:
-            flash(u"Data validation failed.", "error")
-
-        if not form.is_submitted():
-            form.first_name.data = user.get('givenName')
-            form.last_name.data = user.get('sn')
-            form.display_name.data = user.get('displayName')
-            form.user_name.data = user.get('sAMAccountName')
-            form.mail.data = user.get('mail')
-            form.uac_flags.data = [key for key, flag in
-                                   LDAP_AD_USERACCOUNTCONTROL_VALUES.items()
-                                   if (flag[1] and
-                                       user['userAccountControl'] & key)]
-
-        return render_template("forms/basicform.html", form=form, title=title,
-                               action="Save changes",
-                               parent=url_for('user_overview',
-                                              username=username))
-
-    @app.route('/user/<username>/+edit-siccip', methods=['GET', 'POST'])
-    @ldap_auth(Settings.ADMIN_GROUP)
-    def user_edit_siccip(username):
-        title = u"Edit SICC-IP Configuration"
-
-        if not ldap_user_exists(username=username):
-            abort(404)
-
-        user = ldap_get_user(username=username)
-        pager = user['pager'][0] if 'pager' in user else None
-        form = SICCIPEdit(request.form)
-        field_mapping = [       #('internet_type', form.internet_type),
-                         ('internet_quota', form.internet_quota),
-                         ('socialnetwork_quota', form.socialnetwork_quota),
-                         ('dansguardian_filter', form.dansguardian_filter),
-                         ('email_type', form.email_type),
-                         ('email_quota', form.email_quota)]
-
-        form.visible_fields = [field[1] for field in field_mapping]
-
-        if form.validate_on_submit():
-            try:
-                internet_type = 'F'
-                new_pager = 'I%s%f_%f|E%s%f|D%d' % (internet_type, form.internet_quota.data,
-                                                 form.socialnetwork_quota.data,
-                                                 form.email_type.data, form.email_quota.data,
-                                                 form.dansguardian_filter.data)
-                if pager != new_pager:
-                    ldap_update_attribute(user['distinguishedName'], "pager", new_pager)
-                    print(new_pager)
-
-                flash(u"Profile updated successfully.", "success")
-                return redirect(url_for('user_overview',
-                                        username=username))
-            except ldap.LDAPError as e:
-                error = e.message['info'].split(":", 2)[-1].strip()
-                error = str(error[0].upper() + error[1:])
-                flash(error, "error")
-        elif form.errors:
-            flash(u"Data validation failed.", "error")
-
-        if not form.is_submitted():
-            if pager:
-                siccip_data = get_parsed_pager_attribute(pager)
-                if siccip_data is not None:
-                    form.internet_type.data = siccip_data['internet_type']
-                    form.internet_quota.data = siccip_data['internet_quota']
-                    form.socialnetwork_quota.data = siccip_data['socialnetwork_quota']
-                    form.email_type.data = siccip_data['email_type']
-                    form.email_quota.data = siccip_data['email_quota']
-                    form.dansguardian_filter.data = siccip_data['dansguardian_filter']
-
-        return render_template("forms/basicform.html", form=form, title=title,
-                               action="Salvar los cambios",
-                               parent=url_for('user_overview',
-                                              username=username))
-
-    @app.route('/user/<username>/+edit-ssh', methods=['GET', 'POST'])
-    @ldap_auth(Settings.ADMIN_GROUP)
-    def user_edit_ssh(username):
-        title = "Edit SSH keys"
-
-        if not ldap_user_exists(username=username):
-            abort(404)
-
-        user = ldap_get_user(username=username)
-
-        form = UserSSHEdit(request.form)
-        form.visible_fields = [form.ssh_keys]
-
-        if form.validate_on_submit():
-            new_entries = [entry.strip() for entry in
-                           form.ssh_keys.data.split("\n")]
-            try:
-                ldap_update_attribute(user['distinguishedName'],
-                                      'sshPublicKey', new_entries,
-                                      'ldapPublicKey')
-                flash("SSH keys successfuly updated.", "success")
-                return redirect(url_for('user_overview', username=username))
-            except ldap.LDAPError as e:
-                e = dict(e.args[0])
-                flash(e['info'], "error")
-        elif form.errors:
-            flash(u"Data validation failed.", "error")
-
-        if not form.is_submitted():
-            if 'sshPublicKey' in user:
-                form.ssh_keys.data = "\n".join(user['sshPublicKey'])
-
-        return render_template("forms/basicform.html", form=form, title=title,
-                               action="Save changes",
-                               parent=url_for('user_overview',
-                                              username=username))
-
-
-    # @app.route('/user/<username>/+edit-groups', methods=['GET', 'POST'])
-    # @ldap_auth(Settings.ADMIN_GROUP)
-    # def user_edit_groups(username):
-    #     title = "Editar pertenencia a Grupos"
-    #
-    #     if not ldap_user_exists(username=username):
-    #         abort(404)
-    #
-    #     user = ldap_get_user(username=username)
-    #
-    #     form = UserGroupEdit(request.form)
-    #     form.visible_fields = [form.ssh_keys]
-    #
-    #     if form.validate_on_submit():
-    #         try:
-    #             ldap_update_attribute(user['distinguishedName'],
-    #                                   'sshPublicKey', new_entries,
-    #                                   'ldapPublicKey')
-    #             flash(u"Pertenencia a grupos modificada con éxito.", "success")
-    #             return redirect(url_for('user_overview', username=username))
-    #         except ldap.LDAPError as e:
-    #             e = dict(e.args[0])
-    #             flash(e['info'], "error")
-    #     elif form.errors:
-    #         flash(u"Falló la validación de los datos.", "error")
-    #
-    #     if not form.is_submitted():
-    #         if 'sshPublicKey' in user:
-    #             form.ssh_keys.data = "\n".join(user['sshPublicKey'])
-
-    #    return render_template("forms/basicform.html", form=form, title=title,
-    #                           action="Salvar los cambios",
-    #                           parent=url_for('user_overview', username=username))
+            return jsonify({"response": "success"})
+        except ldap.LDAPError as e:
+            e = dict(e.args[0])
+            return jsonify(e)
