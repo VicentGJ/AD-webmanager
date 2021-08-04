@@ -14,7 +14,7 @@ Its compatible with both Windows Active Directory and Samba4 domain controllers.
 # History
 This project is a fork of samba4-manager, created by Stéphane Graber
 and the Edubuntu community.
-This project was pick up for internal use at Havana's Technology University
+This project was pick up for internal use at Havana's Technology University (CUJAE)
 in 2017, and since it has received numerous updates, additions, and changes.
 We decided to release our version as a fork since the original project has 
 not been updated in the last four years and is incompatible with the latest 
