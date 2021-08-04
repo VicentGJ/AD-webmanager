@@ -18,7 +18,7 @@
 
 from libs.common import iri_for as url_for
 from settings import Settings
-from flask import abort, flash, g, render_template, redirect, request, session
+from flask import abort, flash, g, render_template, redirect, request, session, jsonify
 from flask_wtf import FlaskForm
 from wtforms import PasswordField, SelectMultipleField, TextAreaField, \
     StringField, SelectField, DecimalField, IntegerField, BooleanField
@@ -174,7 +174,7 @@ def init(app):
     @app.route('/user/<username>', methods=['GET', 'POST'])
     @ldap_auth("Domain Users")
     def user_overview(username):
-        title = "User details - %s" % username
+        title = "Detalles del Usuario - %s" % username
 
         if not ldap_user_exists(username=username):
             abort(404)
@@ -185,17 +185,17 @@ def init(app):
         
         if logged_user == user['sAMAccountName'] or admin:
 
-            identity_fields = [('givenName', "Name"),
-                               ('sn', "Last Name"),
-                               ('displayName', "Full Name"),
-                               ('name', "Registry Name"),
-                               ('sAMAccountName', "Username"),
-                               ('mail', u"Email address")]
+            identity_fields = [('givenName', "Nombre"),
+                               ('sn', "Apellidos"),
+                               ('displayName', "Nombre Completo"),
+                               ('name', "Nombre del Registro"),
+                               ('sAMAccountName', "Nombre de Usuario"),
+                               ('mail', u"Dirección de Correo")]
 
             if 'title' in user:
-                identity_fields.append(('title', "Occupation"))
+                identity_fields.append(('title', "Ocupación"))
             if 'telephoneNumber' in user:
-                identity_fields.append(('telephoneNumber', "Telephone"))
+                identity_fields.append(('telephoneNumber', "Teléfono"))
 
             if Settings.USER_ATTRIBUTES:
                 for item in Settings.USER_ATTRIBUTES:
@@ -211,10 +211,12 @@ def init(app):
                             user[item[0]] = 'data:image/jpeg;base64,' + imgbase64
                         identity_fields.append((item[0], item[1])) 
 
-            group_fields = [('sAMAccountName', "Name"),
-                            ('description', u"Description")]
+            group_fields = [('sAMAccountName', "Nombre"),
+                            ('description', u"Descripción")]
 
-            user = ldap_get_user(username=username)
+            user: dict = ldap_get_user(username=username)
+            if 'jpegPhoto' in user:
+                user.pop('jpegPhoto')
             group_details = []
             for group in ldap_get_membership(username):
                 group_details.append(ldap_get_group(group, 'distinguishedName'))
@@ -230,47 +232,17 @@ def init(app):
                 print(siccip_data)
 
             available_groups = ldap_get_entries(ldap_filter="(objectclass=group)", scope="subtree")
-            group_choices = [("_","Select a Group")]
+            group_choices = [("_","Seleccione un Grupo")]
             for group_entry in available_groups:
                 if not ldap_in_group(group_entry['sAMAccountName'], username):
                     group_choices += [(group_entry['distinguishedName'], group_entry['sAMAccountName'])]
-
-            form = UserAddGroup(request.form)
-            form.available_groups.choices = group_choices
-
-            if not form.is_submitted():
-                form.available_groups.data = "_"
-
-            if form.validate_on_submit():
-                try:
-                    group_to_add = form.available_groups.data
-                    if group_to_add == "_":
-                        flash(u"You must choose a group from the drop-down list.", "error")
-                    else:
-                        group = ldap_get_entry_simple({'objectClass': 'group', 'distinguishedName': group_to_add})
-                        if 'member' in group:
-                            entries = set(group['member'])
-                        else:
-                            entries = set()
-                        entries.add(user['distinguishedName'])
-                        ldap_update_attribute(group_to_add, "member", list(entries))
-                        flash(u"User successfully added to group.", "success")
-                    return redirect(url_for('user_overview',username=username))
-                except ldap.LDAPError as e:
-                    e = dict(e.args[0])
-                    flash(e['info'], "error")
-            elif form.errors:
-                    flash(u"Data validation failed.", "error")
 
             parent = ",".join(user['distinguishedName'].split(',')[1:])
         
         else:
             abort(401)
 
-        return render_template("pages/user_overview_es.html", g=g, title=title, form=form,
-                               user=user, identity_fields=identity_fields,
-                               group_fields=group_fields, admin=admin, groups=groups, siccip_data=siccip_data,
-                               parent=parent, uac_values=LDAP_AD_USERACCOUNTCONTROL_VALUES)
+        return jsonify({"user": user, "groups": groups, "siccip_data": siccip_data})
 
     @app.route('/user/<username>/+changepw', methods=['GET', 'POST'])
     @ldap_auth("Domain Users")
