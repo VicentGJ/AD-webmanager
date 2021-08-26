@@ -10,6 +10,7 @@ python-ldap = "*"
 dnspython = "*"
 flask-wtf = "*"
 pytz = "*"
+flask-cors = "*"
 
 [dev-packages]
 

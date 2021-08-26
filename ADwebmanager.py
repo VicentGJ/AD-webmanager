@@ -39,6 +39,7 @@ if not os.path.exists(app_prefix):
 from flask import Flask, g
 import glob
 import importlib
+from flask_cors import CORS
 
 # Look at the right place
 import sys
@@ -53,7 +54,7 @@ from settings import Settings
 app = Flask(__name__,
             static_folder="%s/static" % app_prefix,
             template_folder="%s/templates" % app_prefix)
-
+CORS(app)
 app.config.from_object(Settings)
 app.jinja_env.globals['url_for'] = url_for
 
