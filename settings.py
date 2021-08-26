@@ -12,7 +12,6 @@ class Settings:
         "CN=NTDS Quotas", "CN=Program Data", "CN=System",
         "OU=Domain Controllers"
     ]
-    SICCIP_AWARE = False
     ADMIN_GROUP = "Domain Admins"
     SEARCH_ATTRS = [('sAMAccountName', 'Username'), ('givenName', 'Name')]
     USER_ATTRIBUTES = [

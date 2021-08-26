@@ -128,12 +128,7 @@ def pre_request():
               'search_dn': app.config['SEARCH_DN']}
 
     # The various caches
-
     g.ldap_cache = {}
-
-    #   SICC-IP integrations
-    g.siccip = app.config['SICCIP_AWARE']
-    # Extra fields form
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080)
