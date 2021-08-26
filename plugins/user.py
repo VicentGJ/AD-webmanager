@@ -234,18 +234,3 @@ def init(app):
         except ldap.LDAPError as e:
             e = dict(e.args[0])
             return jsonify(e)
-
-    @app.route("/user/find", methods=['GET'])
-    @ldap_auth(Settings.ADMIN_GROUP)
-    def find_filter_entries():
-        title = "Filter entries"
-
-        result = make_response("Arguments fail", 403)
-
-        if request.args.get('attr') and request.args.get('value'):
-            search_filter = '({0}=*{1}*)'.format(request.args.get('attr'), request.args.get('value'))
-            result = ldap_get_entries(search_filter, scope="subtree")
-
-            return jsonify(result), 201
-        else:
-            return {"response": "Error"}
