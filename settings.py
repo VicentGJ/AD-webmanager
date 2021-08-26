@@ -3,6 +3,7 @@ class Settings:
     LDAP_DOMAIN = "cujae.edu.cu"
     SEARCH_DN = "dc=cujae,dc=edu,dc=cu"
     LDAP_SERVER = "200.14.51.161"
+    ORIGINS = "*"
     DEBUG = True
     # URL_PREFIX = "/domain"
     TREE_BLACKLIST = [
@@ -12,9 +13,7 @@ class Settings:
         "OU=Domain Controllers"
     ]
     SICCIP_AWARE = False
-    EXTRA_FIELDS = False
     ADMIN_GROUP = "Domain Admins"
-    auth_admins = {}
     SEARCH_ATTRS = [('sAMAccountName', 'Username'), ('givenName', 'Name')]
     USER_ATTRIBUTES = [
         ["jpegPhoto", "Photo"],

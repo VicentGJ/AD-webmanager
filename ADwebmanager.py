@@ -54,7 +54,7 @@ from settings import Settings
 app = Flask(__name__,
             static_folder="%s/static" % app_prefix,
             template_folder="%s/templates" % app_prefix)
-CORS(app)
+CORS(app, origins=Settings.ORIGINS)
 app.config.from_object(Settings)
 app.jinja_env.globals['url_for'] = url_for
 
@@ -134,8 +134,6 @@ def pre_request():
     #   SICC-IP integrations
     g.siccip = app.config['SICCIP_AWARE']
     # Extra fields form
-    g.extra_fields = app.config['EXTRA_FIELDS']
-
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080)
