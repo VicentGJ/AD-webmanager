@@ -117,16 +117,16 @@ def ldap_delete_entry(dn):
     return True
 
 
-def ldap_get_user(username=None, key="sAMAccountName"):
+def ldap_get_user(value=None, key="sAMAccountName"):
     """
         Return the attributes for the user or None if it doesn't exist.
     """
 
-    if not username:
-        username = g.ldap['username']
+    if not value:
+        value = g.ldap['username']
 
     return ldap_get_entry_simple({'objectClass': 'user',
-                                  key: username})
+                                  key: value})
 
 
 def ldap_get_group(groupname, key="sAMAccountName"):
