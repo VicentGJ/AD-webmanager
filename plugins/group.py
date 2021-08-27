@@ -7,7 +7,7 @@ from wtforms.validators import DataRequired
 from flask.json import jsonify
 from libs.ldap_func import ldap_auth, ldap_create_entry, ldap_delete_entry, \
     ldap_get_entry_simple, ldap_get_members, ldap_get_membership, \
-    ldap_get_group, ldap_in_group, ldap_update_attribute, ldap_group_exists, \
+    ldap_get_group, ldap_in_group, ldap_rename_entry, ldap_update_attribute, ldap_group_exists, \
     LDAP_AD_GROUPTYPE_VALUES, ldap_add_users_to_group
 
 import ldap
@@ -98,10 +98,6 @@ def init(app):
 
         if not ldap_group_exists(groupname):
             abort(404)
-
-        # form = FlaskForm(request.form)
-
-        # if form.validate_on_submit():
         try:
             group = ldap_get_group(groupname=groupname)
             ldap_delete_entry(group['distinguishedName'])
@@ -126,31 +122,18 @@ def init(app):
         if group['groupType'] & 1:
             abort(401)
 
-        # form = GroupEdit(request.form)
-        # field_mapping = [('sAMAccountName', form.name),
-        #                  ('description', form.description),
-        #                  (None, form.group_type),
-        #                  ('groupType', form.group_flags)]
-
-        # form.visible_fields = [field[1] for field in field_mapping]
-
-        # form.group_flags.choices = [(key, value[0]) for key, value in
-        #                             LDAP_AD_GROUPTYPE_VALUES.items()
-        #                             if value[1]]
-
-        # if form.validate_on_submit():
         data: dict = request.json
         try:
             for attribute, field in data.items():
                 value = field
                 if value != group.get(attribute):
-                    if attribute == 'sAMAccountName':
+                    if attribute == 'cn':
+                        ldap_rename_entry(group['distinguishedName'], 'cn', value)
+                        group = ldap_get_group(value, 'cn')
+                    elif attribute == 'sAMAccountName':
                         # Rename the account
                         ldap_update_attribute(group['distinguishedName'],
                                               "sAMAccountName", value)
-                        # Finish by renaming the whole record
-                        ldap_update_attribute(group['distinguishedName'],
-                                              "cn", value)
                         group = ldap_get_group(value)
                     elif attribute == "groupType":
                         group_type = int(data["group_type"].data) + \
