@@ -15,7 +15,7 @@ import base64
 
 from libs.ldap_func import ldap_auth, ldap_change_password, \
     ldap_create_entry, ldap_delete_entry, ldap_get_user, \
-    ldap_get_membership, ldap_get_group, ldap_in_group, ldap_get_entry_simple, \
+    ldap_get_membership, ldap_get_group, ldap_in_group, ldap_get_entry_simple, ldap_rename_entry, \
     ldap_update_attribute, ldap_user_exists, ldap_get_entries, LDAP_AD_USERACCOUNTCONTROL_VALUES
 
 from libs.common import get_parsed_pager_attribute
@@ -202,14 +202,14 @@ def init(app):
                 given_name = user.get('givenName')
                 last_name = user.get('lastName')
                 if value != user.get(attribute):
+                    if attribute == 'cn':
+                        ldap_rename_entry(user['distinguishedName'], 'cn', value)
+                        user = ldap_get_user(value, 'cn')
                     if attribute == 'sAMAccountName':
                         # Rename the account
                         ldap_update_attribute(user['distinguishedName'], "sAMAccountName", value)
                         ldap_update_attribute(user['distinguishedName'], "userPrincipalName",
                                                   "%s@%s" % (value, g.ldap['domain']))
-                        # Finish by renaming the whole record
-                        # TODO: refactor this to use rename_s instead of update
-                        # ldap_update_attribute(user['distinguishedName'], "cn", value)
                         user = ldap_get_user(value)
                     elif attribute == 'userAccountControl':
                         current_uac = 512
