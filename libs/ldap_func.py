@@ -129,13 +129,13 @@ def ldap_get_user(value=None, key="sAMAccountName"):
                                   key: value})
 
 
-def ldap_get_group(groupname, key="sAMAccountName"):
+def ldap_get_group(value, key="sAMAccountName"):
     """
         Return the attributes for the group or None if it doesn't exist.
     """
 
     return ldap_get_entry_simple({'objectClass': 'group',
-                                  key: groupname})
+                                  key: value})
 
 
 def ldap_get_entry_simple(filter_dict):
