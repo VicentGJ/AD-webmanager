@@ -205,7 +205,7 @@ def init(app):
                     if attribute == 'cn':
                         ldap_rename_entry(user['distinguishedName'], 'cn', value)
                         user = ldap_get_user(value, 'cn')
-                    if attribute == 'sAMAccountName':
+                    elif attribute == 'sAMAccountName':
                         # Rename the account
                         ldap_update_attribute(user['distinguishedName'], "sAMAccountName", value)
                         ldap_update_attribute(user['distinguishedName'], "userPrincipalName",
