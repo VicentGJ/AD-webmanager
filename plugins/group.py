@@ -131,7 +131,6 @@ def init(app):
                         ldap_rename_entry(group['distinguishedName'], 'cn', value)
                         group = ldap_get_group(value, 'cn')
                     elif attribute == 'sAMAccountName':
-                        # Rename the account
                         ldap_update_attribute(group['distinguishedName'],
                                               "sAMAccountName", value)
                         group = ldap_get_group(value)
@@ -202,9 +201,6 @@ def init(app):
         if not member['distinguishedName'] in group['member']:
             abort(404)
 
-        #form = GroupDelMember(request.form)
-
-        
         try:
             members = group['member']
             members.remove(member['distinguishedName'])
