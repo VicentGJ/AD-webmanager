@@ -22,6 +22,8 @@ import ldap
 from ldap import modlist
 import struct
 import uuid
+
+from ldap.ldapobject import LDAPObject
 from settings import Settings
 
 LDAP_SCOPES = {"base": ldap.SCOPE_BASE,
@@ -325,24 +327,10 @@ def ldap_update_attribute(dn, attribute, value=None, objectClass=None):
 
     connection = g.ldap['connection']
     current_entry = ldap_get_entry_simple({'distinguishedName': dn})
-    #old_value = current_entry[attribute]
     mod_attrs = []
 
     if not current_entry:
         raise Exception(dn)
-
-    """ if dn.lower().startswith("%s=" % attribute.lower()):
-        # It's a rename, not an attribute update
-        connection.rename_s(dn, "%s=%s" % (attribute, value))
-        return True """
-    
-    """ if objectClass and objectClass not in current_entry['objectClass']:
-        # It's add a new class to the object,  its not an attribute update
-        new_class_list = current_entry['objectClass'].append(objectClass)
-        old = {'objectClass': current_entry['objectClass']}
-        new = {'objectClass': new_class_list}
-        ldif = modlist.modifyModlist(old, new)
-        connection.modify_s(dn, ldif) """
     
     if isinstance(value, list):
         # Flush all entries and re-add everything
@@ -369,54 +357,20 @@ def ldap_update_attribute(dn, attribute, value=None, objectClass=None):
     if len(mod_attrs) != 0:
         connection.modify_s(dn, mod_attrs)
 
-def ldap_update_attribute_old(dn, attribute, value, objectclass=None):
+def ldap_rename_entry(dn, attribute, value):
+    """ 
+        Rename a ldap Object, modifying dn or cn attributes 
     """
-        Set/Update a given attribute.
-    """
-    
     if 'connection' not in g.ldap:
         return False
 
-    connection = g.ldap['connection']
-    attribute = [attribute.encode('utf-8')]
+    connection: LDAPObject = g.ldap['connection']
     current_entry = ldap_get_entry_simple({'distinguishedName': dn})
 
     if not current_entry:
         raise Exception(dn)
 
-    changes = []
-
-    if dn.lower().startswith("%s=" % attribute.lower()):
-        # It's a rename, not an attribute update
-        connection.rename_s(dn, "%s=%s" % (attribute, value))
-        return True
-
-    if objectclass and objectclass not in current_entry['objectClass']:
-        connection.modify_s(dn, [(ldap.MOD_ADD, "objectClass", objectclass)])
-
-    if isinstance(value, list):
-        # Flush all entries and re-add everything
-        if attribute in current_entry:
-            changes.append((ldap.MOD_DELETE, attribute, None))
-
-        for entry in value:
-            if entry:
-                changes.append((ldap.MOD_ADD, attribute, entry))
-    elif not value and attribute in current_entry:
-        # Drop current attribute
-        changes.append((ldap.MOD_DELETE, attribute, None))
-    elif attribute in current_entry:
-        # Update current attribute
-        changes.append((ldap.MOD_REPLACE, attribute, value))
-    elif value:
-        # Add the attribute
-        changes.append((ldap.MOD_ADD, attribute, value))
-
-    if not changes:
-        return True
-    connection.modify_s(dn, changes)
-    return True
-
+    connection.rename_s(dn, "%s=%s" % (attribute, value))
 
 def ldap_add_users_to_group(dn, attribute, value):
     
