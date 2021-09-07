@@ -79,7 +79,7 @@ def init(app):
         if not ldap_user_exists(username=username):
             abort(404)
 
-        user = ldap_get_user(username=username)
+        user = ldap_get_user(username)
         admin = ldap_in_group(Settings.ADMIN_GROUP)
         logged_user = g.ldap['username']
         
@@ -114,35 +114,14 @@ def init(app):
             group_fields = [('sAMAccountName', "Nombre"),
                             ('description', u"Descripción")]
 
-            user: dict = ldap_get_user(username=username)
+            user: dict = ldap_get_user(username)
             if 'jpegPhoto' in user:
                 user.pop('jpegPhoto')
-            group_details = []
-            for group in ldap_get_membership(username):
-                group_details.append(ldap_get_group(group, 'distinguishedName'))
-            # group_details = [ldap_get_group(group, 'distinguishedName') for group in ldap_get_membership(username)]
-
-            group_details = list(filter(None, group_details))
-
-            groups = sorted(group_details, key=lambda entry: entry['sAMAccountName'] )
-
-            siccip_data = None
-            if 'pager' in user:
-                siccip_data = get_parsed_pager_attribute(user['pager'])
-                print(siccip_data)
-
-            available_groups = ldap_get_entries(ldap_filter="(objectclass=group)", scope="subtree")
-            group_choices = [("_","Seleccione un Grupo")]
-            for group_entry in available_groups:
-                if not ldap_in_group(group_entry['sAMAccountName'], username):
-                    group_choices += [(group_entry['distinguishedName'], group_entry['sAMAccountName'])]
-
-            parent = ",".join(user['distinguishedName'].split(',')[1:])
         
         else:
             abort(401)
 
-        return jsonify({"user": user, "groups": groups, "siccip_data": siccip_data})
+        return jsonify({"user": user})
 
     @app.route('/user/<username>/+changepw', methods=['POST'])
     @ldap_auth("Domain Users")
@@ -178,7 +157,7 @@ def init(app):
             abort(404)
 
         try:
-            user = ldap_get_user(username=username)
+            user = ldap_get_user(username)
             ldap_delete_entry(user['distinguishedName'])
             return jsonify({"response": "success"})
         except ldap.LDAPError as e:
@@ -193,7 +172,7 @@ def init(app):
         if not ldap_user_exists(username=username):
             abort(404)
 
-        user = ldap_get_user(username=username)
+        user = ldap_get_user(username)
         data = request.json
         
         try:
