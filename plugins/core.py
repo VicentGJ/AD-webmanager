@@ -25,7 +25,7 @@ def init(app):
     @app.route('/user')
     @ldap_auth("Domain Users")
     def core_index():
-        return redirect(url_for('user_overview', username=g.ldap['username']))
+        return redirect(url_for('user_overview', value=g.ldap['username']))
 
     @app.route('/+logout')
     @ldap_auth("Domain Users")
