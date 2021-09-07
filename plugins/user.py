@@ -74,7 +74,6 @@ def init(app):
     @app.route('/user/<username>', methods=['GET'])
     @ldap_auth("Domain Users")
     def user_overview(username):
-        title = "Detalles del Usuario - %s" % username
 
         if not ldap_user_exists(username=username):
             abort(404)
@@ -84,18 +83,6 @@ def init(app):
         logged_user = g.ldap['username']
         
         if logged_user == user['sAMAccountName'] or admin:
-
-            identity_fields = [('givenName', "Nombre"),
-                               ('sn', "Apellidos"),
-                               ('displayName', "Nombre Completo"),
-                               ('name', "Nombre del Registro"),
-                               ('sAMAccountName', "Nombre de Usuario"),
-                               ('mail', u"Dirección de Correo")]
-
-            if 'title' in user:
-                identity_fields.append(('title', "Ocupación"))
-            if 'telephoneNumber' in user:
-                identity_fields.append(('telephoneNumber', "Teléfono"))
 
             if Settings.USER_ATTRIBUTES:
                 for item in Settings.USER_ATTRIBUTES:
@@ -109,10 +96,6 @@ def init(app):
                         if item[0] == 'jpegPhoto':
                             imgbase64 = base64.b64encode(user[item[0]]).decode()
                             user[item[0]] = 'data:image/jpeg;base64,' + imgbase64
-                        identity_fields.append((item[0], item[1])) 
-
-            group_fields = [('sAMAccountName', "Nombre"),
-                            ('description', u"Descripción")]
 
             user: dict = ldap_get_user(username)
             if 'jpegPhoto' in user:
