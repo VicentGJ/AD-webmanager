@@ -389,12 +389,12 @@ def ldap_add_users_to_group(dn, attribute, value):
     if len(mod_attrs) != 0:
         connection.modify_s(dn, mod_attrs)
 
-def ldap_user_exists(username=None):
+def ldap_user_exists(value=None, key='sAMAccountName'):
     """
         Return True if the user exists. False otherwise.
     """
 
-    if ldap_get_user(username):
+    if ldap_get_user(value, key):
         return True
 
     return False

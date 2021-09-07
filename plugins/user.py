@@ -71,14 +71,19 @@ def init(app):
            print(e)
            return jsonify({"response": "Missing key {0}".format(str(e))})
 
-    @app.route('/user/<username>', methods=['GET'])
+    @app.route('/user/<value>', methods=['GET'])
     @ldap_auth("Domain Users")
-    def user_overview(username):
+    def user_overview(value):
 
-        if not ldap_user_exists(username=username):
+        if request.args.get('key'):
+            key = request.args.get('key')
+        else:
+            key = 'sAMAccountName'
+        
+        if not ldap_user_exists(value=value, key=key):
             abort(404)
 
-        user = ldap_get_user(username)
+        user = ldap_get_user(value, key)
         admin = ldap_in_group(Settings.ADMIN_GROUP)
         logged_user = g.ldap['username']
         
@@ -97,7 +102,7 @@ def init(app):
                             imgbase64 = base64.b64encode(user[item[0]]).decode()
                             user[item[0]] = 'data:image/jpeg;base64,' + imgbase64
 
-            user: dict = ldap_get_user(username)
+            user: dict = ldap_get_user(value, key)
             if 'jpegPhoto' in user:
                 user.pop('jpegPhoto')
         
