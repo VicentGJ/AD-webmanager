@@ -43,6 +43,7 @@ class GroupAddMembers(FlaskForm):
 class GroupEdit(FlaskForm):
     name = TextField('Name', [DataRequired()])
     description = TextField(u'Description')
+    mail = TextField(u'Mail')
     group_type = RadioField('Type',
                             choices=[(2147483648, 'Security Group'),
                                      (0, u'Distribution list')],
@@ -59,6 +60,7 @@ def init(app):
         form = GroupEdit(request.form)
         field_mapping = [('sAMAccountName', form.name),
                          ('description', form.description),
+                         ('mail', form.mail),
                          (None, form.group_type),
                          ('groupType', form.group_flags)]
 
@@ -191,6 +193,7 @@ def init(app):
         form = GroupEdit(request.form)
         field_mapping = [('sAMAccountName', form.name),
                          ('description', form.description),
+                         ('mail', form.mail),
                          (None, form.group_type),
                          ('groupType', form.group_flags)]
 
@@ -238,6 +241,7 @@ def init(app):
         if not form.is_submitted():
             form.name.data = group.get('sAMAccountName')
             form.description.data = group.get('description')
+            form.mail.data = group.get('mail')
             form.group_type.data = group['groupType'] & 2147483648
             form.group_flags.data = 0
             for key, flag in LDAP_AD_GROUPTYPE_VALUES.items():
