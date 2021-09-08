@@ -52,6 +52,7 @@ class UserProfileEdit(FlaskForm):
     display_name = StringField('Full Name', [DataRequired(), Length(max=256)])
     user_name = StringField('Username', [DataRequired(), Length(max=20)])
     mail = StringField(u'Email address', [Length(max=256)])
+    www_home_page = StringField(u'Home page (MailAD Quota)', [Length(max=256)])
     uac_flags = SelectMultipleField('Flags', coerce=int)
 
 
@@ -113,7 +114,8 @@ def init(app):
                          ('mail', form.mail),
                          (None, form.password),
                          (None, form.password_confirm),
-                         ('userAccountControl', form.uac_flags)]
+                         ('userAccountControl', form.uac_flags),
+                         ('wWWHomePage', form.www_home_page)]
         if g.extra_fields:
             extra_field_mapping = [('cUJAEPersonExternal', form.manual),
                                    ('cUJAEPersonType', form.person_type),
@@ -356,7 +358,8 @@ def init(app):
                          ('sn', form.last_name),
                          ('sAMAccountName', form.user_name),
                          ('mail', form.mail),
-                         ('userAccountControl', form.uac_flags)]
+                         ('userAccountControl', form.uac_flags),
+                         ('wWWHomePage', form.www_home_page)]
 
         form.uac_flags.choices = [(key, value[0]) for key, value in LDAP_AD_USERACCOUNTCONTROL_VALUES.items()]
 
@@ -411,6 +414,7 @@ def init(app):
             form.display_name.data = user.get('displayName')
             form.user_name.data = user.get('sAMAccountName')
             form.mail.data = user.get('mail')
+            form.www_home_page = user.get('wWWHomePage')
             form.uac_flags.data = [key for key, flag in
                                    LDAP_AD_USERACCOUNTCONTROL_VALUES.items()
                                    if (flag[1] and
