@@ -22,24 +22,32 @@ versions of Python and supporting libraries.
 We will keep updating the project for our organization and the community, 
 and we will love to receive all kinds of feedback and contributions.
 
-# Dependencies
- * python
- * python-dnspython
- * python-flask
- * python-flaskext.wtf,
- * python-ldap
- * python-wtforms
+# Install and run
 
-# Using
+## Local config
 
  * Access settings.py to configure
  * Put a random string in SECRET\_KEY
  * Set LDAP\_DOMAIN to your Directory domain
+ * Set SEARCH\_DN to your Directory LDAP search base
  * Set LDAP\_SERVER to your Domain Controller IP
- * Start the server with:
 
+You can install and use the software from two sources: the distro's repository or from the internet:
+
+## From distro's repository tested on Debian 10 & Ubuntu 20.04 using python2 (Not recommended, python 2 is deprecated)
+
+```sh
+$ sudo apt install python-ldap python-flask python-flaskext.wtf python-dnspython python-wtforms python-configparser python-tz
+$ python ADwebmanager.py
 ```
-./ADwebmanager.py
+
+## From the Internet as per Pipfile (Using Python 3.9, recommended way)
+
+```sh
+apt install git pipenv python3.9 python3.9-dev libldap2-dev libsasl2-dev libssl-dev build-essential
+pipenv install --python /usr/bin/python3.9
+pipenv shell
+python3.9 ADmanager.py
 ```
 
 You may then connect through: [http://localhost:8080](http://localhost:8080)
