@@ -49,7 +49,6 @@ class UserAddGroup(FlaskForm):
 class UserProfileEdit(FlaskForm):
     first_name = StringField('Name', [DataRequired(), Length(max=64)])
     last_name = StringField('Last Name', [Length(max=64)])
-    display_name = StringField('Full Name', [DataRequired(), Length(max=256)])
     user_name = StringField('Username', [DataRequired(), Length(max=20)])
     mail = StringField(u'Email address', [Length(max=256)])
     uac_flags = SelectMultipleField('Flags', coerce=int)
