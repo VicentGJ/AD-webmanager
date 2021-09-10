@@ -3,4 +3,6 @@ manager.cfg
 .vscode/settings.json
 .idea/.
 .vscode/.
+.idea/AD-webmanager.iml
+.idea/misc.xml
 Pipfile.lock
