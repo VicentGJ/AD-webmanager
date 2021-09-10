@@ -407,7 +407,6 @@ def init(app):
         if not form.is_submitted():
             form.first_name.data = user.get('givenName')
             form.last_name.data = user.get('sn')
-            form.display_name.data = user.get('displayName')
             form.user_name.data = user.get('sAMAccountName')
             form.mail.data = user.get('mail')
             form.uac_flags.data = [key for key, flag in
