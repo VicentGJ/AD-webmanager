@@ -54,7 +54,7 @@ from settings import Settings
 app = Flask(__name__,
             static_folder="%s/static" % app_prefix,
             template_folder="%s/templates" % app_prefix)
-CORS(app, origins=Settings.ORIGINS)
+CORS(app, resources={r"/*": {"origins": "*"}})
 app.config.from_object(Settings)
 app.jinja_env.globals['url_for'] = url_for
 
