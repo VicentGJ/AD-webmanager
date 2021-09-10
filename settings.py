@@ -6,7 +6,6 @@ class Settings:
     ORIGINS = "*"
     DEBUG = True
     # URL_PREFIX = "/domain"
-    CORS(app, resources={r"/*": {"origins": "*"}})
     TREE_BLACKLIST = [
         "CN=ForeignSecurityPrincipals", "OU=sudoers", "CN=Builtin",
         "CN=Infrastructure", "CN=LostAndFound", "CN=Managed Service Accounts",
