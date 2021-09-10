@@ -1,8 +1,7 @@
 manager.cfg
 *.pyc
 .vscode/settings.json
-.idea/.
-.vscode/.
-.idea/AD-webmanager.iml
+.idea
 .idea/misc.xml
+.vscode/
 Pipfile.lock
