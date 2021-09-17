@@ -75,7 +75,6 @@ def init(app):
 
             entry['name'] = entry['displayName']
             entry['__type'] = "Usuario"
-            entry['__target'] = url_for('user_overview', username=entry['sAMAccountName'])
             # TODO: Fix this !!! we need photo support
             if 'jpegPhoto' in entry:
                 entry.pop("jpegPhoto")
@@ -104,8 +103,6 @@ def init(app):
 
                 if 'group' in entry['objectClass']:
                     entry['__type'] = "Grupo"
-                    entry['__target'] = url_for('group_overview',
-                                                groupname=entry['sAMAccountName'])
                 elif 'organizationalUnit' in entry['objectClass']:
                     entry['__type'] = "Unidad Organizativa"
                 elif 'container' in entry['objectClass']:
