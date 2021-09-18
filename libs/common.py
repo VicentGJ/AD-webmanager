@@ -19,6 +19,7 @@
 from flask import url_for
 from werkzeug.urls import uri_to_iri
 from configparser import SafeConfigParser
+from datetime import datetime
 
 
 class ReverseProxied(object):
@@ -37,6 +38,16 @@ class ReverseProxied(object):
             environ['PATH_INFO'] = path_info[len(script_name):]
 
         return self.app(environ, start_response)
+
+
+def convert_adtimestamp_to_datetime(timestamp: int):
+    """
+        This function takes a 18 digit AD timestamp
+        and returns the corresponding datetime object
+    """
+    unix_timestamp = (timestamp / 10000000) - 11644473600
+    dt_object = datetime.fromtimestamp(unix_timestamp)
+    return dt_object
 
 
 def iri_for(endpoint, **values):

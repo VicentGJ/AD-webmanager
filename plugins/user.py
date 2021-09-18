@@ -5,10 +5,6 @@ from werkzeug.exceptions import HTTPException
 from libs.common import iri_for as url_for
 from settings import Settings
 from flask import abort, flash, g, render_template, redirect, request, session
-from flask_wtf import FlaskForm
-from wtforms import PasswordField, SelectMultipleField, TextAreaField, \
-    StringField, SelectField, DecimalField, IntegerField, BooleanField
-from wtforms.validators import DataRequired,  EqualTo, Optional, Length
 from datetime import datetime
 from pytz import timezone
 import base64
@@ -18,7 +14,7 @@ from libs.ldap_func import ldap_auth, ldap_change_password, \
     ldap_get_membership, ldap_get_group, ldap_in_group, ldap_get_entry_simple, ldap_rename_entry, \
     ldap_update_attribute, ldap_user_exists, ldap_get_entries, LDAP_AD_USERACCOUNTCONTROL_VALUES
 
-from libs.common import get_parsed_pager_attribute
+from libs.common import get_parsed_pager_attribute, convert_adtimestamp_to_datetime
 
 import ldap
 
@@ -88,21 +84,27 @@ def init(app):
         logged_user = g.ldap['username']
         
         if logged_user == user['sAMAccountName'] or admin:
+            if hasattr(Settings, "TIMEZONE"):
+                datetime_field = (user["whenChanged"][6:8] + '/' + user["whenChanged"][4:6] + '/' + user["whenChanged"][0:4]
+                                  + ' ' + user["whenChanged"][8:10] + ':' + user["whenChanged"][10:12] + ':'
+                                  + user["whenChanged"][12:14] )
+                datetime_field = datetime.strptime(datetime_field, '%d/%m/%Y %H:%M:%S')
+                user["whenChanged"] = datetime_field.astimezone(timezone(Settings.TIMEZONE))
 
-            if Settings.USER_ATTRIBUTES:
-                for item in Settings.USER_ATTRIBUTES:
-                    if item[0] in user:
-                        if len(item) == 3 and item[2] == 'time':
-                            datetime_field = (user[item[0]][6:8] + '/' + user[item[0]][4:6] + '/' + user[item[0]][0:4] 
-                                            + ' ' + user[item[0]][8:10] + ':' + user[item[0]][10:12] + ':' 
-                                            + user[item[0]][12:14] )
-                            datetime_field = datetime.strptime(datetime_field, '%d/%m/%Y %H:%M:%S')
-                            user[item[0]] = datetime_field.astimezone(timezone(Settings.TIMEZONE))
-                        if item[0] == 'jpegPhoto':
-                            imgbase64 = base64.b64encode(user[item[0]]).decode()
-                            user[item[0]] = 'data:image/jpeg;base64,' + imgbase64
+                datetime_field = (
+                            user["whenCreated"][6:8] + '/' + user["whenCreated"][4:6] + '/' + user["whenCreated"][0:4]
+                            + ' ' + user["whenCreated"][8:10] + ':' + user["whenCreated"][10:12] + ':'
+                            + user["whenCreated"][12:14])
+                datetime_field = datetime.strptime(datetime_field, '%d/%m/%Y %H:%M:%S')
+                user["whenCreated"] = datetime_field.astimezone(timezone(Settings.TIMEZONE))
 
-            user: dict = ldap_get_user(value, key)
+                user["lastLogon"] = convert_adtimestamp_to_datetime(int(user["lastLogon"]))\
+                    .astimezone(timezone(Settings.TIMEZONE))
+                user["lastLogonTimestamp"] = convert_adtimestamp_to_datetime(int(user["lastLogonTimestamp"]))\
+                    .astimezone(timezone(Settings.TIMEZONE))
+                user["pwdLastSet"] = convert_adtimestamp_to_datetime(int(user["pwdLastSet"])) \
+                    .astimezone(timezone(Settings.TIMEZONE))
+
             if 'jpegPhoto' in user:
                 user.pop('jpegPhoto')
         

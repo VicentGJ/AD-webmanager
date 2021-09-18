@@ -20,4 +20,4 @@ class Settings:
     TREE_ATTRIBUTES = [
         ['mail', "Email"], ['__type', "Type"], ['active', "Status"]
     ]
-#    TIMEZONE = "Your/Timezone"
+    TIMEZONE = "America/Havana"
