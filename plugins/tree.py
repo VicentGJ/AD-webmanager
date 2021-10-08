@@ -10,6 +10,9 @@ def init(app):
     @app.route('/tree/<base>', methods=['GET', 'POST'])
     @ldap_auth(Settings.ADMIN_GROUP)
     def tree_base(base=None):
+
+        if request.args.get('filters'):
+            filter_array = request.args.get('filters').split("=")
         if not base:
             base = g.ldap['dn']
         elif not base.lower().endswith(g.ldap['dn'].lower()):
@@ -20,22 +23,11 @@ def init(app):
         if not admin:
             abort(401)
         else:
-            entry_fields = [('name', "Nombre"),
-                            ('__description', u"Login/Descripción")]
-            
-            if Settings.TREE_ATTRIBUTES:
-                for item in Settings.TREE_ATTRIBUTES:
-                    entry_fields.append((item[0], item[1]))
-
-            """ if form.validate_on_submit():
-                filter_str = form.filter_str.data
-                filter_select = form.filter_select.data
-                scope = "subtree"
-                entries = get_entries(filter_str, filter_select, base, scope) """
-            
-            filter_str = None
-            scope = "onelevel"
-            entries = get_entries("top", "objectClass", base, scope)
+            scope = "onelevel"         
+            if filter_array:
+                entries = get_entries(filter_array[1], filter_array[0], base, scope)
+            else:
+                entries = get_entries("top", "objectClass", base, scope)
 
             parent = None
             base_split = base.split(',')
@@ -44,7 +36,7 @@ def init(app):
 
             return jsonify(entries)
 
-    def get_entries(filter_str, filter_select, base, scope):
+    def get_entries(filter_str, filter_attr, base, scope):
         """
         Get all entries that will be displayed in the tree
         """
@@ -53,8 +45,8 @@ def init(app):
         users = ldap_get_entries("objectClass=top", base, scope, ignore_erros=True)
         users = filter(lambda entry: 'displayName' in entry, users)
         users = filter(lambda entry: 'sAMAccountName' in entry, users)
-        users = filter(lambda entry: filter_select in entry, users)
-        users = filter(lambda entry: filter_str in entry[filter_select], users)
+        users = filter(lambda entry: filter_attr in entry, users)
+        users = filter(lambda entry: filter_str in entry[filter_attr], users)
         users: typing.List[typing.Dict] = sorted(
             users, key=lambda entry: entry['displayName']
         )

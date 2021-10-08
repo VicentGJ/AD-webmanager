@@ -45,7 +45,7 @@ LDAP_AD_USERACCOUNTCONTROL_VALUES = {2: (u"Deactivated", True),
                                      8192: ("Server Trusted Account", False),
                                      65536: (u"Password does not expire", True),
                                      8388608: (u"Password expired", False)
-                                     }
+                                    }
 
 LDAP_AD_BOOL_ATTRIBUTES = ['showInAdvancedViewOnly']
 LDAP_AD_GUID_ATTRIBUTES = ['objectGUID']
