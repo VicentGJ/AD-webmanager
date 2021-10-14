@@ -13,6 +13,8 @@ def init(app):
 
         if request.args.get('filters'):
             filter_array = request.args.get('filters').split("=")
+        else:
+            filter_array = None
         if not base:
             base = g.ldap['dn']
         elif not base.lower().endswith(g.ldap['dn'].lower()):
