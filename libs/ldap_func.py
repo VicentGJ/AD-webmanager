@@ -38,13 +38,31 @@ LDAP_AD_GROUPTYPE_VALUES = {1: ('Sistem', False),
                             32: ('APP_QUERY', False)}
 
 #!!! This need editing for open-source release
-LDAP_AD_USERACCOUNTCONTROL_VALUES = {2: (u"Deactivated", True),
+LDAP_AD_USERACCOUNTCONTROL_VALUES = {
+                                     1: ("Script", True),
+                                     2: (u"Deactivated", True),
+                                     8: (u"Homedir Required", True),
+                                     16: (u"Lockout", True),
+                                     32: (u"Password Not Required", True),
                                      64: (u"User can't change password", False),
-                                     512: ("Normal Account", False),
-                                     4096: ("PC Trusted Account", False),
-                                     8192: ("Server Trusted Account", False),
+                                     128: (u"Encrypted text password allowed", True),
+                                     256: (u"Temporal Duplicated Account", True),
+                                     512: (u"Normal Account", False),
+                                     2048: (u"Interdomain Trusted Account", True),
+                                     4096: (u"PC Trusted Account", False),
+                                     8192: (u"Server Trusted Account", False),
                                      65536: (u"Password does not expire", True),
-                                     8388608: (u"Password expired", False)
+                                     66048: (u"Normal Account, Password does not expire", True),
+                                     131072: (u"MNS logon account", True),
+                                     262144: (u"Smart card required", True),
+                                     524288: (u"Trusted for delegation", True),
+                                     1048576: (u"Not delegated", True),
+                                     2097152: (u"Use DES key only", True),
+                                     4194304: (u"Don't require pre-authentication", True),
+                                     8388608: (u"Password expired", False),
+                                     16777216: (u"Trusted to authenticate for delegation", True),
+                                     67108864: (u"Partial secrets account", True),
+                                     2147483648: ("User AES key only", True)
                                     }
 
 LDAP_AD_BOOL_ATTRIBUTES = ['showInAdvancedViewOnly']
