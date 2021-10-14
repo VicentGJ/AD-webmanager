@@ -84,6 +84,11 @@ def init(app):
         logged_user = g.ldap['username']
         
         if logged_user == user['sAMAccountName'] or admin:
+            if user["userAccountControl"]:
+                for key, flag in (LDAP_AD_USERACCOUNTCONTROL_VALUES.items()):
+                    if flag[1] and key == user["userAccountControl"]:
+                        user["userAccountControl"] = flag[0]
+
             if hasattr(Settings, "TIMEZONE"):
                 datetime_field = (user["whenChanged"][6:8] + '/' + user["whenChanged"][4:6] + '/' + user["whenChanged"][0:4]
                                   + ' ' + user["whenChanged"][8:10] + ':' + user["whenChanged"][10:12] + ':'
