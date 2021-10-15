@@ -49,8 +49,8 @@ def init(app):
         users = filter(lambda entry: 'sAMAccountName' in entry, users)
 
         if filter_str == "multiple_filters":
-            for filters in filter_attr:
-                users = apply_multiple_filters(filters, users)
+            for filter in filter_attr:
+                users = apply_filter(filter, users)
         else:
             entries = filter(lambda entry: filter_attr in entry, entries)
             entries = filter(
@@ -121,8 +121,8 @@ def init(app):
 
         return entries
 
-    def apply_multiple_filters(filters, users):
-        new_filter = filters.split("=")
+    def apply_filter(filter, users):
+        new_filter = filter.split("=")
         if len(new_filter) > 1:
             attr = new_filter[0]
             value = str(new_filter[1]).lower()
@@ -137,10 +137,10 @@ def init(app):
                     lambda entry: value == str(entry[attr]).lower(),
                     users
                     )
-                users: typing.List[typing.Dict] = sorted(
-                    users,
-                    key=lambda entry: entry['displayName']
-                )
+            users: typing.List[typing.Dict] = sorted(
+                users,
+                key=lambda entry: entry['displayName']
+            )
             return users
         else:
             abort(400)
