@@ -12,7 +12,7 @@ def init(app):
     def tree_base(base=None):
 
         if request.args.get('filters'):
-            filter_array = request.args.get('filters').split("|")
+            filter_array = request.args.get('filters').split(",")
         else:
             filter_array = None
         if not base:
@@ -45,21 +45,18 @@ def init(app):
         entries = []
 
         users = ldap_get_entries("objectClass=top", base, scope, ignore_erros=True)
-        users = filter(lambda entry: 'displayName' in entry, users)
-        users = filter(lambda entry: 'sAMAccountName' in entry, users)
-
-        if filter_str == "multiple_filters":
-            for filter in filter_attr:
-                users = apply_filter(filter, users)
-        else:
-            entries = filter(lambda entry: filter_attr in entry, entries)
-            entries = filter(
-                    lambda entry: filter_str in entry[filter_attr],
-                    entries
-            )
-        entries: typing.List[typing.Dict] = sorted(
-            entries, key=lambda entry: entry['displayName']
+        users = filter(
+            lambda entry: 'displayName' in entry and 'sAMAccountName' in entry,
+            users
         )
+        if filter_str != "multiple_filters":
+            users = filter(
+                lambda entry: filter_attr in entry and filter_str in entry[filter_attr], 
+                users
+            )
+            users: typing.List[typing.Dict] = sorted(
+                users, key=lambda entry: entry['displayName']
+            )
 
         if filter_str == "top":
             other_entries = ldap_get_entries("objectClass=top", base, scope, ignore_erros=True)
@@ -67,6 +64,7 @@ def init(app):
             other_entries = sorted(other_entries, key=lambda entry: entry['name'])
         else:
             other_entries = []
+            
         for entry in users:
             if 'description' not in entry:
                 if 'sAMAccountName' in entry:
@@ -118,29 +116,33 @@ def init(app):
                 for blacklist in Settings.TREE_BLACKLIST:
                     if entry['distinguishedName'].startswith(blacklist):
                         entries.remove(entry)
+        
+        if filter_str == "multiple_filters":
+            for filt in filter_attr:
+                entries = apply_filter(filt, entries)
 
         return entries
 
-    def apply_filter(filter, users):
-        new_filter = filter.split("=")
+    def apply_filter(filt, entries):
+        """
+        Apply a filter to a given list of users
+        """
+
+        new_filter = filt.split(":")
         if len(new_filter) > 1:
             attr = new_filter[0]
-            value = str(new_filter[1]).lower()
-            users = filter(lambda entry: attr in entry, users)
-            if value != "":
-                users = filter(
-                    lambda entry: value in str(entry[attr]).lower(),
-                    users
-                )
-            else:
-                users = filter(
-                    lambda entry: value == str(entry[attr]).lower(),
-                    users
-                    )
-            users: typing.List[typing.Dict] = sorted(
-                users,
+            value = str(new_filter[1]).replace('"', '').lower()
+            entries = filter(
+                lambda entry: attr in entry and
+                value in str(entry[attr]).lower() if value != ""
+                else value == str(entry[attr]).lower(),
+                entries
+            )
+
+            entries: typing.List[typing.Dict] = sorted(
+                entries,
                 key=lambda entry: entry['displayName']
             )
-            return users
+            return entries
         else:
             abort(400)
