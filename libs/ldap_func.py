@@ -538,3 +538,19 @@ def tryFunc():
     docstring
     """
     pass
+
+
+def fields_cleaning(function):
+    def wrapper(*args, **kwargs):
+
+        result = function(*args, **kwargs)
+        entries = result[0]
+
+        for attribute, value in entries.items():
+            if attribute == "userAccountControl":
+                for key, flag in (LDAP_AD_USERACCOUNTCONTROL_VALUES.items()):
+                    if flag[1] and key == value:
+                        entries[attribute] = flag[0]
+
+        return result
+    return wrapper

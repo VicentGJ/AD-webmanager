@@ -2,7 +2,7 @@ import typing
 from libs.common import iri_for as url_for
 from settings import Settings
 from flask import g, render_template, request, redirect, abort, jsonify
-from libs.ldap_func import ldap_auth, ldap_get_entries, ldap_in_group
+from libs.ldap_func import fields_cleaning, ldap_auth, ldap_get_entries, ldap_in_group
 
 
 def init(app):
@@ -38,6 +38,7 @@ def init(app):
 
             return jsonify(entries)
 
+    @fields_cleaning
     def get_entries(filter_str, filter_attr, base, scope):
         """
         Get all entries that will be displayed in the tree
