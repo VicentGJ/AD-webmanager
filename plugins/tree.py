@@ -14,7 +14,7 @@ def init(app):
     @ldap_auth(Settings.ADMIN_GROUP)
     def tree_base(base=None):
 
-        filter_array = request.args.get('filters')
+        filter_array = request.args.get('filters').split(",")
         fields = request.args.get('fields')
 
         if not base:
@@ -58,7 +58,8 @@ def init(app):
         )
         if filter_str != "multiple_filters":
             users = filter(
-                lambda entry: filter_attr in entry and filter_str in entry[filter_attr], 
+                lambda entry: filter_attr in entry
+                and filter_str in entry[filter_attr],
                 users
             )
             users: typing.List[typing.Dict] = sorted(
