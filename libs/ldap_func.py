@@ -16,7 +16,7 @@
 # You can find the license on Debian systems in the file
 # /usr/share/common-licenses/GPL-2
 
-from flask import request, Response, g, session, abort
+from flask import request, Response, g, session
 from functools import wraps
 import ldap
 from ldap import modlist
@@ -24,7 +24,7 @@ import struct
 import uuid
 
 from ldap.ldapobject import LDAPObject
-from settings import Settings
+
 
 LDAP_SCOPES = {"base": ldap.SCOPE_BASE,
                "onelevel": ldap.SCOPE_ONELEVEL,
@@ -37,33 +37,43 @@ LDAP_AD_GROUPTYPE_VALUES = {1: ('Sistem', False),
                             16: ('APP_BASIC', False),
                             32: ('APP_QUERY', False)}
 
+
 #!!! This need editing for open-source release
 LDAP_AD_USERACCOUNTCONTROL_VALUES = {
-                                     1: ("Script", True),
-                                     2: (u"Deactivated", True),
-                                     8: (u"Homedir Required", True),
-                                     16: (u"Lockout", True),
-                                     32: (u"Password Not Required", True),
-                                     64: (u"User can't change password", False),
-                                     128: (u"Encrypted text password allowed", True),
-                                     256: (u"Temporal Duplicated Account", True),
-                                     512: (u"Normal Account", False),
-                                     2048: (u"Interdomain Trusted Account", True),
-                                     4096: (u"PC Trusted Account", False),
-                                     8192: (u"Server Trusted Account", False),
-                                     65536: (u"Password does not expire", True),
-                                     66048: (u"Normal Account, Password does not expire", True),
-                                     131072: (u"MNS logon account", True),
-                                     262144: (u"Smart card required", True),
-                                     524288: (u"Trusted for delegation", True),
-                                     1048576: (u"Not delegated", True),
-                                     2097152: (u"Use DES key only", True),
-                                     4194304: (u"Don't require pre-authentication", True),
-                                     8388608: (u"Password expired", False),
-                                     16777216: (u"Trusted to authenticate for delegation", True),
-                                     67108864: (u"Partial secrets account", True),
-                                     2147483648: ("User AES key only", True)
-                                    }
+    1: ("Script", True),
+    2: (u"Deactivated", True),
+    8: (u"Homedir Required", True),
+    16: (u"Lockout", True),
+    32: (u"Password Not Required", True),
+    64: (u"User can't change password", True),
+    128: (u"Encrypted text password allowed", True),
+    256: (u"Temporal Duplicated Account", True),
+    512: (u"Normal Account", True),
+    2048: (u"Interdomain Trusted Account", True),
+    4096: (u"PC Trusted Account", True),
+    8192: (u"Server Trusted Account", True),
+    65536: (u"Password does not expire", True),
+    66048: (u"Normal Account, Password does not expire", True),
+    131072: (u"MNS logon account", True),
+    262144: (u"Smart card required", True),
+    524288: (u"Trusted for delegation", True),
+    1048576: (u"Not delegated", True),
+    2097152: (u"Use DES key only", True),
+    4194304: (u"Don't require pre-authentication", True),
+    8388608: (u"Password expired", True),
+    16777216: (u"Trusted to authenticate for delegation", True),
+    67108864: (u"Partial secrets account", True),
+    2147483648: ("User AES key only", True)
+}
+
+LDAP_AP_PRIMRARY_GROUP_ID_VALUES = {
+    512: "Domain Admins",
+    513: "Domain Users",
+    514: "Domain Guests",
+    515: "Domain Computers",
+    516: "Domain Controllers",
+}
+
 
 LDAP_AD_BOOL_ATTRIBUTES = ['showInAdvancedViewOnly']
 LDAP_AD_GUID_ATTRIBUTES = ['objectGUID']
@@ -551,24 +561,10 @@ def ldap_auth(group=None):
         return wraps(view_func)(_decorator)
     return _my_decorator
 
+
 def tryFunc():
     """
     docstring
     """
     pass
 
-
-def fields_cleaning(function):
-    def wrapper(*args, **kwargs):
-
-        result = function(*args, **kwargs)
-        entries = result[0]
-
-        for attribute, value in entries.items():
-            if attribute == "userAccountControl":
-                for key, flag in (LDAP_AD_USERACCOUNTCONTROL_VALUES.items()):
-                    if flag[1] and key == value:
-                        entries[attribute] = flag[0]
-
-        return result
-    return wrapper

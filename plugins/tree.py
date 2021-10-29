@@ -1,8 +1,11 @@
 import typing
 from libs.common import iri_for as url_for
 from settings import Settings
-from flask import g, render_template, request, redirect, abort, jsonify
-from libs.ldap_func import fields_cleaning, ldap_auth, ldap_get_entries, ldap_in_group
+from flask import g, request, abort, jsonify
+from libs.ldap_func import ldap_auth, ldap_get_entries, ldap_in_group
+from libs.utils import (
+    multiple_entries_fields_cleaning, multiple_entry_only_selected_fields,
+)
 
 
 def init(app):
@@ -11,10 +14,9 @@ def init(app):
     @ldap_auth(Settings.ADMIN_GROUP)
     def tree_base(base=None):
 
-        if request.args.get('filters'):
-            filter_array = request.args.get('filters').split(",")
-        else:
-            filter_array = None
+        filter_array = request.args.get('filters')
+        fields = request.args.get('fields')
+
         if not base:
             base = g.ldap['dn']
         elif not base.lower().endswith(g.ldap['dn'].lower()):
@@ -25,11 +27,15 @@ def init(app):
         if not admin:
             abort(401)
         else:
-            scope = "onelevel"         
+            scope = "onelevel"
             if filter_array:
-                entries = get_entries("multiple_filters", filter_array, base, scope)
+                entries = get_entries(
+                    fields, "multiple_filters", filter_array, base, scope
+                )
             else:
-                entries = get_entries("top", "objectClass", base, scope)
+                entries = get_entries(
+                    fields, "top", "objectClass", base, scope
+                )
 
             parent = None
             base_split = base.split(',')
@@ -38,8 +44,8 @@ def init(app):
 
             return jsonify(entries)
 
-    @fields_cleaning
-    def get_entries(filter_str, filter_attr, base, scope):
+    @multiple_entries_fields_cleaning
+    def get_entries(fields, filter_str, filter_attr, base, scope):
         """
         Get all entries that will be displayed in the tree
         """
@@ -117,10 +123,12 @@ def init(app):
                 for blacklist in Settings.TREE_BLACKLIST:
                     if entry['distinguishedName'].startswith(blacklist):
                         entries.remove(entry)
-        
+
         if filter_str == "multiple_filters":
             for filt in filter_attr:
                 entries = apply_filter(filt, entries)
+
+        entries = multiple_entry_only_selected_fields(fields, entries)
 
         return entries
 

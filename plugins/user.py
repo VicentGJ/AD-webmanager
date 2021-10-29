@@ -1,22 +1,20 @@
-from flask import json
 from flask.json import jsonify
-from flask.wrappers import Response
-from werkzeug.exceptions import HTTPException
-from libs.common import iri_for as url_for
 from settings import Settings
-from flask import abort, flash, g, render_template, redirect, request, session
+from flask import abort, g, request
 from datetime import datetime
 from pytz import timezone
-import base64
-
-from libs.ldap_func import ldap_auth, ldap_change_password, \
-    ldap_create_entry, ldap_delete_entry, ldap_get_user, \
-    ldap_get_membership, ldap_get_group, ldap_in_group, ldap_get_entry_simple, ldap_rename_entry, \
-    ldap_update_attribute, ldap_user_exists, ldap_get_entries, LDAP_AD_USERACCOUNTCONTROL_VALUES
-
-from libs.common import get_parsed_pager_attribute, convert_adtimestamp_to_datetime
-
+from libs.ldap_func import (
+    ldap_auth, ldap_change_password, ldap_create_entry, ldap_delete_entry,
+    ldap_get_user, ldap_in_group,
+    ldap_rename_entry, ldap_update_attribute,
+    ldap_user_exists, LDAP_AD_USERACCOUNTCONTROL_VALUES,
+)
+from libs.utils import (
+    single_entry_only_selected_fields,
+    fields_cleaning,
+)
 import ldap
+
 
 def init(app):
     @app.route('/user/+add', methods=['POST'])
@@ -75,14 +73,15 @@ def init(app):
             key = request.args.get('key')
         else:
             key = 'sAMAccountName'
-        
+
+        fields = request.args.get('fields')
         if not ldap_user_exists(value=value, key=key):
             abort(404)
 
         user = ldap_get_user(value, key)
         admin = ldap_in_group(Settings.ADMIN_GROUP)
         logged_user = g.ldap['username']
-        
+
         if logged_user == user['sAMAccountName'] or admin:
             if user["userAccountControl"]:
                 for key, flag in (LDAP_AD_USERACCOUNTCONTROL_VALUES.items()):
@@ -103,16 +102,11 @@ def init(app):
                 datetime_field = datetime.strptime(datetime_field, '%d/%m/%Y %H:%M:%S')
                 user["whenCreated"] = datetime_field.astimezone(timezone(Settings.TIMEZONE))
 
-                user["lastLogon"] = convert_adtimestamp_to_datetime(int(user["lastLogon"]))\
-                    .astimezone(timezone(Settings.TIMEZONE))
-                user["lastLogonTimestamp"] = convert_adtimestamp_to_datetime(int(user["lastLogonTimestamp"]))\
-                    .astimezone(timezone(Settings.TIMEZONE))
-                user["pwdLastSet"] = convert_adtimestamp_to_datetime(int(user["pwdLastSet"])) \
-                    .astimezone(timezone(Settings.TIMEZONE))
-
             if 'jpegPhoto' in user:
                 user.pop('jpegPhoto')
-        
+            user = single_entry_only_selected_fields(fields, user)
+            fields_cleaning(user)
+
         else:
             abort(401)
 
