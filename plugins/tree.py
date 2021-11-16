@@ -14,8 +14,10 @@ def init(app):
     @ldap_auth(Settings.ADMIN_GROUP)
     def tree_base(base=None):
 
-        filter_array = request.args.get('filters').split(",")
         fields = request.args.get('fields')
+        filter_array = request.args.get('filters')
+        if filter_array is not None:
+            filter_array = request.args.get('filters').split(",")
 
         if not base:
             base = g.ldap['dn']
