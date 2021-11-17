@@ -2,8 +2,6 @@ from libs.common import iri_for as url_for
 from settings import Settings
 from flask import abort, flash, g, render_template, redirect, request
 from flask_wtf import FlaskForm
-from wtforms import RadioField, TextAreaField, TextField, HiddenField
-from wtforms.validators import DataRequired
 from flask.json import jsonify
 from libs.ldap_func import ldap_auth, ldap_create_entry, ldap_delete_entry, \
     ldap_get_entry_simple, ldap_get_members, ldap_get_membership, \
