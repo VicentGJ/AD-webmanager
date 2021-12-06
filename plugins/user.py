@@ -116,7 +116,7 @@ def init(app):
     @ldap_auth("Domain Users")
     def user_changepw(username):
 
-        if not ldap_user_exists(username=username):
+        if not ldap_user_exists(value=username):
             abort(404)
 
         admin = ldap_in_group(Settings.ADMIN_GROUP)
