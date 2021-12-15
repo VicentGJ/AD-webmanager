@@ -417,6 +417,7 @@ def ldap_add_users_to_group(dn, attribute, value):
     if len(mod_attrs) != 0:
         connection.modify_s(dn, mod_attrs)
 
+
 def ldap_user_exists(value=None, key='sAMAccountName'):
     """
         Return True if the user exists. False otherwise.
@@ -442,9 +443,10 @@ def ldap_group_exists(groupname=None):
 # Private
 def _ldap_authenticate():
     """Sends a 401 response that enables basic auth"""
-    return Response('Could not verify your access level for that URL.\n'
-                    'You have to login with proper credentials', 401,
-                    {'WWW-Authenticate': 'Basic realm="Login Required"'})
+    return {
+        "data": None,
+        "error": "Could not verify your access level for that URL. " +
+        "You have to login with proper credentials"}, 401
 
 
 def _ldap_connect(username, password):
@@ -567,4 +569,3 @@ def tryFunc():
     docstring
     """
     pass
-
