@@ -1,0 +1,10 @@
+dnspython
+flask
+flask_wtf
+
+wtforms
+jwt
+pytz
+python-ldap
+
+python-json-logger
