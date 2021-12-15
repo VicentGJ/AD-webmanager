@@ -1,6 +1,8 @@
 from libs.ldap_func import (
     LDAP_AD_USERACCOUNTCONTROL_VALUES, LDAP_AP_PRIMRARY_GROUP_ID_VALUES
 )
+from libs.logger import log_info, log_error
+from utils import constants
 
 
 def multiple_entries_fields_cleaning(function):
@@ -87,3 +89,21 @@ def convert_adtimestamp_to_milliseconds(timestamp: int):
         unix_timestamp = (timestamp / 10000000) - 11644473600
         milliseconds = unix_timestamp*1000
     return milliseconds
+
+
+def error_response(method, username, error, status_code):
+    """
+        Create the unauthorize response
+    """
+    log_error(constants.LOG_EX, method, {
+                "error": error,
+                "username": username,
+            })
+    return {"data": None, "error": error}, status_code
+
+
+def simple_success_response(data):
+    """
+        Create a simple success response
+    """
+    return {"data": data, "error": None}, 200

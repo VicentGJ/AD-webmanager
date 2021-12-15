@@ -5,6 +5,7 @@ from flask import g, request, abort, jsonify
 from libs.ldap_func import ldap_auth, ldap_get_entries, ldap_in_group
 from libs.utils import (
     multiple_entries_fields_cleaning, multiple_entry_only_selected_fields,
+    error_response, simple_success_response
 )
 from libs.logs import logs
 from libs.logger import log_info, log_error
@@ -32,11 +33,13 @@ def init(app):
 
         admin = ldap_in_group(Settings.ADMIN_GROUP)
         if not admin:
-            log_error(constants.LOG_EX, {
-                "error": "User not authorized",
-                "username": request.authorization.username,
-            })
-            return {"data": None, "error": "Unauthorized"}, 401
+            response = error_response(
+                method="tree_base",
+                username=request.authorization.username,
+                error=constants.UNAUTHORIZED,
+                status_code=401,
+            )
+            return response
         else:
             scope = "onelevel"
             if filter_array:
@@ -55,13 +58,15 @@ def init(app):
 
             if 'error' in entries:
                 error = entries['error']
-                log_error(constants.LOG_EX, "tree_base", {
-                    "error": error,
-                    "username": request.authorization.username,
-                })
-                return {"data": None, "error": error}, 400
+                response = error_response(
+                    method="tree_base",
+                    username=request.authorization.username,
+                    error=error,
+                    status_code=400,
+                )
+                return response
 
-            return {"data": entries, "error": None}, 200
+            return simple_success_response(entries)
 
     @multiple_entries_fields_cleaning
     def get_entries(fields, filter_str, filter_attr, base, scope):
