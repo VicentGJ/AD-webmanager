@@ -10,15 +10,18 @@ from libs.ldap_func import (
     ldap_user_exists, LDAP_AD_USERACCOUNTCONTROL_VALUES,
 )
 from libs.utils import (
-    single_entry_only_selected_fields,
-    fields_cleaning,
+    single_entry_only_selected_fields, fields_cleaning, decode_ldap_error,
+    error_response, simple_success_response
 )
 import ldap
+from libs.logs import logs
+from utils import constants
 
 
 def init(app):
     @app.route('/user/+add', methods=['POST'])
     @ldap_auth(Settings.ADMIN_GROUP)
+    @logs([])
     def user_add():
         try:
             data: dict = request.json
@@ -56,17 +59,37 @@ def init(app):
             else:
                 attributes['displayName'] = attributes['givenName']
 
-            ldap_create_entry("cn=%s,%s" % (data["sAMAccountName"], base), attributes)
+            ldap_create_entry(
+                "cn=%s,%s" % (data["sAMAccountName"], base),
+                attributes
+            )
             ldap_change_password(None, password, data["sAMAccountName"])
-            return jsonify({"response": "ok"}) # TODO: Improve this
+
+            return simple_success_response("Success")
+
         except ldap.LDAPError as e:
-           return jsonify({"response": str(e)})
+            error = decode_ldap_error(e)
+            response = error_response(
+                method="user_add",
+                username=request.authorization.username,
+                error=error,
+                status_code=500,
+            )
+            return response
+
         except KeyError as e:
-           print(e)
-           return jsonify({"response": "Missing key {0}".format(str(e))})
+            error = "Missing key {0}".format(str(e))
+            response = error_response(
+                method="user_add",
+                username=request.authorization.username,
+                error=error,
+                status_code=500,
+            )
+            return response
 
     @app.route('/user/<value>', methods=['GET'])
     @ldap_auth("Domain Users")
+    @logs(['value'])
     def user_overview(value):
 
         if request.args.get('key'):
@@ -76,7 +99,14 @@ def init(app):
 
         fields = request.args.get('fields')
         if not ldap_user_exists(value=value, key=key):
-            abort(404)
+            error = "User not found"
+            response = error_response(
+                method="user_overview",
+                username=request.authorization.username,
+                error=error,
+                status_code=404,
+            )
+            return response
 
         user = ldap_get_user(value, key)
         admin = ldap_in_group(Settings.ADMIN_GROUP)
@@ -89,18 +119,35 @@ def init(app):
                         user["userAccountControl"] = flag[0]
 
             if hasattr(Settings, "TIMEZONE"):
-                datetime_field = (user["whenChanged"][6:8] + '/' + user["whenChanged"][4:6] + '/' + user["whenChanged"][0:4]
-                                  + ' ' + user["whenChanged"][8:10] + ':' + user["whenChanged"][10:12] + ':'
-                                  + user["whenChanged"][12:14] )
-                datetime_field = datetime.strptime(datetime_field, '%d/%m/%Y %H:%M:%S')
-                user["whenChanged"] = datetime_field.astimezone(timezone(Settings.TIMEZONE))
+                datetime_field = (
+                    user["whenChanged"][6:8] + '/' +
+                    user["whenChanged"][4:6] + '/' +
+                    user["whenChanged"][0:4] + ' ' +
+                    user["whenChanged"][8:10] + ':' +
+                    user["whenChanged"][10:12] + ':' +
+                    user["whenChanged"][12:14]
+                )
+                datetime_field = datetime.strptime(
+                    datetime_field, '%d/%m/%Y %H:%M:%S'
+                )
+                user["whenChanged"] = datetime_field.astimezone(
+                    timezone(Settings.TIMEZONE)
+                )
 
                 datetime_field = (
-                            user["whenCreated"][6:8] + '/' + user["whenCreated"][4:6] + '/' + user["whenCreated"][0:4]
-                            + ' ' + user["whenCreated"][8:10] + ':' + user["whenCreated"][10:12] + ':'
-                            + user["whenCreated"][12:14])
-                datetime_field = datetime.strptime(datetime_field, '%d/%m/%Y %H:%M:%S')
-                user["whenCreated"] = datetime_field.astimezone(timezone(Settings.TIMEZONE))
+                            user["whenCreated"][6:8] + '/' +
+                            user["whenCreated"][4:6] + '/' +
+                            user["whenCreated"][0:4] + ' ' +
+                            user["whenCreated"][8:10] + ':' +
+                            user["whenCreated"][10:12] + ':' +
+                            user["whenCreated"][12:14]
+                        )
+                datetime_field = datetime.strptime(
+                    datetime_field, '%d/%m/%Y %H:%M:%S'
+                )
+                user["whenCreated"] = datetime_field.astimezone(
+                    timezone(Settings.TIMEZONE)
+                )
 
             if 'jpegPhoto' in user:
                 user.pop('jpegPhoto')
@@ -108,16 +155,30 @@ def init(app):
             fields_cleaning(user)
 
         else:
-            abort(401)
+            response = error_response(
+                method="user_overview",
+                username=request.authorization.username,
+                error=constants.UNAUTHORIZED,
+                status_code=401,
+            )
+            return response
 
-        return jsonify({"user": user})
+        return simple_success_response(user)
 
     @app.route('/user/<username>/+changepw', methods=['POST'])
     @ldap_auth("Domain Users")
+    @logs(['username'])
     def user_changepw(username):
 
         if not ldap_user_exists(value=username):
-            abort(404)
+            error = "User not found"
+            response = error_response(
+                method="user_changepw",
+                username=request.authorization.username,
+                error=error,
+                status_code=404,
+            )
+            return response
 
         admin = ldap_in_group(Settings.ADMIN_GROUP)
 
@@ -129,37 +190,70 @@ def init(app):
             else:
                 ldap_change_password(None, data["old_password"],
                                      data["new_password"], username=username)
-            return jsonify({"response": "success"})
+            return simple_success_response("Success")
         except ldap.LDAPError as e:
-            e = dict(e.args[0])
-            return jsonify(e)
+            error = decode_ldap_error(e)
+            response = error_response(
+                method="user_changepw",
+                username=request.authorization.username,
+                error=error,
+                status_code=500,
+            )
+            return response
         except KeyError as e:
-           print(e)
-           return jsonify({"response": "Missing key {0}".format(str(e))})
+            error = "Missing key {0}".format(str(e))
+            response = error_response(
+                method="user_changepw",
+                username=request.authorization.username,
+                error=error,
+                status_code=500,
+            )
+            return response
 
     @app.route('/user/<username>', methods=['DELETE'])
     @ldap_auth(Settings.ADMIN_GROUP)
     def user_delete(username):
-        title = "Borrar Usuario"
 
-        if not ldap_user_exists(username=username):
-            abort(404)
+        if not ldap_user_exists(value=username):
+            error = "User not found"
+            response = error_response(
+                method="user_overview",
+                username=request.authorization.username,
+                error=error,
+                status_code=404,
+            )
+            return response
 
         try:
             user = ldap_get_user(username)
             ldap_delete_entry(user['distinguishedName'])
-            return jsonify({"response": "success"})
+
+            return simple_success_response("Success")
+
         except ldap.LDAPError as e:
-            e = dict(e.args[0])
-            return jsonify(e)
+            error = decode_ldap_error(e)
+            response = error_response(
+                method="user_delete",
+                username=request.authorization.username,
+                error=error,
+                status_code=500,
+            )
+            return response
 
     @app.route('/user/<username>', methods=['PUT'])
     @ldap_auth(Settings.ADMIN_GROUP)
+    @logs(['username'])
     def user_edit_profile(username):
-        title = "Editar usuario"
 
         if not ldap_user_exists(username=username):
-            abort(404)
+            error = "User not found"
+            response = error_response(
+                method="user_overview",
+                username=request.authorization.username,
+                error=error,
+                status_code=404,
+            )
+            return response
 
         user = ldap_get_user(username)
         data = request.json
@@ -171,34 +265,77 @@ def init(app):
                 last_name = user.get('lastName')
                 if value != user.get(attribute):
                     if attribute == 'cn':
-                        ldap_rename_entry(user['distinguishedName'], 'cn', value)
+                        ldap_rename_entry(
+                            user['distinguishedName'],
+                            'cn', 
+                            value
+                        )
                         user = ldap_get_user(value, 'cn')
                     elif attribute == 'sAMAccountName':
                         # Rename the account
-                        ldap_update_attribute(user['distinguishedName'], "sAMAccountName", value)
-                        ldap_update_attribute(user['distinguishedName'], "userPrincipalName",
-                                                  "%s@%s" % (value, g.ldap['domain']))
+                        ldap_update_attribute(
+                            user['distinguishedName'],
+                            "sAMAccountName",
+                            value
+                        )
+                        ldap_update_attribute(
+                            user['distinguishedName'],
+                            "userPrincipalName",
+                            "%s@%s" % (value, g.ldap['domain'])
+                        )
                         user = ldap_get_user(value)
                     elif attribute == 'userAccountControl':
                         current_uac = 512
-                        for key, flag in (LDAP_AD_USERACCOUNTCONTROL_VALUES.items()):
+                        for key, flag in (
+                            LDAP_AD_USERACCOUNTCONTROL_VALUES.items()
+                        ):
                             if flag[1] and key in field:
                                 current_uac += key
-                        ldap_update_attribute(user['distinguishedName'], attribute, str(current_uac)) 
+                        ldap_update_attribute(
+                            user['distinguishedName'],
+                            attribute, str(current_uac)
+                        )
                     elif attribute == 'givenName':
                         given_name = value
-                        ldap_update_attribute(user['distinguishedName'], attribute, value)
+                        ldap_update_attribute(
+                            user['distinguishedName'],
+                            attribute,
+                            value
+                        )
                         displayName = given_name + ' ' + last_name
-                        ldap_update_attribute(user['distinguishedName'], 'displayName', displayName)
+                        ldap_update_attribute(
+                            user['distinguishedName'],
+                            'displayName',
+                            displayName
+                        )
                     elif attribute == 'sn':
                         last_name = value
-                        ldap_update_attribute(user['distinguishedName'], attribute, value)
+                        ldap_update_attribute(
+                            user['distinguishedName'],
+                            attribute,
+                            value
+                        )
                         displayName = given_name + ' ' + last_name
-                        ldap_update_attribute(user['distinguishedName'], 'displayName', displayName)
+                        ldap_update_attribute(
+                            user['distinguishedName'],
+                            'displayName',
+                            displayName
+                        )
                     else:
-                        ldap_update_attribute(user['distinguishedName'], attribute, value)
+                        ldap_update_attribute(
+                            user['distinguishedName'],
+                            attribute,
+                            value
+                        )
 
-            return jsonify({"response": "success"})
+            return simple_success_response("Success")
+
         except ldap.LDAPError as e:
-            e = dict(e.args[0])
-            return jsonify(e)
+            error = decode_ldap_error(e)
+            response = error_response(
+                method="user_edit_profile",
+                username=request.authorization.username,
+                error=error,
+                status_code=500,
+            )
+            return response
