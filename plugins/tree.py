@@ -6,12 +6,16 @@ from libs.ldap_func import ldap_auth, ldap_get_entries, ldap_in_group
 from libs.utils import (
     multiple_entries_fields_cleaning, multiple_entry_only_selected_fields,
 )
+from libs.logs import logs
+from libs.logger import log_info, log_error
+from utils import constants
 
 
 def init(app):
     @app.route('/tree', methods=['GET', 'POST'])
     @app.route('/tree/<base>', methods=['GET', 'POST'])
     @ldap_auth(Settings.ADMIN_GROUP)
+    @logs(['base'])
     def tree_base(base=None):
 
         fields = request.args.get('fields')
@@ -19,15 +23,20 @@ def init(app):
         if filter_array is not None:
             filter_array = request.args.get('filters').split(",")
 
+        log_info(constants.LOG_OK, "tree_base", [
+            {"fields": fields}, {"filters": filter_array}])
         if not base:
             base = g.ldap['dn']
         elif not base.lower().endswith(g.ldap['dn'].lower()):
             base += ",%s" % g.ldap['dn']
 
         admin = ldap_in_group(Settings.ADMIN_GROUP)
-
         if not admin:
-            abort(401)
+            log_error(constants.LOG_EX, {
+                "error": "User not authorized",
+                "username": request.authorization.username,
+            })
+            return {"data": None, "error": "Unauthorized"}, 401
         else:
             scope = "onelevel"
             if filter_array:
@@ -44,7 +53,15 @@ def init(app):
             if not base_split[0].lower().startswith("dc"):
                 parent = ",".join(base_split[1:])
 
-            return jsonify(entries)
+            if 'error' in entries:
+                error = entries['error']
+                log_error(constants.LOG_EX, "tree_base", {
+                    "error": error,
+                    "username": request.authorization.username,
+                })
+                return {"data": None, "error": error}, 400
+
+            return {"data": entries, "error": None}, 200
 
     @multiple_entries_fields_cleaning
     def get_entries(fields, filter_str, filter_attr, base, scope):
@@ -69,20 +86,34 @@ def init(app):
             )
 
         if filter_str == "top":
-            other_entries = ldap_get_entries("objectClass=top", base, scope, ignore_erros=True)
-            other_entries = filter(lambda entry: 'displayName' not in entry, other_entries)
-            other_entries = sorted(other_entries, key=lambda entry: entry['name'])
+            other_entries = ldap_get_entries(
+                "objectClass=top",
+                base,
+                scope,
+                ignore_erros=True
+            )
+            other_entries = filter(
+                lambda entry: 'displayName' not in entry,
+                other_entries
+            )
+            other_entries = sorted(
+                other_entries,
+                key=lambda entry: entry['name']
+            )
         else:
             other_entries = []
-            
+
         for entry in users:
             if 'description' not in entry:
                 if 'sAMAccountName' in entry:
-                   entry['__description'] = entry['sAMAccountName']
+                    entry['__description'] = entry['sAMAccountName']
             else:
                 entry['__description'] = entry['description']
 
-            entry['__target'] = url_for('tree_base', base=entry['distinguishedName'])
+            entry['__target'] = url_for(
+                'tree_base',
+                base=entry['distinguishedName']
+            )
 
             entry['name'] = entry['displayName']
             entry['__type'] = "Usuario"
@@ -110,7 +141,10 @@ def init(app):
                 else:
                     entry['__description'] = entry['description']
 
-                entry['__target'] = url_for('tree_base', base=entry['distinguishedName'])
+                entry['__target'] = url_for(
+                    'tree_base',
+                    base=entry['distinguishedName']
+                )
 
                 if 'group' in entry['objectClass']:
                     entry['__type'] = "Grupo"
@@ -130,8 +164,10 @@ def init(app):
         if filter_str == "multiple_filters":
             for filt in filter_attr:
                 entries = apply_filter(filt, entries)
-
-        entries = multiple_entry_only_selected_fields(fields, entries)
+                if 'error' in entries:
+                    break
+        else:
+            entries = multiple_entry_only_selected_fields(fields, entries)
 
         return entries
 
@@ -141,6 +177,9 @@ def init(app):
         """
 
         new_filter = filt.split(":")
+        log_info(constants.LOG_OK, "apply_filter", {
+            "filter_to_process": new_filter
+        })
         if len(new_filter) > 1:
             attr = new_filter[0]
             value = str(new_filter[1]).replace('"', '').lower()
@@ -157,4 +196,8 @@ def init(app):
             )
             return entries
         else:
-            abort(400)
+            error = "incorrect filter format in: " + new_filter[0]
+            log_error(constants.LOG_EX, "apply_filter", {
+                "error": error
+            })
+            return {"error": error}
