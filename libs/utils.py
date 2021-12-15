@@ -26,6 +26,7 @@ def single_entry_fields_cleaning(function):
 
 
 def fields_cleaning(entry):
+    if 'error' not in entry:
     for attribute, value in entry.items():
         if attribute == "userAccountControl":
             for key, flag in (LDAP_AD_USERACCOUNTCONTROL_VALUES.items()):
