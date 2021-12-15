@@ -1,3 +1,4 @@
+from json import loads
 from libs.ldap_func import (
     LDAP_AD_USERACCOUNTCONTROL_VALUES, LDAP_AP_PRIMRARY_GROUP_ID_VALUES
 )
@@ -29,24 +30,24 @@ def single_entry_fields_cleaning(function):
 
 def fields_cleaning(entry):
     if 'error' not in entry:
-    for attribute, value in entry.items():
-        if attribute == "userAccountControl":
-            for key, flag in (LDAP_AD_USERACCOUNTCONTROL_VALUES.items()):
-                if flag[1] and key == value:
-                    entry[attribute] = flag[0]
-                    break
+        for attribute, value in entry.items():
+            if attribute == "userAccountControl":
+                for key, flag in (LDAP_AD_USERACCOUNTCONTROL_VALUES.items()):
+                    if flag[1] and key == value:
+                        entry[attribute] = flag[0]
+                        break
 
-        if attribute == "lastLogon" or \
-            attribute == "lastLogonTimestamp" or \
-                attribute == "pwdLastSet":
-            entry[attribute] = convert_adtimestamp_to_milliseconds(
-                int(entry[attribute])
-            )
-        if attribute == "primaryGroupID":
-            for key, flag in (LDAP_AP_PRIMRARY_GROUP_ID_VALUES.items()):
-                if key == int(value):
-                    entry[attribute] = flag
-                    break
+            if attribute == "lastLogon" or \
+                attribute == "lastLogonTimestamp" or \
+                    attribute == "pwdLastSet":
+                entry[attribute] = convert_adtimestamp_to_milliseconds(
+                    int(entry[attribute])
+                )
+            if attribute == "primaryGroupID":
+                for key, flag in (LDAP_AP_PRIMRARY_GROUP_ID_VALUES.items()):
+                    if key == int(value):
+                        entry[attribute] = flag
+                        break
 
 
 def multiple_entry_only_selected_fields(fields, entries):
@@ -89,6 +90,21 @@ def convert_adtimestamp_to_milliseconds(timestamp: int):
         unix_timestamp = (timestamp / 10000000) - 11644473600
         milliseconds = unix_timestamp*1000
     return milliseconds
+
+
+def decode_ldap_error(e):
+    """
+        Transform the LDAPError into json and return
+        its description
+    """
+    result = "Unknown error"
+    errString = str(e).replace("'", '"')
+    error = loads(errString)
+
+    if 'desc' in error:
+        result = error['desc']
+
+    return result
 
 
 def error_response(method, username, error, status_code):
