@@ -4,3 +4,4 @@ LOG_OK = "LOG_OK"
 LOG_EX = "LOG_EX"
 
 UNAUTHORIZED = "User not authorized"
+BAD_REQUEST = "Bad request"

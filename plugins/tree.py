@@ -10,7 +10,7 @@ from libs.utils import (
 from libs.logs import logs
 from libs.logger import log_info, log_error
 from utils import constants
-
+from libs.ldap_func import LDAP_SCOPES
 
 def init(app):
     @app.route('/tree', methods=['GET', 'POST'])
@@ -41,7 +41,35 @@ def init(app):
             )
             return response
         else:
-            scope = "onelevel"
+            scope = request.args.get('scope')
+            if scope is None:
+                scope = "onelevel"
+            else:
+                if scope not in LDAP_SCOPES:
+                    error = constants.BAD_REQUEST + \
+                        f", scope '{scope}' is incorrect"
+                    response = error_response(
+                        method="tree_base",
+                        username=request.authorization.username,
+                        error=error,
+                        status_code=400,
+                    )
+                    return response
+            if scope == 'subtree' and filter_array is None:
+                error = constants.BAD_REQUEST + \
+                        f", when using scope '{scope}' filters must be set"
+                response = error_response(
+                    method="tree_base",
+                    username=request.authorization.username,
+                    error=error,
+                    status_code=400,
+                )
+                return response
+            log_info(constants.LOG_OK, "tree_base", [
+                {"fields": fields},
+                {"filters": filter_array},
+                {"scope": scope}
+            ])
             if filter_array:
                 entries = get_entries(
                     fields, "multiple_filters", filter_array, base, scope
@@ -183,11 +211,12 @@ def init(app):
 
         new_filter = filt.split(":")
         log_info(constants.LOG_OK, "apply_filter", {
-            "filter_to_process": new_filter
+            "filter_to_apply": new_filter
         })
         if len(new_filter) > 1:
             attr = new_filter[0]
             value = str(new_filter[1]).replace('"', '').lower()
+
             entries = filter(
                 lambda entry: attr in entry and
                 value in str(entry[attr]).lower() if value != ""
