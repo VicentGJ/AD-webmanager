@@ -217,12 +217,21 @@ def init(app):
             attr = new_filter[0]
             value = str(new_filter[1]).replace('"', '').lower()
 
-            entries = filter(
-                lambda entry: attr in entry and
-                value in str(entry[attr]).lower() if value != ""
-                else value == str(entry[attr]).lower(),
-                entries
-            )
+            if value[0] == "!":
+                value = value[1:]
+                entries = filter(
+                    lambda entry: attr in entry and
+                    value not in str(entry[attr]).lower() if value != ""
+                    else value == str(entry[attr]).lower(),
+                    entries
+                )
+            else:
+                entries = filter(
+                    lambda entry: attr in entry and
+                    value in str(entry[attr]).lower() if value != ""
+                    else value == str(entry[attr]).lower(),
+                    entries
+                )
 
             entries: typing.List[typing.Dict] = sorted(
                 entries,
