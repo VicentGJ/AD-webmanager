@@ -19,6 +19,7 @@
 
 import argparse
 import os
+from dotenv import load_dotenv
 
 app_prefix = "/opt/samba4-manager-master/"
 
@@ -112,6 +113,7 @@ for plugin_file in glob.glob("%s/plugins/*.py" % app_prefix):
     plugin = importlib.import_module("plugins.%s" % plugin_name)
     plugin.init(app)
 
+load_dotenv()
 
 @app.before_request
 def pre_request():
