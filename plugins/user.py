@@ -52,6 +52,7 @@ class UserProfileEdit(FlaskForm):
     display_name = StringField('Nombre Completo', [DataRequired(), Length(max=256)])
     user_name = StringField('Nombre de Usuario', [DataRequired(), Length(max=20)])
     mail = StringField(u'Dirección de correo', [Length(max=256)])
+    other_mail = StringField(u'Dirección de correo', [Length(max=256)])
     category = SelectField(choices=[('Auto', 'Automático'),
                                     ('A', 'Categoria A'),
                                     ('B', 'Categoria B'),
@@ -368,6 +369,7 @@ def init(app):
                          ('sn', form.last_name),
                          ('sAMAccountName', form.user_name),
                          ('mail', form.mail),
+                         ('otherMailBox', other_mail),
                          ('pager', form.category),
                          ('userAccountControl', form.uac_flags)]
 
@@ -562,3 +564,4 @@ def init(app):
     #    return render_template("forms/basicform.html", form=form, title=title,
     #                           action="Salvar los cambios",
     #                           parent=url_for('user_overview', username=username))
+
