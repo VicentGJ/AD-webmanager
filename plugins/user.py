@@ -369,7 +369,7 @@ def init(app):
                          ('sn', form.last_name),
                          ('sAMAccountName', form.user_name),
                          ('mail', form.mail),
-                         ('otherMailBox', other_mail),
+                         ('otherMailBox', form.other_mail),
                          ('pager', form.category),
                          ('userAccountControl', form.uac_flags)]
 
