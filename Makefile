@@ -1,0 +1,2 @@
+  run:
+    python ADwebmanager.py
