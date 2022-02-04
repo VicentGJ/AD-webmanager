@@ -8,15 +8,21 @@ from libs.ldap_func import (
     ldap_get_user, ldap_in_group,
     ldap_rename_entry, ldap_update_attribute,
     ldap_user_exists, LDAP_AD_USERACCOUNTCONTROL_VALUES,
+    ldap_get_membership, _ldap_authenticate
 )
 from libs.utils import (
     single_entry_only_selected_fields, fields_cleaning, decode_ldap_error,
-    error_response, simple_success_response
+    error_response, simple_success_response, token_required
 )
 import ldap
 from libs.logs import logs
 from utils import constants
-
+import jwt
+from datetime import datetime, timedelta
+from services.user import (
+    s_user_overview, s_get_jwt,
+)
+import os
 
 def init(app):
     @app.route('/user/+add', methods=['POST'])
@@ -87,83 +93,15 @@ def init(app):
             )
             return response
 
-    @app.route('/user/<value>', methods=['GET'])
+    @app.route('/jwt', methods=['GET'])
     @ldap_auth("Domain Users")
-    @logs(['value'])
-    def user_overview(value):
+    def login_jwt():
+        return s_get_jwt()
 
-        if request.args.get('key'):
-            key = request.args.get('key')
-        else:
-            key = 'sAMAccountName'
-
-        fields = request.args.get('fields')
-        if not ldap_user_exists(value=value, key=key):
-            error = "User not found"
-            response = error_response(
-                method="user_overview",
-                username=request.authorization.username,
-                error=error,
-                status_code=404,
-            )
-            return response
-
-        user = ldap_get_user(value, key)
-        admin = ldap_in_group(Settings.ADMIN_GROUP)
-        logged_user = g.ldap['username']
-
-        if logged_user == user['sAMAccountName'] or admin:
-            if user["userAccountControl"]:
-                for key, flag in (LDAP_AD_USERACCOUNTCONTROL_VALUES.items()):
-                    if flag[1] and key == user["userAccountControl"]:
-                        user["userAccountControl"] = flag[0]
-
-            if hasattr(Settings, "TIMEZONE"):
-                datetime_field = (
-                    user["whenChanged"][6:8] + '/' +
-                    user["whenChanged"][4:6] + '/' +
-                    user["whenChanged"][0:4] + ' ' +
-                    user["whenChanged"][8:10] + ':' +
-                    user["whenChanged"][10:12] + ':' +
-                    user["whenChanged"][12:14]
-                )
-                datetime_field = datetime.strptime(
-                    datetime_field, '%d/%m/%Y %H:%M:%S'
-                )
-                user["whenChanged"] = datetime_field.astimezone(
-                    timezone(Settings.TIMEZONE)
-                )
-
-                datetime_field = (
-                            user["whenCreated"][6:8] + '/' +
-                            user["whenCreated"][4:6] + '/' +
-                            user["whenCreated"][0:4] + ' ' +
-                            user["whenCreated"][8:10] + ':' +
-                            user["whenCreated"][10:12] + ':' +
-                            user["whenCreated"][12:14]
-                        )
-                datetime_field = datetime.strptime(
-                    datetime_field, '%d/%m/%Y %H:%M:%S'
-                )
-                user["whenCreated"] = datetime_field.astimezone(
-                    timezone(Settings.TIMEZONE)
-                )
-
-            if 'jpegPhoto' in user:
-                user.pop('jpegPhoto')
-            user = single_entry_only_selected_fields(fields, user)
-            fields_cleaning(user)
-
-        else:
-            response = error_response(
-                method="user_overview",
-                username=request.authorization.username,
-                error=constants.UNAUTHORIZED,
-                status_code=401,
-            )
-            return response
-
-        return simple_success_response(user)
+    @app.route('/user/<value>', methods=['GET'])
+    @token_required("Domain User")
+    def user_overview(current_user, value):
+        return s_user_overview(current_user, value)
 
     @app.route('/user/<username>/+changepw', methods=['POST'])
     @ldap_auth("Domain Users")
@@ -217,7 +155,7 @@ def init(app):
         if not ldap_user_exists(value=username):
             error = "User not found"
             response = error_response(
-                method="user_overview",
+                method="user_delete",
                 username=request.authorization.username,
                 error=error,
                 status_code=404,
@@ -248,7 +186,7 @@ def init(app):
         if not ldap_user_exists(username=username):
             error = "User not found"
             response = error_response(
-                method="user_overview",
+                method="user_edit_profile",
                 username=request.authorization.username,
                 error=error,
                 status_code=404,

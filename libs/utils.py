@@ -1,10 +1,15 @@
 from json import loads
+from ntpath import curdir
 from libs.ldap_func import (
-    LDAP_AD_USERACCOUNTCONTROL_VALUES, LDAP_AP_PRIMRARY_GROUP_ID_VALUES
+    LDAP_AD_USERACCOUNTCONTROL_VALUES, LDAP_AP_PRIMRARY_GROUP_ID_VALUES,
+    _ldap_connect
 )
+from settings import Settings
 from libs.logger import log_info, log_error
 from utils import constants
-
+from flask import request
+import jwt
+import os
 
 def multiple_entries_fields_cleaning(function):
     def wrapper(*args, **kwargs):
@@ -123,3 +128,46 @@ def simple_success_response(data):
         Create a simple success response
     """
     return {"data": data, "error": None}, 200
+
+
+def token_required(group=None):
+    def decorator(function):
+        def wrapper(*args, **kwargs):
+            token = None
+            current_user = None
+            # jwt is passed in the request header
+            if 'x-access-token' in request.headers:
+                token = request.headers['x-access-token']
+            # return 401 if token is not passed
+            if not token:
+                return {'message': 'Token is missing'}, 401
+                # decoding the payload to fetch the stored details
+            try:
+                data = jwt.decode(
+                    token, os.getenv("JWT_SECRET"),
+                    algorithms=os.getenv("JWT_ALGO"),
+                )
+                current_user = data["sub"]
+                _ldap_connect(current_user, "")
+
+            except jwt.ExpiredSignatureError as e:
+
+                return error_response(
+                    method="token_required",
+                    username="",
+                    error=str(e),
+                    status_code=401,
+                )
+            
+            except:
+                return error_response(
+                    method="token_required",
+                    username="",
+                    error="Token is invalid",
+                    status_code=401,
+                )
+
+            return function(current_user, *args, **kwargs)
+        wrapper.__name__ = function.__name__
+        return wrapper
+    return decorator

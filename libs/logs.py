@@ -4,6 +4,7 @@ from datetime import datetime
 from libs.logger import log_info, log_error
 from utils import constants
 
+
 def logs(logs_params):
     def decorator(function):
         def wrapper(*args, **kwargs):

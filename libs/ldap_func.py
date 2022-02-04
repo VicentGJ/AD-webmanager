@@ -16,12 +16,15 @@
 # You can find the license on Debian systems in the file
 # /usr/share/common-licenses/GPL-2
 
+from django.conf import Settings
 from flask import request, Response, g, session
 from functools import wraps
 import ldap
 from ldap import modlist
 import struct
 import uuid
+import os
+
 
 from ldap.ldapobject import LDAPObject
 
@@ -466,8 +469,10 @@ def _ldap_connect(username, password):
     for server in servers:
         connection = ldap.initialize("ldaps://%s:636" % server)
         try:
-            connection.simple_bind_s("%s@%s" % (username, g.ldap['domain']),
-                                    password)
+            connection.simple_bind_s(
+                "%s@%s" % (os.getenv("LDAP_USER"), g.ldap['domain']),
+                os.getenv("LDAP_PASS")
+            )
 
             g.ldap['connection'] = connection
             g.ldap['server'] = server
