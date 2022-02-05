@@ -52,7 +52,7 @@ class UserProfileEdit(FlaskForm):
     display_name = StringField('Nombre Completo', [DataRequired(), Length(max=256)])
     user_name = StringField('Nombre de Usuario', [DataRequired(), Length(max=20)])
     mail = StringField(u'Dirección de correo', [Length(max=256)])
-    other_mail = StringField(u'Dirección de correo', [Length(max=256)])
+    other_mail = StringField(u'Dirección de correo de recuperacion', [Length(max=256)])
     category = SelectField(choices=[('Auto', 'Automático'),
                                     ('A', 'Categoria A'),
                                     ('B', 'Categoria B'),
