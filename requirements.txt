@@ -3,7 +3,7 @@ flask
 flask_wtf
 
 wtforms
-jwt
+pyjwt
 pytz
 python-ldap
 python-dotenv

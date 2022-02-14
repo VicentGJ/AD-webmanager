@@ -12,7 +12,7 @@ flask-wtf = "*"
 pytz = "*"
 flask-cors = "*"
 python-dotenv = "*"
-
+pyjwt = "*"
 [dev-packages]
 
 [requires]
