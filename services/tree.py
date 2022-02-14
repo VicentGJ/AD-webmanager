@@ -15,6 +15,7 @@ from libs.ldap_func import LDAP_SCOPES
 
 @logs(['base'])
 def s_tree_base(current_user, base):
+
     fields = request.args.get('fields')
     filter_array = request.args.get('filters')
     if filter_array is not None:
@@ -27,70 +28,62 @@ def s_tree_base(current_user, base):
     elif not base.lower().endswith(g.ldap['dn'].lower()):
         base += ",%s" % g.ldap['dn']
 
-    admin = ldap_in_group(Settings.ADMIN_GROUP)
-    if not admin:
+    scope = request.args.get('scope')
+    if scope is None:
+        scope = "onelevel"
+    else:
+        if scope not in LDAP_SCOPES:
+            error = constants.BAD_REQUEST + \
+                f", scope '{scope}' is incorrect"
+            response = error_response(
+                method="tree_base",
+                username=current_user,
+                error=error,
+                status_code=400,
+            )
+            return response
+
+    if scope == 'subtree' and filter_array is None:
+        error = constants.BAD_REQUEST + \
+                f", when using scope '{scope}' filters must be set"
         response = error_response(
             method="tree_base",
-            username=current_user,
-            error=constants.UNAUTHORIZED,
-            status_code=401,
+            username=request.authorization.username,
+            error=error,
+            status_code=400,
         )
         return response
+    log_info(constants.LOG_OK, "tree_base", [
+        {"fields": fields},
+        {"filters": filter_array},
+        {"scope": scope}
+    ])
+    if filter_array:
+        entries = get_entries(
+            fields, "multiple_filters", filter_array, base, scope
+        )
     else:
-        scope = request.args.get('scope')
-        if scope is None:
-            scope = "onelevel"
-        else:
-            if scope not in LDAP_SCOPES:
-                error = constants.BAD_REQUEST + \
-                    f", scope '{scope}' is incorrect"
-                response = error_response(
-                    method="tree_base",
-                    username=current_user,
-                    error=error,
-                    status_code=400,
-                )
-                return response
-        if scope == 'subtree' and filter_array is None:
-            error = constants.BAD_REQUEST + \
-                    f", when using scope '{scope}' filters must be set"
-            response = error_response(
-                method="tree_base",
-                username=request.authorization.username,
-                error=error,
-                status_code=400,
-            )
-            return response
-        log_info(constants.LOG_OK, "tree_base", [
-            {"fields": fields},
-            {"filters": filter_array},
-            {"scope": scope}
-        ])
-        if filter_array:
-            entries = get_entries(
-                fields, "multiple_filters", filter_array, base, scope
-            )
-        else:
-            entries = get_entries(
-                fields, "top", "objectClass", base, scope
-            )
+        entries = get_entries(
+            fields, "top", "objectClass", base, scope
+        )
 
-        parent = None
-        base_split = base.split(',')
-        if not base_split[0].lower().startswith("dc"):
-            parent = ",".join(base_split[1:])
+    parent = None
+    base_split = base.split(',')
+    if not base_split[0].lower().startswith("dc"):
+        parent = ",".join(base_split[1:])
 
-        if 'error' in entries:
-            error = entries['error']
-            response = error_response(
-                method="tree_base",
-                username=request.authorization.username,
-                error=error,
-                status_code=400,
-            )
-            return response
+    if 'error' in entries:
+        error = entries['error']
+        response = error_response(
+            method="tree_base",
+            username=request.authorization.username,
+            error=error,
+            status_code=400,
+        )
+        return response
 
-        return simple_success_response(entries)
+    return simple_success_response(entries)
+
 
 @multiple_entries_fields_cleaning
 def get_entries(fields, filter_str, filter_attr, base, scope):
