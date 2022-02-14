@@ -2,8 +2,9 @@ from json import loads
 from ntpath import curdir
 from libs.ldap_func import (
     LDAP_AD_USERACCOUNTCONTROL_VALUES, LDAP_AP_PRIMRARY_GROUP_ID_VALUES,
-    _ldap_connect
+    _ldap_connect, ldap_in_group
 )
+from utils import constants
 from settings import Settings
 from libs.logger import log_info, log_error
 from utils import constants
@@ -158,12 +159,20 @@ def token_required(group=None):
                     error=str(e),
                     status_code=401,
                 )
-            
+
             except:
                 return error_response(
                     method="token_required",
                     username="",
                     error="Token is invalid",
+                    status_code=401,
+                )
+            
+            if group is not None and not ldap_in_group(group, current_user):
+                return error_response(
+                    method="token_required",
+                    username="",
+                    error=constants.UNAUTHORIZED,
                     status_code=401,
                 )
 
