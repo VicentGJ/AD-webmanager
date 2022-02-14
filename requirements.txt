@@ -6,5 +6,5 @@ wtforms
 jwt
 pytz
 python-ldap
-
+python-dotenv
 python-json-logger
