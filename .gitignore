@@ -2,3 +2,4 @@ manager.cfg
 *.pyc
 .vscode/settings.json
 Pipfile.lock
+database.db

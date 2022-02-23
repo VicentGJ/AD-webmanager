@@ -41,6 +41,7 @@ from flask import Flask, g
 import glob
 import importlib
 from flask_cors import CORS
+from libs.utils import get_db
 
 # Look at the right place
 import sys
@@ -114,6 +115,25 @@ for plugin_file in glob.glob("%s/plugins/*.py" % app_prefix):
     plugin.init(app)
 
 load_dotenv()
+
+
+@app.teardown_appcontext
+def close_connection(exception):
+    db = getattr(g, '_database', None)
+    if db is not None:
+        db.close()
+
+
+def init_db():
+    with app.app_context():
+        db = get_db()
+        with app.open_resource('schema.sql', mode='r') as f:
+            db.cursor().executescript(f.read())
+        db.commit()
+
+
+init_db()
+
 
 @app.before_request
 def pre_request():
