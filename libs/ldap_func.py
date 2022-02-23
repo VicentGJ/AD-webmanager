@@ -324,7 +324,7 @@ def ldap_in_group(groupname, username=None):
     group = ldap_get_group(groupname)
     groups = ldap_get_membership(username)
 
-    if group is None:
+    if group is None or groups is None:
         return False
     # Start by looking at direct membership
     if group['distinguishedName'] in groups:
@@ -452,7 +452,55 @@ def _ldap_authenticate():
         "You have to login with proper credentials"}, 401
 
 
+def _ldap_connect_with_user_and_password(username, password):
+    """
+    Used in the login flow, it uses the given username and password
+    """
+    # Already connected
+    if 'connection' in g.ldap:
+        return True
+
+    ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_NEVER)
+    ldap.set_option(ldap.OPT_REFERRALS, 0)
+    ldap.set_option(ldap.OPT_PROTOCOL_VERSION, 3)
+
+    if isinstance(g.ldap['server'], list):
+        servers = g.ldap['server']
+    else:
+        servers = [g.ldap['server']]
+
+    for server in servers:
+        connection = ldap.initialize("ldaps://%s:636" % server)
+        try:
+            connection.simple_bind_s(
+                "%s@%s" % (username, g.ldap['domain']),
+                password
+            )
+
+            g.ldap['connection'] = connection
+            g.ldap['server'] = server
+            g.ldap['username'] = username
+
+            # Get domain SID
+            # Can't go through ldap_get_entry as it requires domain_sid be set.
+            result = connection.search_s(g.ldap['dn'], ldap.SCOPE_BASE)
+            g.ldap['domain_sid'] = _ldap_decode_attribute("objectSid", result[0][1]['objectSid'])
+
+            return True
+        except ldap.INVALID_CREDENTIALS:
+            return False
+        #except:
+        #   continue
+        
+
+    #raise Exception("No server reachable at this point.")
+
+
 def _ldap_connect(username, password):
+    """
+    Used in all connections to the LDAP but the login flow
+    It uses an username and password set in the environment
+    """
     # Already connected
     if 'connection' in g.ldap:
         return True
@@ -559,7 +607,7 @@ def ldap_auth(group=None):
                 session.pop('logout')
                 return _ldap_authenticate()
 
-            if not auth or not _ldap_connect(auth.username, auth.password):
+            if not auth or not _ldap_connect_with_user_and_password(auth.username, auth.password):
                 return _ldap_authenticate()
             if group and not ldap_in_group(group):
                 return _ldap_authenticate()
