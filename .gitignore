@@ -3,3 +3,4 @@ manager.cfg
 .vscode/settings.json
 Pipfile.lock
 database.db
+.env
