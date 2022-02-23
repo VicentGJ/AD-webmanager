@@ -1,23 +1,32 @@
 from settings import Settings
 from libs.ldap_func import ldap_auth
-from libs.utils import token_required
+from libs.utils import token_required, expired_token
 from services.user import (
-    s_get_jwt, s_user_overview, s_user_add, s_user_changepw,
+    s_get_jwt, s_refresh_token, s_user_overview, s_user_add, s_user_changepw,
     s_user_delete, s_user_edit_profile,
 )
+from flask import request
 
 
 def init(app):
+
+    @app.route('/user/login', methods=['GET'])
+    @ldap_auth("Domain Users")
+    def login_jwt():
+        return s_get_jwt()
+
+    @app.route('/user/refresh-token', methods=['POST'])
+    @expired_token("Domain Users")
+    def refresh_token(current_user):
+        data: dict = request.json
+        return s_refresh_token(current_user, data)
+
 
     @app.route('/user/+add', methods=['POST'])
     @token_required(Settings.ADMIN_GROUP)
     def user_add(current_user):
         return s_user_add(current_user)
 
-    @app.route('/jwt', methods=['GET'])
-    @ldap_auth("Domain Users")
-    def login_jwt():
-        return s_get_jwt()
 
     @app.route('/user/<value>', methods=['GET'])
     @token_required("Domain Users")

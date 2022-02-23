@@ -1,3 +1,4 @@
+from tokenize import String
 from settings import Settings
 from flask import request, g
 from datetime import datetime
@@ -9,8 +10,8 @@ from libs.ldap_func import (
     ldap_delete_entry, ldap_rename_entry, ldap_update_attribute,
 )
 from libs.utils import (
-    single_entry_only_selected_fields, fields_cleaning,
-    error_response, simple_success_response, decode_ldap_error
+    get_db, query_db, decode_jwt, single_entry_only_selected_fields,
+    fields_cleaning, error_response, simple_success_response, decode_ldap_error
 )
 from libs.logs import logs
 import jwt
@@ -23,22 +24,107 @@ from ldap import LDAPError
 def s_get_jwt():
     auth = request.authorization
     groups = ldap_get_membership(auth.username)
+
     if groups is None:
         return _ldap_authenticate()
 
-    encoded = jwt.encode({
-        'sub': auth.username,
-        'iat': datetime.utcnow(),
-        'exp': datetime.utcnow() + timedelta(minutes=15),
+    response = {
+        "access_token": create_access_token(auth.username, groups),
+        "refresh_token": create_refresh_token(auth.username, groups)
+    }
+
+    return simple_success_response(response)
+
+
+def create_access_token(user, groups):
+    token = jwt.encode({
+        "sub": user,
+        "iat": datetime.utcnow(),
+        "exp": datetime.utcnow() + timedelta(minutes=15),
         "iss": "ad-webmanager",
-        'claims': {
-            'groups': groups
+        "claims": {
+            "groups": groups
         }
 
     }, os.getenv("JWT_SECRET"), os.getenv("JWT_ALGO"))
+    return token
 
-    response = {'access_token': encoded}
-    return simple_success_response(response)
+
+def create_refresh_token(user, groups, replaced_token=""):
+
+    refresh_token = jwt.encode({
+        "sub": user,
+        "iat": datetime.utcnow(),
+        "exp": datetime.utcnow() + timedelta(hours=72),
+        "iss": "ad-webmanager",
+        "claims": {
+            "groups": groups
+        }
+
+    }, os.getenv("JWT_SECRET"), os.getenv("JWT_ALGO"))
+    db = get_db()
+    if replaced_token == "":
+        query_db("INSERT INTO tokens (token, user, replaced_token)\
+            values(?, ?, ?)", [refresh_token, user, replaced_token])
+    else:
+        query_db("UPDATE tokens SET token = ?, replaced_token = ?\
+            WHERE token=?",
+            [refresh_token, replaced_token, replaced_token])
+
+    db.commit()
+
+    return refresh_token
+
+
+@logs([""])
+def s_refresh_token(current_user, data):
+
+    if data is None or "refresh_token" not in data:
+        response = error_response(
+            method="s_refresh_token",
+            username=current_user,
+            error="Refresh token not present in the payload",
+            status_code=400,
+        )
+        return response
+
+    refresh_token = data["refresh_token"]
+    d = decode_jwt(refresh_token)
+    if isinstance(d, type(String)) is False:
+        return d
+    try:
+        for to_replace in query_db(
+            query="SELECT * FROM tokens WHERE token = ? and user = ?",
+            args=[refresh_token, current_user],
+            one=True
+        ):
+
+            groups = ldap_get_membership(current_user)
+            if groups is None:
+                return _ldap_authenticate()
+            response = {
+                "access_token": create_access_token(current_user, groups),
+                "refresh_token": create_refresh_token(current_user, groups, to_replace)
+            }
+            return response
+
+    except TypeError as e:
+        if "NoneType" in str(e):
+            response = error_response(
+                method="s_refresh_token",
+                username=current_user,
+                error="Refresh token does not exist",
+                status_code=400,
+            )
+            return response
+        else:
+            response = error_response(
+                method="s_refresh_token",
+                username=current_user,
+                error=f"Unkown error: {e}",
+                status_code=500,
+            )
+            return response
 
 
 @logs(['value'])
