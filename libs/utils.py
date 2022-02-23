@@ -1,4 +1,5 @@
 from json import loads
+from tokenize import String
 from ntpath import curdir
 from libs.ldap_func import (
     LDAP_AD_USERACCOUNTCONTROL_VALUES, LDAP_AP_PRIMRARY_GROUP_ID_VALUES,
@@ -138,8 +139,46 @@ def token_required(group=None):
             token = None
             current_user = None
             # jwt is passed in the request header
-            if 'x-access-token' in request.headers:
-                token = request.headers['x-access-token']
+            if "Authorization" in request.headers:
+                token = request.headers["Authorization"].split("Bearer ")
+                if len(token) < 2:
+                    return {'message': 'Token is missing'}, 401
+                token = token[1]
+            # return 401 if token is not passed
+            if not token:
+                return {'message': 'Token is missing'}, 401
+                # decoding the payload to fetch the stored details
+            decoded = decode_jwt(token)
+            if isinstance(decoded, type(String)) is False:
+                return decoded
+            else:
+                current_user = decoded
+            
+            if group is not None and not ldap_in_group(group, current_user):
+                return error_response(
+                    method="token_required",
+                    username="",
+                    error=constants.UNAUTHORIZED,
+                    status_code=401,
+                )
+
+            return function(current_user, *args, **kwargs)
+        wrapper.__name__ = function.__name__
+        return wrapper
+    return decorator
+
+
+def expired_token(group=None):
+    def decorator(function):
+        def wrapper(*args, **kwargs):
+            token = None
+            current_user = None
+            # jwt is passed in the request header
+            if "Authorization" in request.headers:
+                token = request.headers["Authorization"].split("Bearer ")
+                if len(token) < 2:
+                    return {'message': 'Token is missing'}, 401
+                token = token[1]
             # return 401 if token is not passed
             if not token:
                 return {'message': 'Token is missing'}, 401
@@ -149,27 +188,72 @@ def token_required(group=None):
                     token, os.getenv("JWT_SECRET"),
                     algorithms=os.getenv("JWT_ALGO"),
                 )
+               
+            except jwt.ExpiredSignatureError:
+                data = jwt.decode(
+                    token, os.getenv("JWT_SECRET"),
+                    algorithms=os.getenv("JWT_ALGO"),
+                    options={"verify_exp": False},
+                )
                 current_user = data["sub"]
                 _ldap_connect(current_user, "")
-
-            except jwt.ExpiredSignatureError as e:
-
-                return error_response(
-                    method="token_required",
-                    username="",
-                    error=str(e),
-                    status_code=401,
-                )
-
+                if group is not None and not ldap_in_group(group, current_user):
+                    return error_response(
+                        method="expired_token",
+                        username="",
+                        error=constants.UNAUTHORIZED,
+                        status_code=401,
+                    )
+                return function(current_user, *args, **kwargs)
             except:
                 return error_response(
-                    method="token_required",
+                    method="expired_token",
                     username="",
                     error="Token is invalid",
                     status_code=401,
                 )
+            
+            # Token is valid, can't be refreshed
+            return error_response(
+                    method="expired_token",
+                    username="",
+                    error="Token is still valid, can't be refreshed",
+                    status_code=400,
+                )
+        wrapper.__name__ = function.__name__
+        return wrapper
+    return decorator
 
-DATABASE = "../database.db"
+
+def decode_jwt(token):
+    try:
+        data = jwt.decode(
+            token, os.getenv("JWT_SECRET"),
+            algorithms=os.getenv("JWT_ALGO"),
+        )
+        current_user = data["sub"]
+        _ldap_connect(current_user, "")
+
+    except jwt.ExpiredSignatureError as e:
+
+        return error_response(
+            method="token_required",
+            username="",
+            error=str(e),
+            status_code=401,
+        )
+
+    except:
+        return error_response(
+            method="token_required",
+            username="",
+            error="Token is invalid",
+            status_code=401,
+        )
+    return current_user
+
+
+DATABASE = "database.db"
 
 
 def get_db():
