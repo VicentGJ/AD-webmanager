@@ -45,7 +45,6 @@ def create_access_token(user, groups):
         "claims": {
             "groups": groups
         }
-
     }, os.getenv("JWT_SECRET"), os.getenv("JWT_ALGO"))
     return token
 
@@ -59,15 +58,14 @@ def create_refresh_token(user, groups, replaced_token=""):
         "iss": "ad-webmanager",
         "claims": {
             "groups": groups
-        }
-
+        },
     }, os.getenv("JWT_SECRET"), os.getenv("JWT_ALGO"))
     db = get_db()
     if replaced_token == "":
         query_db("INSERT INTO tokens (token, user, replaced_token)\
             values(?, ?, ?)", [refresh_token, user, replaced_token])
     else:
-        query_db("UPDATE tokens SET token = ?, replaced_token = ?\
+        query_db("UPDATE tokens SET token=?, replaced_token=?\
             WHERE token=?",
             [refresh_token, replaced_token, replaced_token])
 
@@ -90,11 +88,12 @@ def s_refresh_token(current_user, data):
 
     refresh_token = data["refresh_token"]
     d = decode_jwt(refresh_token)
-    if isinstance(d, type(String)) is False:
+    if isinstance(d, str) is False:
+        d[0]["error"] = f'Refresh token error: {d[0]["error"]}'
         return d
     try:
         for to_replace in query_db(
-            query="SELECT * FROM tokens WHERE token = ? and user = ?",
+            query="SELECT token FROM tokens WHERE token = ? and user = ?",
             args=[refresh_token, current_user],
             one=True
         ):
@@ -104,7 +103,11 @@ def s_refresh_token(current_user, data):
                 return _ldap_authenticate()
             response = {
                 "access_token": create_access_token(current_user, groups),
-                "refresh_token": create_refresh_token(current_user, groups, to_replace)
+                "refresh_token": create_refresh_token(
+                    current_user,
+                    groups,
+                    to_replace,
+                )
             }
             return response
 
@@ -114,7 +117,7 @@ def s_refresh_token(current_user, data):
                 method="s_refresh_token",
                 username=current_user,
                 error="Refresh token does not exist",
-                status_code=400,
+                status_code=404,
             )
             return response
         else:
