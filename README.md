@@ -55,12 +55,12 @@ the Developer Certificate of Ownership (developercertificate.org).
 
 # Environment file and JWT authentication
 
-The project uses JWT authentication and requires sensitive configuration, therefore the env file
+The project has included JWT authentication and requires sensitive configuration, therefore the env file.
+The environment file is a private file placed in the root of the project and must be called: ".env".
+The cryptographic algorithm used is HS256 which is a symmetric algorithm to ensure control over who uses the secret key.
 
-Then environment file is a private file placed in the root of the project and must be called: ".env"
-
-This is an example of is content, and all fields are required:
-JWT_SECRET="JWT_SECRET"
+This is an example of its content and all fields are required:
+JWT_SECRET="some secret"
 JWT_ALGO="HS256"
-LDAP_USER="ldap user"
-LDAP_PASS="ldap password"
+LDAP_USER="some ldap user"
+LDAP_PASS="some ldap password"
