@@ -8,3 +8,4 @@ pytz
 python-ldap
 python-dotenv
 python-json-logger
+flask-cors
