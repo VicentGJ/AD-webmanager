@@ -60,7 +60,11 @@ The environment file is a private file placed in the root of the project and mus
 The cryptographic algorithm used is HS256 which is a symmetric algorithm to ensure control over who uses the secret key.
 
 This is an example of its content and all fields are required:
-JWT_SECRET="some secret"
-JWT_ALGO="HS256"
-LDAP_USER="some ldap user"
-LDAP_PASS="some ldap password"
+
+`JWT_SECRET="some secret"`
+
+`JWT_ALGO="HS256"`
+
+`LDAP_USER="some ldap user"`
+
+`LDAP_PASS="some ldap password"`
