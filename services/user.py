@@ -1,4 +1,3 @@
-from tokenize import String
 from settings import Settings
 from flask import request, g
 from datetime import datetime
@@ -6,7 +5,7 @@ from pytz import timezone
 from libs.ldap_func import (
     ldap_change_password, ldap_create_entry, ldap_get_user, ldap_in_group,
     ldap_get_membership, _ldap_authenticate, ldap_user_exists,
-    LDAP_AD_USERACCOUNTCONTROL_VALUES, ldap_change_password, ldap_create_entry,
+    LDAP_AD_USERACCOUNTCONTROL_VALUES, ldap_create_entry,
     ldap_delete_entry, ldap_rename_entry, ldap_update_attribute,
 )
 from libs.utils import (

@@ -1,15 +1,15 @@
 import typing
 from libs.common import iri_for as url_for
 from settings import Settings
-from flask import g, request, abort, jsonify
-from libs.ldap_func import ldap_auth, ldap_get_entries, ldap_in_group
+from flask import g, request
+from libs.ldap_func import ldap_get_entries
 from libs.utils import (
     multiple_entries_fields_cleaning, multiple_entry_only_selected_fields,
-    error_response, simple_success_response, token_required
+    error_response, simple_success_response
 )
 from libs.logs import logs
 from libs.logger import log_info, log_error
-from utils import constants
+from libs import constants
 from libs.ldap_func import LDAP_SCOPES
 
 

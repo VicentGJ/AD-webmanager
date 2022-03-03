@@ -17,8 +17,9 @@
 # /usr/share/common-licenses/GPL-2
 
 from libs.common import iri_for as url_for
-from flask import g, redirect, session, Flask
-from libs.ldap_func import ldap_auth, ldap_get_entry_simple
+from flask import g, redirect, session
+from libs.ldap_func import ldap_auth
+
 
 def init(app):
     @app.route('/')

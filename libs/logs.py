@@ -2,7 +2,7 @@ import sys
 from datetime import datetime
 
 from libs.logger import log_info, log_error
-from utils import constants
+from libs import constants
 
 
 def logs(logs_params):

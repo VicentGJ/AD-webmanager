@@ -1,18 +1,16 @@
 from json import loads
 from tokenize import String
-from ntpath import curdir
 from libs.ldap_func import (
     LDAP_AD_USERACCOUNTCONTROL_VALUES, LDAP_AP_PRIMRARY_GROUP_ID_VALUES,
     _ldap_connect, ldap_in_group
 )
-from utils import constants
-from settings import Settings
-from libs.logger import log_info, log_error
-from utils import constants
+from libs import constants
+from libs.logger import log_error
 from flask import request, g
 import jwt
 import os
 import sqlite3
+
 
 def multiple_entries_fields_cleaning(function):
     def wrapper(*args, **kwargs):

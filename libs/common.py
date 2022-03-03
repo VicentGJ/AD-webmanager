@@ -18,7 +18,6 @@
 
 from flask import url_for
 from werkzeug.urls import uri_to_iri
-from configparser import SafeConfigParser
 from datetime import datetime
 
 

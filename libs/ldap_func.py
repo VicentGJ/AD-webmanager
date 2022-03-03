@@ -16,8 +16,7 @@
 # You can find the license on Debian systems in the file
 # /usr/share/common-licenses/GPL-2
 
-from django.conf import Settings
-from flask import request, Response, g, session
+from flask import request, g, session
 from functools import wraps
 import ldap
 from ldap import modlist
