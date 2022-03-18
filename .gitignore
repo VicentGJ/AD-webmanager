@@ -5,3 +5,4 @@ manager.cfg
 .idea/misc.xml
 .vscode/
 Pipfile.lock
+venv/
