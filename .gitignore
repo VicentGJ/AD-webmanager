@@ -4,4 +4,5 @@ manager.cfg
 .idea
 .idea/misc.xml
 .vscode/
+venv/
 Pipfile.lock
