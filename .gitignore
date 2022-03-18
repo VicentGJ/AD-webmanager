@@ -6,3 +6,4 @@ manager.cfg
 .vscode/
 venv/
 Pipfile.lock
+settings.py
