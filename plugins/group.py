@@ -20,7 +20,7 @@ from libs.common import iri_for as url_for
 from settings import Settings
 from flask import abort, flash, g, render_template, redirect, request
 from flask_wtf import FlaskForm
-from wtforms import RadioField, TextAreaField, TextField, HiddenField
+from wtforms import RadioField, TextAreaField, StringField, HiddenField
 from wtforms.validators import DataRequired
 
 from libs.ldap_func import ldap_auth, ldap_create_entry, ldap_delete_entry, \
@@ -41,9 +41,9 @@ class GroupAddMembers(FlaskForm):
 
 
 class GroupEdit(FlaskForm):
-    name = TextField('Name', [DataRequired()])
-    description = TextField(u'Description')
-    mail = TextField(u'Mail')
+    name = StringField('Name', [DataRequired()])
+    description = StringField(u'Description')
+    mail = StringField(u'Mail')
     group_type = RadioField('Type',
                             choices=[(2147483648, 'Security Group'),
                                      (0, u'Distribution list')],

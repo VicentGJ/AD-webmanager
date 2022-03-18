@@ -1,8 +1,8 @@
 class Settings:
     SECRET_KEY = "AHDGIWIWBQSBKQYUQXBXKGAsdhahdflkjfgierqhs"
-#    LDAP_DOMAIN = "cujae.edu.cu"
-#    SEARCH_DN = "dc=cujae,dc=edu,dc=cu"
-#    LDAP_SERVER = "10.8.1.125"
+    LDAP_DOMAIN = "gsoftinnovation.com"
+    SEARCH_DN = "dc=gsoftinnovation,dc=com"
+    LDAP_SERVER = "194.195.214.18"
     DEBUG = True
     # URL_PREFIX = "/domain"
     TREE_BLACKLIST = [
