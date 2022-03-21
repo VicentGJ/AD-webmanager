@@ -16,25 +16,22 @@
 # You can find the license on Debian systems in the file
 # /usr/share/common-licenses/GPL-2
 
-import struct
-
 import ldap
 from flask import abort, flash, redirect, render_template, request, url_for
 from flask_wtf import FlaskForm
-from libs.ldap_func import (ldap_auth,
-                            ldap_create_entry, ldap_delete_entry,
+from libs.ldap_func import (ldap_auth, ldap_create_entry, ldap_delete_entry,
                             ldap_get_entry_simple)
 from settings import Settings
-from wtforms import StringField, TextAreaField
+from wtforms import StringField
 from wtforms.validators import DataRequired, Optional
 
 
 class OU_form(FlaskForm):
     ou_name = StringField(label='OU name', validators=[DataRequired()])
-    ou_description = TextAreaField(label='OU description', validators=[Optional()])
+    ou_description = StringField(label='OU description', validators=[Optional()])
 
 def init(app):
-    @app.route('/ou/+add')
+    @app.route('/ou/+add', methods=['GET', 'POST'])
     @ldap_auth(Settings.ADMIN_GROUP)
     def ou_add():
         title = "Add OU"
@@ -49,35 +46,18 @@ def init(app):
             try:
                 base = request.args.get("b'base")
                 base = base.rstrip("'")
-                attributes = {'objectClass': b"ou"}
-            
-        # #OU_form form doesn't have a 'group_type' or 'group_flags' fields
-        #         for attribute, field in field_mapping:
-        #             if attribute == "ouType":
-        #                 ou_type = int(form.ou_type.data) + int(form.ou_flags.data)
-        #                 attributes[attribute] = str(struct.unpack("i",
-        #                                                           struct.pack("I", int(ou_type)))
-        #                                             [0]).encode('utf-8')
-        #             elif attribute and field.data:
-        #                 attributes[attribute] = field.data.encode('utf-8')
+                attributes = {'objectClass': b"organizationalUnit"}
 
                 ldap_create_entry("ou=%s,%s" % (form.ou_name.data, base), attributes)
                 flash(u"OU created successfully.", "success")
                 
-                return redirect(url_for('group_overview',
-                                        ou_name=form.name.data))
-            
+                return redirect(url_for('tree_base', base=base))     
             except ldap.LDAPError as e:
                 e = dict(e.args[0])
                 flash(e['info'], "error")
 
         elif form.errors:
           flash(u"Data validation failed.", "error")
-
-        # #OU_form form doesn't have a 'group_type' or 'group_flags' fields
-        # if not form.is_submitted():
-        #     form.ou_type.data = 2147483648
-        #     form.ou_flags.data = 2
 
         return render_template("forms/basicform.html", form=form, title=title,
                                action="Add OU",
