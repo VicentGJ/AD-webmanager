@@ -4,5 +4,11 @@ manager.cfg
 .idea
 .idea/misc.xml
 .vscode/
+<<<<<<< HEAD
 Pipfile.lock
 venv/
+=======
+venv/
+Pipfile.lock
+settings.py
+>>>>>>> 81db795716b467cb28c5a5755b374a89c689c759
