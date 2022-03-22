@@ -22,30 +22,34 @@ from flask_wtf import FlaskForm
 from libs.ldap_func import (ldap_auth, ldap_create_entry, ldap_delete_entry, ldap_get_entry,
                             ldap_get_entry_simple, ldap_get_ou)
 from settings import Settings
-from wtforms import StringField
+from wtforms import StringField, TextAreaField
 from wtforms.validators import DataRequired, Optional
 
 class OU_form(FlaskForm):
     ou_name = StringField(label='OU name', validators=[DataRequired()])
-    ou_description = StringField(label='OU description', validators=[Optional()])
+    ou_description = TextAreaField(label='OU description', validators=[Optional()])
 
 def init(app):
     @app.route('/ou/+add', methods=['GET', 'POST'])
     @ldap_auth(Settings.ADMIN_GROUP)
     def ou_add():
         title = "Add OU"
-        form = OU_form(request.form)
+        form: FlaskForm = OU_form(request.form)
         
-        field_mapping = [('ou_name', form.ou_name),
-                         ('ou_description', form.ou_description)]
+        field_mapping = [('description', form.ou_description)]
         
         form.visible_fields = [field[1] for field in field_mapping]
+        form.visible_fields.insert(0, form.ou_name)
 
         if form.validate_on_submit():
             try:
                 base = request.args.get("b'base")
                 base = base.rstrip("'")
-                attributes = {'objectClass': b"organizationalUnit"}
+                attributes = {
+                    'objectClass': b"organizationalUnit",
+                    }
+                for attribute, field in field_mapping:
+                    attributes[attribute] = field.data.encode('utf-8')
 
                 ldap_create_entry("ou=%s,%s" % (form.ou_name.data, base), attributes)
                 flash(u"OU created successfully.", "success")
@@ -61,6 +65,36 @@ def init(app):
 
         return render_template("forms/basicform.html", form=form, title=title,
                                action="Add OU",
+                               parent=url_for('tree_base'))
+                   
+    @app.route('/ou/<ou_name>/+delete', methods=['GET', 'POST'])
+    @ldap_auth(Settings.ADMIN_GROUP)
+    def ou_delete(ou_name):
+        title = "Delete OU"
+
+        # if not ldap_group_exists(ou_name):
+        #     abort(404)
+
+        form = FlaskForm(request.form)
+
+        if form.validate_on_submit():
+            try:
+                ou = ldap_get_ou(ou_name=ou_name)
+                ldap_delete_entry(ou['distinguishedName'])
+                flash(u"OU removed successfully.", "success")
+                return redirect(url_for('core_index'))
+
+            except ldap.LDAPError as e:
+                error = e.message['info'].split(":", 2)[-1].strip()
+                error = str(error[0].upper() + error[1:])
+                flash(error, "error")
+                
+        elif form.errors:
+                flash(u"Data validation failed.", "error")
+
+        return render_template("pages/ou_delete_es.html", title=title,
+                               action="Delete OU", form=form,
+                               ou_name=ou_name,
                                parent=url_for('tree_base'))
 
     # @app.route('/group/<groupname>')
@@ -104,36 +138,6 @@ def init(app):
     #                            group_fields=group_fields, admin=admin,
     #                            groups=groups, members=members, parent=parent,
     #                            grouptype_values=LDAP_AD_GROUPTYPE_VALUES)
-                   
-    @app.route('/ou/<ou_name>/+delete', methods=['GET', 'POST'])
-    @ldap_auth(Settings.ADMIN_GROUP)
-    def ou_delete(ou_name):
-        title = "Delete OU"
-
-        # if not ldap_group_exists(ou_name):
-        #     abort(404)
-
-        form = FlaskForm(request.form)
-
-        if form.validate_on_submit():
-            try:
-                ou = ldap_get_ou(ou_name=ou_name)
-                ldap_delete_entry(ou['distinguishedName'])
-                flash(u"OU removed successfully.", "success")
-                return redirect(url_for('core_index'))
-
-            except ldap.LDAPError as e:
-                error = e.message['info'].split(":", 2)[-1].strip()
-                error = str(error[0].upper() + error[1:])
-                flash(error, "error")
-                
-        elif form.errors:
-                flash(u"Data validation failed.", "error")
-
-        return render_template("pages/ou_delete_es.html", title=title,
-                               action="Delete OU", form=form,
-                               ou_name=ou_name,
-                               parent=url_for('tree_base'))
 
     # @app.route('/group/<groupname>/+edit', methods=['GET', 'POST'])
     # @ldap_auth(Settings.ADMIN_GROUP)
