@@ -16,20 +16,21 @@
 # You can find the license on Debian systems in the file
 # /usr/share/common-licenses/GPL-2
 
-from libs.common import iri_for as url_for
-from settings import Settings
-from flask import abort, flash, g, render_template, redirect, request
-from flask_wtf import FlaskForm
-from wtforms import RadioField, TextAreaField, StringField, HiddenField
-from wtforms.validators import DataRequired
-
-from libs.ldap_func import ldap_auth, ldap_create_entry, ldap_delete_entry, \
-    ldap_get_entry_simple, ldap_get_members, ldap_get_membership, \
-    ldap_get_group, ldap_in_group, ldap_update_attribute, ldap_group_exists, \
-    LDAP_AD_GROUPTYPE_VALUES, ldap_add_users_to_group
+import struct
 
 import ldap
-import struct
+from flask import abort, flash, g, redirect, render_template, request
+from flask_wtf import FlaskForm
+from libs.common import iri_for as url_for
+from libs.ldap_func import (LDAP_AD_GROUPTYPE_VALUES, ldap_add_users_to_group,
+                            ldap_auth, ldap_create_entry, ldap_delete_entry,
+                            ldap_get_entry_simple, ldap_get_group,
+                            ldap_get_members, ldap_get_membership,
+                            ldap_group_exists, ldap_in_group,
+                            ldap_update_attribute)
+from settings import Settings
+from wtforms import RadioField, StringField, TextAreaField
+from wtforms.validators import DataRequired
 
 
 class GroupDelMember(FlaskForm):
