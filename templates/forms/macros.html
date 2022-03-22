@@ -4,7 +4,7 @@
     {% else %}
     <li>
     {% endif %}
-        <label>{{ field.label.text }}{% if field.flags.required %} <span class="required">(obligatorio)</span>{% endif %}</label>
+        <label>{{ field.label.text }}{% if field.flags.required %} <span class="required">(required)</span>{% endif %}</label>
         {{ field(**kwargs)|safe }}
         {% if field.errors %}
             <span class="field-error">{{ field.errors|join("<br />") }}</span>
