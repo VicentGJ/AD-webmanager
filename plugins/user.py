@@ -181,7 +181,6 @@ def init(app):
         user = ldap_get_user(username=username)
         admin = ldap_in_group(Settings.ADMIN_GROUP)
         logged_user = g.ldap['username']
-        
         if logged_user == user['sAMAccountName'] or admin:
 
             identity_fields = [('givenName', "Name"),
