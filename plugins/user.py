@@ -17,6 +17,7 @@
 # /usr/share/common-licenses/GPL-2
 
 from libs.common import iri_for as url_for
+from libs.common import namefrom_dn
 from settings import Settings
 from flask import abort, flash, g, render_template, redirect, request, session
 from flask_wtf import FlaskForm
@@ -264,11 +265,11 @@ def init(app):
         
         else:
             abort(401)
-
+        name = namefrom_dn(parent)
         return render_template("pages/user_overview_es.html", g=g, title=title, form=form,
                                user=user, identity_fields=identity_fields,
                                group_fields=group_fields, admin=admin, groups=groups, siccip_data=siccip_data,
-                               parent=parent, uac_values=LDAP_AD_USERACCOUNTCONTROL_VALUES)
+                               parent=parent, uac_values=LDAP_AD_USERACCOUNTCONTROL_VALUES, name=name)
 
     @app.route('/user/<username>/+changepw', methods=['GET', 'POST'])
     @ldap_auth("Domain Users")

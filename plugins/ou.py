@@ -19,8 +19,9 @@
 import ldap
 from flask import abort, flash, redirect, render_template, request, url_for
 from flask_wtf import FlaskForm
+from libs.common import namefrom_dn
 from libs.ldap_func import (ldap_auth, ldap_create_entry, ldap_delete_entry,
-                            ldap_get_ou, ldap_update_attribute)
+                            ldap_get_ou)
 from settings import Settings
 from wtforms import StringField, TextAreaField
 from wtforms.validators import DataRequired, Optional
@@ -74,9 +75,6 @@ def init(app):
     def ou_delete(ou_name):
         title = "Delete OU"
 
-        # if not ldap_group_exists(ou_name):
-        #     abort(404)
-
         form = FlaskForm(request.form)
 
         if form.validate_on_submit():
@@ -84,7 +82,7 @@ def init(app):
                 ou = ldap_get_ou(ou_name=ou_name)
                 ldap_delete_entry(ou['distinguishedName'])
                 flash(u"OU removed successfully.", "success")
-                return redirect(url_for('core_index'))
+                return redirect(url_for('tree_base'))
 
             except ldap.LDAPError as e:
                 error = e.message['info'].split(":", 2)[-1].strip()
@@ -93,75 +91,75 @@ def init(app):
                 
         elif form.errors:
                 flash(u"Data validation failed.", "error")
-
+        name = namefrom_dn(ou_name).title()
         return render_template("pages/ou_delete_es.html", title=title,
                                action="Delete OU", form=form,
-                               ou_name=ou_name,
-                               parent=url_for('tree_base'))
+                               ou_name=ou_name.upper(),
+                               parent=url_for('tree_base'), name=name)
 
-    @app.route('/ou/<ou_name>/+edit', methods=['GET', 'POST'])
-    @ldap_auth(Settings.ADMIN_GROUP)
-    def ou_edit(ou_name):
-        title = "Edit OU"
+    # @app.route('/ou/<ou_name>/+edit', methods=['GET', 'POST'])
+    # @ldap_auth(Settings.ADMIN_GROUP)
+    # def ou_edit(ou_name):
+    #     title = "Edit OU"
 
-        ou = ldap_get_ou(ou_name)
+    #     ou = ldap_get_ou(ou_name)
 
-        form = OU_form(request.form)
-        field_mapping = [('description', form.ou_description)]
+    #     form = OU_form(request.form)
+    #     field_mapping = [('description', form.ou_description)]
         
-        form.visible_fields = [field[1] for field in field_mapping]
+    #     form.visible_fields = [field[1] for field in field_mapping]
 
-        form.visible_fields.insert(0, form.ou_name)
+    #     form.visible_fields.insert(0, form.ou_name)
 
-        if form.validate_on_submit():
-            try:
-                for attribute, field in field_mapping:
-                    value = field.data
-                    if value != group.get(attribute):
-                        if attribute == 'sAMAccountName':
-                            # Rename the account
-                            ldap_update_attribute(ou['distinguishedName'],
-                                                  "sAMAccountName", value)
-                            # Finish by renaming the whole record
-                            ldap_update_attribute(group['distinguishedName'],
-                                                  "cn", value)
-                            group = ldap_get_group(value)
-                        elif attribute == "groupType":
-                            group_type = int(form.group_type.data) + \
-                                int(form.group_flags.data)
-                            ldap_update_attribute(
-                                group['distinguishedName'], attribute,
-                                str(
-                                    struct.unpack(
-                                        "i", struct.pack(
-                                            "I", int(group_type)))[0]))
-                        elif attribute:
-                            ldap_update_attribute(group['distinguishedName'],
-                                                  attribute, value)
+    #     if form.validate_on_submit():
+    #         try:
+    #             for attribute, field in field_mapping:
+    #                 value = field.data
+    #                 if value != group.get(attribute):
+    #                     if attribute == 'sAMAccountName':
+    #                         # Rename the account
+    #                         ldap_update_attribute(ou['distinguishedName'],
+    #                                               "sAMAccountName", value)
+    #                         # Finish by renaming the whole record
+    #                         ldap_update_attribute(group['distinguishedName'],
+    #                                               "cn", value)
+    #                         group = ldap_get_group(value)
+    #                     elif attribute == "groupType":
+    #                         group_type = int(form.group_type.data) + \
+    #                             int(form.group_flags.data)
+    #                         ldap_update_attribute(
+    #                             group['distinguishedName'], attribute,
+    #                             str(
+    #                                 struct.unpack(
+    #                                     "i", struct.pack(
+    #                                         "I", int(group_type)))[0]))
+    #                     elif attribute:
+    #                         ldap_update_attribute(group['distinguishedName'],
+    #                                               attribute, value)
 
-                flash(u"Successfully modified group.", "success")
-                return redirect(url_for('group_overview',
-                                        groupname=form.name.data))
-            except ldap.LDAPError as e:
-                e = dict(e.args[0])
-                flash(e['info'], "error")
-        elif form.errors:
-            flash(u"Data verification failed.", "error")
+    #             flash(u"Successfully modified group.", "success")
+    #             return redirect(url_for('group_overview',
+    #                                     groupname=form.name.data))
+    #         except ldap.LDAPError as e:
+    #             e = dict(e.args[0])
+    #             flash(e['info'], "error")
+    #     elif form.errors:
+    #         flash(u"Data verification failed.", "error")
 
-        if not form.is_submitted():
-            form.name.data = group.get('sAMAccountName')
-            form.description.data = group.get('description')
-            form.mail.data = group.get('mail')
-            form.group_type.data = group['groupType'] & 2147483648
-            form.group_flags.data = 0
-            for key, flag in LDAP_AD_GROUPTYPE_VALUES.items():
-                if flag[1] and group['groupType'] & key:
-                    form.group_flags.data += key
+    #     if not form.is_submitted():
+    #         form.name.data = group.get('sAMAccountName')
+    #         form.description.data = group.get('description')
+    #         form.mail.data = group.get('mail')
+    #         form.group_type.data = group['groupType'] & 2147483648
+    #         form.group_flags.data = 0
+    #         for key, flag in LDAP_AD_GROUPTYPE_VALUES.items():
+    #             if flag[1] and group['groupType'] & key:
+    #                 form.group_flags.data += key
 
-        return render_template("forms/basicform.html", form=form, title=title,
-                               action="Save changes",
-                               parent=url_for('group_overview',
-                                              groupname=groupname))
+    #     return render_template("forms/basicform.html", form=form, title=title,
+    #                            action="Save changes",
+    #                            parent=url_for('group_overview',
+    #                                           groupname=groupname))
 
     # @app.route('/group/<groupname>/+add-members', methods=['GET', 'POST'])
     # @ldap_auth(Settings.ADMIN_GROUP)
