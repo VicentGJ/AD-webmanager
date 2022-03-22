@@ -135,6 +135,14 @@ def ldap_get_group(groupname, key="sAMAccountName"):
     return ldap_get_entry_simple({'objectClass': 'group',
                                   key: groupname})
 
+def ldap_get_ou(ou_name, key="distinguishedName"):
+    """
+        Return the attributes for the ou or None if it doesn't exist.
+    """
+
+    return ldap_get_entry_simple({'objectClass': 'organizationalUnit',
+                                  key: ou_name})
+
 
 def ldap_get_entry_simple(filter_dict):
     """

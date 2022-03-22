@@ -7,24 +7,23 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
-#
+
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-#
+
 # You can find the license on Debian systems in the file
 # /usr/share/common-licenses/GPL-2
 
 import ldap
 from flask import abort, flash, redirect, render_template, request, url_for
 from flask_wtf import FlaskForm
-from libs.ldap_func import (ldap_auth, ldap_create_entry, ldap_delete_entry,
-                            ldap_get_entry_simple)
+from libs.ldap_func import (ldap_auth, ldap_create_entry, ldap_delete_entry, ldap_get_entry,
+                            ldap_get_entry_simple, ldap_get_ou)
 from settings import Settings
 from wtforms import StringField
 from wtforms.validators import DataRequired, Optional
-
 
 class OU_form(FlaskForm):
     ou_name = StringField(label='OU name', validators=[DataRequired()])
@@ -50,8 +49,9 @@ def init(app):
 
                 ldap_create_entry("ou=%s,%s" % (form.ou_name.data, base), attributes)
                 flash(u"OU created successfully.", "success")
-                
-                return redirect(url_for('tree_base', base=base))     
+ 
+                return redirect(url_for('tree_base', base=base))
+
             except ldap.LDAPError as e:
                 e = dict(e.args[0])
                 flash(e['info'], "error")
@@ -62,7 +62,6 @@ def init(app):
         return render_template("forms/basicform.html", form=form, title=title,
                                action="Add OU",
                                parent=url_for('tree_base'))
-
 
     # @app.route('/group/<groupname>')
     # @ldap_auth("Domain Users")
@@ -105,35 +104,36 @@ def init(app):
     #                            group_fields=group_fields, admin=admin,
     #                            groups=groups, members=members, parent=parent,
     #                            grouptype_values=LDAP_AD_GROUPTYPE_VALUES)
+                   
+    @app.route('/ou/<ou_name>/+delete', methods=['GET', 'POST'])
+    @ldap_auth(Settings.ADMIN_GROUP)
+    def ou_delete(ou_name):
+        title = "Delete OU"
 
-    # @app.route('/group/<groupname>/+delete', methods=['GET', 'POST'])
-    # @ldap_auth(Settings.ADMIN_GROUP)
-    # def group_delete(groupname):
-    #     title = "Delete group"
+        # if not ldap_group_exists(ou_name):
+        #     abort(404)
 
-    #     if not ldap_group_exists(groupname):
-    #         abort(404)
+        form = FlaskForm(request.form)
 
-    #     form = FlaskForm(request.form)
+        if form.validate_on_submit():
+            try:
+                ou = ldap_get_ou(ou_name=ou_name)
+                ldap_delete_entry(ou['distinguishedName'])
+                flash(u"OU removed successfully.", "success")
+                return redirect(url_for('core_index'))
 
-    #     if form.validate_on_submit():
-    #         try:
-    #             group = ldap_get_group(groupname=groupname)
-    #             ldap_delete_entry(group['distinguishedName'])
-    #             flash(u"Group removed successfully.", "success")
-    #             return redirect(url_for('core_index'))
-    #         except ldap.LDAPError as e:
-    #             error = e.message['info'].split(":", 2)[-1].strip()
-    #             error = str(error[0].upper() + error[1:])
-    #             flash(error, "error")
-    #     elif form.errors:
-    #             flash(u"Data validation failed.", "error")
+            except ldap.LDAPError as e:
+                error = e.message['info'].split(":", 2)[-1].strip()
+                error = str(error[0].upper() + error[1:])
+                flash(error, "error")
+                
+        elif form.errors:
+                flash(u"Data validation failed.", "error")
 
-    #     return render_template("pages/group_delete_es.html", title=title,
-    #                            action="Delete group", form=form,
-    #                            groupname=groupname,
-    #                            parent=url_for('group_overview',
-    #                                           groupname=groupname))
+        return render_template("pages/ou_delete_es.html", title=title,
+                               action="Delete OU", form=form,
+                               ou_name=ou_name,
+                               parent=url_for('tree_base'))
 
     # @app.route('/group/<groupname>/+edit', methods=['GET', 'POST'])
     # @ldap_auth(Settings.ADMIN_GROUP)

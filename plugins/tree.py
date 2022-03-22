@@ -69,8 +69,8 @@ def init(app):
                 parent = ",".join(base_split[1:])
 
             return render_template("pages/tree_base_es.html", form=form, parent=parent,
-                                   admin=admin, base=base, entries=entries,
-                                   entry_fields=entry_fields)
+                                   admin=admin, base=base.upper(), entries=entries,
+                                   entry_fields=entry_fields, root=g.ldap['search_dn'].upper())
 
     def get_entries(filter_str, filter_select, base, scope):
         """
