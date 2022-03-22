@@ -3,146 +3,153 @@
 {% block content %}
 
 {% if parent %}
-            <a href="{{ url_for('tree_base', base=parent) }}" class="button">Return to: {{ parent }}</a>
+<a href="{{ url_for('tree_base', base=parent) }}" class="button">Return to: {{ name }}</a>
 {% endif %}
 
 
 <div class="user_profile" style="min-height:10em;">
     <div class="right">
-{% if g.ldap['username'] == user['sAMAccountName'] or admin %}
-        <p style="text-align: right;"><a href="{{ url_for('user_changepw', username=user['sAMAccountName']) }}" class="button">Change Password</a></p>
-{% endif %}
-{% if admin %}
-        <p style="text-align: right;"><a href="{{ url_for('user_edit_profile', username=user['sAMAccountName']) }}" class="button">Edit user</a></p>
-        <p style="text-align: right;"><a href="{{ url_for('user_delete', username=user['sAMAccountName']) }}" class="button">Remove user</a></p>
-{% endif %}
+        {% if g.ldap['username'] == user['sAMAccountName'] or admin %}
+        <p style="text-align: right;"><a href="{{ url_for('user_changepw', username=user['sAMAccountName']) }}"
+                class="button">Change Password</a></p>
+        {% endif %}
+        {% if admin %}
+        <p style="text-align: right;"><a href="{{ url_for('user_edit_profile', username=user['sAMAccountName']) }}"
+                class="button">Edit user</a></p>
+        <p style="text-align: right;"><a href="{{ url_for('user_delete', username=user['sAMAccountName']) }}"
+                class="button">Remove user</a></p>
+        {% endif %}
     </div>
     <h2>Profile</h2>
 
     <table style='width:auto;'>
-{% for key, title in identity_fields %}
-{% if key in user %}
+        {% for key, title in identity_fields %}
+        {% if key in user %}
         <tr>
             <th style='padding-right:10px;'>{{ title }}</td>
-{% if key == "otherMailbox" %}
+                {% if key == "otherMailbox" %}
             <td> {% for alias in user[key] %}
-                    {{ alias }},
-                 {% endfor %}
+                {{ alias }},
+                {% endfor %}
             </td>
-{% elif key == "jpegPhoto" %}
+            {% elif key == "jpegPhoto" %}
             <td>
                 <img src={{ user[key] }} alt="photo" width="90" height="90">
             </td>
-{% else %}
+            {% else %}
             <td>{{ user[key] }}</td>
-{% endif %}
+            {% endif %}
         </tr>
-{% endif %}
-{% endfor %}
-{% if 'userAccountControl' in user %}
+        {% endif %}
+        {% endfor %}
+        {% if 'userAccountControl' in user %}
         <tr>
             <th style='padding-right:10px;'>Flags </th>
             <td>
                 <ul>
-{% for key, value in uac_values.items() %}
-{% if user['userAccountControl'].__and__(key) %}
+                    {% for key, value in uac_values.items() %}
+                    {% if user['userAccountControl'].__and__(key) %}
                     <li>{{ value[0] }}</li>
-{% endif %}
-{% endfor %}
+                    {% endif %}
+                    {% endfor %}
                 </ul>
             </td>
         </tr>
-{% endif %}
+        {% endif %}
     </table>
 
-{% if groups %}
-<br><br>
-<hr>
-<div class="right">
-   {% if admin %}
-    <p>
-     <form method="post" action="?" class="form">
-        {{ form.csrf_token }}
-        {{ form.available_groups }}
-        <input type="submit" value="Add" />
-    </form>
-    </p>
-   {% endif %}
-</div>
-<h2>Group Membership</h2>
-<table>
-    <tr>
-{% for key, title in group_fields %}
-        <th>{{ title }}</th>
-{% endfor %}
-    </tr>
-
-{% for entry in groups %}
-    <tr>
-{% for key, title in group_fields %}
-{% if key in entry %}
-        <td>{{ entry[key] }}</td>
-{% else %}
-        <td>&nbsp;</td>
-{% endif %}
-{% endfor %}
+    {% if groups %}
+    <br><br>
+    <hr>
+    <div class="right">
         {% if admin %}
-           {% if '__primaryGroup' in user and user['__primaryGroup'] == entry['distinguishedName'] %}
-            <td></td>
-           {% else %}
-            <td><a href="{{ url_for('group_delmember', groupname=entry['sAMAccountName'], member=user['sAMAccountName'], show_user=True) }}">(remove from group)</a></td>
-           {% endif %}
+        <p>
+        <form method="post" action="?" class="form">
+            {{ form.csrf_token }}
+            {{ form.available_groups }}
+            <input type="submit" value="Add" />
+        </form>
+        </p>
         {% endif %}
-    </tr>
-{% endfor %}
-</table>
-{% endif %}
+    </div>
+    <h2>Group Membership</h2>
+    <table>
+        <tr>
+            {% for key, title in group_fields %}
+            <th>{{ title }}</th>
+            {% endfor %}
+        </tr>
+
+        {% for entry in groups %}
+        <tr>
+            {% for key, title in group_fields %}
+            {% if key in entry %}
+            <td>{{ entry[key] }}</td>
+            {% else %}
+            <td>&nbsp;</td>
+            {% endif %}
+            {% endfor %}
+            {% if admin %}
+            {% if '__primaryGroup' in user and user['__primaryGroup'] == entry['distinguishedName'] %}
+            <td></td>
+            {% else %}
+            <td><a
+                    href="{{ url_for('group_delmember', groupname=entry['sAMAccountName'], member=user['sAMAccountName'], show_user=True) }}">(remove
+                    from group)</a></td>
+            {% endif %}
+            {% endif %}
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
 </div>
 <br><br>
 
 {% if g.siccip %}
 <hr>
 <div class="right">
-{% if admin %}
-   {% if siccip_data %}
-    <p style="text-align: right;"><a href="{{ url_for('user_edit_siccip', username=user['sAMAccountName']) }}" class="button">Edit SICC-IP Conf</a></p>
-   {% else %}
-    <p style="text-align: right;"><a href="{{ url_for('user_edit_siccip', username=user['sAMAccountName']) }}" class="button">Create SICC-IP Conf</a></p>
-   {% endif %}
-{% endif %}
+    {% if admin %}
+    {% if siccip_data %}
+    <p style="text-align: right;"><a href="{{ url_for('user_edit_siccip', username=user['sAMAccountName']) }}"
+            class="button">Edit SICC-IP Conf</a></p>
+    {% else %}
+    <p style="text-align: right;"><a href="{{ url_for('user_edit_siccip', username=user['sAMAccountName']) }}"
+            class="button">Create SICC-IP Conf</a></p>
+    {% endif %}
+    {% endif %}
 </div>
 <h2>Configuración SICC-IP</h2>
 {% if siccip_data %}
-    <table style='width:auto;'>
-        <tr>
-            <th style='padding-right:10px;'>Internet Quote:</td>
-            <td>{{ siccip_data['internet_quota'] }} MU</td>
-        </tr>
-        <tr>
-            <th style='padding-right:10px;'>% de la cuota utilizable en redes sociales:</td>
-            <td>{{ siccip_data['socialnetwork_quota'] }} %</td>
-        </tr>
-        <tr>
-            <th style='padding-right:10px;'>Filtro Dansguardian:</td>
-            <td>{{ siccip_data['dansguardian_filter'] }}</td>
-        </tr>
-        <tr>
-            <th style='padding-right:10px;'>Tipo de cuenta de Correo:</td>
+<table style='width:auto;'>
+    <tr>
+        <th style='padding-right:10px;'>Internet Quote:</td>
+        <td>{{ siccip_data['internet_quota'] }} MU</td>
+    </tr>
+    <tr>
+        <th style='padding-right:10px;'>% de la cuota utilizable en redes sociales:</td>
+        <td>{{ siccip_data['socialnetwork_quota'] }} %</td>
+    </tr>
+    <tr>
+        <th style='padding-right:10px;'>Filtro Dansguardian:</td>
+        <td>{{ siccip_data['dansguardian_filter'] }}</td>
+    </tr>
+    <tr>
+        <th style='padding-right:10px;'>Tipo de cuenta de Correo:</td>
             {% if siccip_data['email_type'] == 'F' %}
-            <td>Sin restricciones de entrega</td>
-            {% elif siccip_data['email_type'] == 'R' %}
-            <td>Con restricciones (envío y recepción a .cu)</td>
-            {% else %}
-            <td>Solo correo local</td>
-            {% endif %}
-        </tr>
-        <tr>
-            <th style='padding-right:10px;'>Cuota para el correo:</td>
-            <td>{{ siccip_data['email_quota'] }} UM</td>
-        </tr>
+        <td>Sin restricciones de entrega</td>
+        {% elif siccip_data['email_type'] == 'R' %}
+        <td>Con restricciones (envío y recepción a .cu)</td>
+        {% else %}
+        <td>Solo correo local</td>
+        {% endif %}
+    </tr>
+    <tr>
+        <th style='padding-right:10px;'>Cuota para el correo:</td>
+        <td>{{ siccip_data['email_quota'] }} UM</td>
+    </tr>
 </table>
 {% else %}
-    <p style='padding-right:10px;'>El usuario no tiene definida configuración compatible con SICC-IP</p>
+<p style='padding-right:10px;'>El usuario no tiene definida configuración compatible con SICC-IP</p>
 {% endif %}
 {% endif %}
 
