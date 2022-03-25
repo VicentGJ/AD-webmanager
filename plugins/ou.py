@@ -91,13 +91,13 @@ def init(app):
                 
         elif form.errors:
                 flash(u"Data validation failed.", "error")
-        name = namefrom_dn(ou_name).title()
+        name = namefrom_dn(ou_name)
         return render_template("pages/ou_delete_es.html", title=title,
                                action="Delete OU", form=form,
                                ou_name=ou_name.upper(),
                                parent=url_for('tree_base'), name=name)
 
-    
+    #FIXME: can change ou description but not name
     @app.route('/ou/<ou_name>/+edit', methods=['GET', 'POST'])
     @ldap_auth(Settings.ADMIN_GROUP)
     def ou_edit(ou_name):
@@ -106,9 +106,8 @@ def init(app):
         ou = ldap_get_ou(ou_name)
 
         form = OU_form(request.form)
-        field_mapping = [('description', form.ou_description)]
+        field_mapping = [('distinguishedName',form.ou_name),('description', form.ou_description)]
         form.visible_fields = [field[1] for field in field_mapping]
-        form.visible_fields.insert(0, form.ou_name)
 
         if form.validate_on_submit():
             try:
@@ -116,21 +115,17 @@ def init(app):
                     value = field.data
                     if value != ou.get(attribute):
                         if attribute == 'distinguishedName':
-                            # Rename the OU
-                            ldap_update_attribute(ou['distinguishedName'],
-                                                  "distinguishedName", value)
-                            # Finish by renaming the whole record
                             dn: str = ou['distinguishedName'].split(",", 1)[1]
-                            dn = "CN={0},{1}".format(value, dn)
+                            dn = "OU={0},{1}".format(value, dn)
                             ldap_update_attribute(ou['distinguishedName'],
-                                                  "distinguishedName", "CN={0}".format(value))
+                                                  "distinguishedName", "OU={0}".format(value))
                             ou['distinguishedName'] = dn
                         elif attribute:
                             ldap_update_attribute(ou['distinguishedName'],
                                                   attribute, value)
 
                 flash(u"Successfully modified OU.", "success")
-                return redirect(url_for('tree_base'))
+                return redirect(url_for('tree_base', base=ou['distinguishedName']))
 
             except ldap.LDAPError as e:
                 e = dict(e.args[0])
