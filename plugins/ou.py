@@ -129,7 +129,6 @@ def init(app):
             except ldap.LDAPError as e:
                 e = dict(e.args[0])
                 flash(e['info'], "error")
-                raise e
 
         elif form.errors:
             flash(u"Data verification failed.", "error")
