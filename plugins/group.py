@@ -16,6 +16,8 @@
 # You can find the license on Debian systems in the file
 # /usr/share/common-licenses/GPL-2
 
+from email.mime import base
+from operator import indexOf
 import struct
 
 import ldap
@@ -214,9 +216,11 @@ def init(app):
                             ldap_update_attribute(group['distinguishedName'],
                                                   "sAMAccountName", value)
                             # Finish by renaming the whole record
+                            dn: str = group['distinguishedName'].split(",", 1)[1]
+                            dn = "CN={0},{1}".format(value, dn)
                             ldap_update_attribute(group['distinguishedName'],
-                                                  "cn", value)
-                            group = ldap_get_group(value)
+                                                  "distinguishedName", "CN={0}".format(value))
+                            group['distinguishedName'] = dn
                         elif attribute == "groupType":
                             group_type = int(form.group_type.data) + \
                                 int(form.group_flags.data)
@@ -236,6 +240,7 @@ def init(app):
             except ldap.LDAPError as e:
                 e = dict(e.args[0])
                 flash(e['info'], "error")
+                raise e
         elif form.errors:
             flash(u"Data verification failed.", "error")
 
