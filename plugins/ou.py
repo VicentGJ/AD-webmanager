@@ -97,7 +97,6 @@ def init(app):
                                ou_name=ou_name.upper(),
                                parent=url_for('tree_base'), name=name)
 
-    #FIXME: can change ou description but not name
     @app.route('/ou/<ou_name>/+edit', methods=['GET', 'POST'])
     @ldap_auth(Settings.ADMIN_GROUP)
     def ou_edit(ou_name):

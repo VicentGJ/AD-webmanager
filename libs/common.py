@@ -86,3 +86,6 @@ def get_parsed_pager_attribute(pager):
 
 def namefrom_dn(dn):
     return dn.split('=')[1].split(',')[0]
+def get_objclass(dn):
+    print(dn.split('=')[0])
+    return dn.split('=')[0]
