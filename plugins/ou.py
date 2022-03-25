@@ -16,6 +16,7 @@
 # You can find the license on Debian systems in the file
 # /usr/share/common-licenses/GPL-2
 
+from email.mime import base
 import ldap
 from flask import abort, flash, redirect, render_template, request, url_for
 from flask_wtf import FlaskForm
@@ -96,7 +97,7 @@ def init(app):
         return render_template("pages/ou_delete_es.html", title=title,
                                action="Delete OU", form=form,
                                ou_name=ou_name.upper(),
-                               parent=url_for('tree_base'), name=name)
+                               parent=url_for('tree_base', base=ou_name), name=name)
 
     @app.route('/ou/<ou_name>/+edit', methods=['GET', 'POST'])
     @ldap_auth(Settings.ADMIN_GROUP)
