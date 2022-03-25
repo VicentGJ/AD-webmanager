@@ -3,7 +3,7 @@
 {% block content %}
 
 {% if parent %}
-            <a href="{{ url_for('tree_base', base=parent) }}" class="button">Return to: {{ parent }}</a>
+            <a href="{{ url_for('tree_base', base=parent) }}" class="button">Return to: {{ parent_name }}</a>
 {% endif %}
 
 <div class="group_profile" style="min-height:10em;">
