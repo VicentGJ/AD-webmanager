@@ -69,7 +69,8 @@ def init(app):
         return render_template("forms/basicform.html", form=form, title=title,
                                action="Add OU",
                                parent=url_for('tree_base'))
-                   
+                               
+    #FIXME:   delete all children          
     @app.route('/ou/<ou_name>/+delete', methods=['GET', 'POST'])
     @ldap_auth(Settings.ADMIN_GROUP)
     def ou_delete(ou_name):
