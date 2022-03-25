@@ -1,0 +1,26 @@
+{% extends "base-modal_es.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+{% from "forms/macros.html" import render_field %}
+{% if request.query_string %}
+<form method="post" action="?{{ request.query_string }}" class="form">
+    {% else %}
+    <form method="post" action="?" class="form">
+        {% endif %}
+        {{ form.csrf_token }}
+        <ul>
+            {% for field in form.visible_fields %}
+            {% if field != form.new_alias%}
+            {{ render_field(field) }}
+            {% else %}
+            <!-- <a href="url_for('user_edit_profile, username=username')"><input type="button" value="New alias"></a> -->
+            {{ render_field(field, show_label=False) }}
+            {% endif %}
+            {% endfor %}
+        </ul>
+        {% if parent %}
+        <a class="link-button" href="{{ parent }}">Cancel</a>
+        {% endif %}
+        <input class="right" type="submit" value="{{ action }}" />
+    </form>
+    {% endblock %}
