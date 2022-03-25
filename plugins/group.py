@@ -23,7 +23,7 @@ import struct
 import ldap
 from flask import abort, flash, g, redirect, render_template, request
 from flask_wtf import FlaskForm
-from libs.common import iri_for as url_for
+from libs.common import iri_for as url_for, namefrom_dn
 from libs.ldap_func import (LDAP_AD_GROUPTYPE_VALUES, ldap_add_users_to_group,
                             ldap_auth, ldap_create_entry, ldap_delete_entry,
                             ldap_get_entry_simple, ldap_get_group,
@@ -143,11 +143,12 @@ def init(app):
                          entry['sAMAccountName'])
 
         parent = ",".join(group['distinguishedName'].split(',')[1:])
-
+        parent_name = namefrom_dn(parent)
         return render_template("pages/group_overview_es.html", g=g, title=title,
                                group=group, identity_fields=identity_fields,
                                group_fields=group_fields, admin=admin,
                                groups=groups, members=members, parent=parent,
+                               parent_name=parent_name,
                                grouptype_values=LDAP_AD_GROUPTYPE_VALUES)
 
     @app.route('/group/<groupname>/+delete', methods=['GET', 'POST'])
