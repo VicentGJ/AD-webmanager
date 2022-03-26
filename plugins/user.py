@@ -151,7 +151,6 @@ def init(app):
                         if len(x):
                             for mail in x:#TODO: save x to the otherMailbox's list
                                 attributes[attribute] = [mail.encode('utf-8')]
-                            print(attributes)
                     elif attribute and field.data:
                         if isinstance(field, BooleanField):
                             if field.data:
