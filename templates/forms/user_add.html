@@ -1,8 +1,5 @@
 {% extends "base-modal_es.html" %}
 {% block title %}{{ title }}{% endblock %}
-{% block js %}
-<script src="../../static/js/jquery.min.js"></script>
-{% endblock js %}
 {% block content %}
 {% from "forms/macros.html" import render_field %}
 {% if request.query_string %}
@@ -16,10 +13,10 @@
             {{ render_field(form.last_name) }}
             {{ render_field(form.user_name) }}
             {{ render_field(form.mail) }}
-            <li>
-                <span id="add-alias">{{ form.alias.label }}</span>
-                <input type="button" value="+" id="add-alias-btn">
-            </li>
+
+            <span id="add-alias">{{ form.alias.label }}</span>
+            <input type="button" value="+" id="add-alias-btn">
+
             {{ render_field(form.password) }}
             {{ render_field(form.password_confirm) }}
             {{ render_field(form.uac_flags) }}
@@ -33,7 +30,7 @@
     <script>
         $(document).ready(function () {
             $("#add-alias-btn").click(function () {
-                $("#add-alias").append("<li><input type=\"email\" name=\"alias_mail\"></li>");
+                $("#add-alias").append("<input type=\"email\" name=\"alias_mail\" placeholder=\"new alias\">");
             });
         });
     </script>

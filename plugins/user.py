@@ -426,13 +426,14 @@ def init(app):
             form.user_name.data = user.get('sAMAccountName')
             form.mail.data = user.get('mail')
 #TODO: show the other mail boxes on the user edit template
+            othermail = ['mail1', 'mail2', 'mail3']
             form.uac_flags.data = [key for key, flag in
                                    LDAP_AD_USERACCOUNTCONTROL_VALUES.items()
                                    if (flag[1] and
                                        user['userAccountControl'] & key)]
 
         return render_template("forms/user_edit.html", form=form, title=title,
-                               action="Save changes",username=username,
+                               action="Save changes",username=username,othermail=othermail,
                                parent=url_for('user_overview',
                                               username=username))
 

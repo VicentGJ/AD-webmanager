@@ -1,8 +1,5 @@
 {% extends "base-modal_es.html" %}
 {% block title %}{{ title }}{% endblock %}
-{% block js %}
-    <script src="../../static/js/jquery.min.js"></script>
-{% endblock js %}
 {% block content %}
 {% from "forms/macros.html" import render_field %}
 {% if request.query_string %}
@@ -12,15 +9,24 @@
         {% endif %}
         {{ form.csrf_token }}
         <ul>
-            {{ render_field(form.first_name) }}
-            {{ render_field(form.last_name) }}
-            {{ render_field(form.user_name) }}
-            {{ render_field(form.mail) }}
-            <li>
-                <span id="add-alias">{{ form.alias.label }}</span>
-                <input type="button" value="+" id="add-alias-btn">
+            {{ render_field(form.first_name, class="form-control") }}
+            {{ render_field(form.last_name, class="form-control") }}
+            {{ render_field(form.user_name, class="form-control") }}
+            {{ render_field(form.mail, class="form-control") }}
+
+            <li id="add-alias">
+                <label>{{ form.alias.label }}</label>
+                <!---TODO: dynamic id for inputs--->
+                {% for mail in othermail %}
+                <div class="input-group mb-3 div-identifier">
+                    <input class="form-control" type="email" name="alias_mail" value="{{ mail }}" placeholder="new alias">
+                    <input type="button" value="-" class="btn btn-danger remove-alias">
+                </div>
+                {% endfor %}
             </li>
-            {{ render_field(form.uac_flags) }}
+            <input type="button" value="+" id="add-alias-btn">
+
+            {{ render_field(form.uac_flags, class="form-control") }}
         </ul>
 
         {% if parent %}
@@ -30,9 +36,18 @@
     </form>
     <script>
         $(document).ready(function () {
+            $(document).on("click", ".remove-alias", function () {
+                $(this).parent('.div-identifier').remove();
+            });
             $("#add-alias-btn").click(function () {
-                $("#add-alias").append("<li><input type=\"email\" name=\"alias_mail\"></li>");
+                $("#add-alias").append("    \
+                <div class=\"div-identifier input-group mb-3 \">    \
+                    <input class=\"form-control\" type=\"email\" name=\"alias_mail\" placeholder=\"new alias\">  \
+                    <input type=\"button\" value=\"-\" class=\"btn btn-danger remove-alias\">    \
+                </div>  \
+                    ");
             });
         });
+
     </script>
     {% endblock %}

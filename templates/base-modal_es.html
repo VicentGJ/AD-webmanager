@@ -7,8 +7,11 @@
     {% block css %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/import.css') }}" />
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}"> -->
     {% endblock %}
-    {% block js %}{% endblock js %}
+    {% block js %}
+    <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+    {% endblock js %}
 </head>
 
 <body class="modal-content login">
