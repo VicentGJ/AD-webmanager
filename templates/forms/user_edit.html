@@ -16,7 +16,6 @@
 
             <li id="add-alias">
                 <label>{{ form.alias.label }}</label>
-                <!---TODO: dynamic id for inputs--->
                 {% for mail in othermail %}
                 <div class="input-group mb-3 div-identifier">
                     <input class="form-control" type="email" name="alias_mail" value="{{ mail }}" placeholder="new alias">

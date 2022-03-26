@@ -9,17 +9,20 @@
         {% endif %}
         {{ form.csrf_token }}
         <ul>
-            {{ render_field(form.first_name) }}
-            {{ render_field(form.last_name) }}
-            {{ render_field(form.user_name) }}
-            {{ render_field(form.mail) }}
-
-            <span id="add-alias">{{ form.alias.label }}</span>
+            {{ render_field(form.first_name, class="form-control") }}
+            {{ render_field(form.last_name, class="form-control") }}
+            {{ render_field(form.user_name, class="form-control") }}
+            {{ render_field(form.mail, class="form-control") }}
+            
+            <li id="add-alias">
+                <label>{{ form.alias.label }}</label>
+                
+            </li>
             <input type="button" value="+" id="add-alias-btn">
-
-            {{ render_field(form.password) }}
-            {{ render_field(form.password_confirm) }}
-            {{ render_field(form.uac_flags) }}
+            
+            {{ render_field(form.password, class="form-control") }}
+            {{ render_field(form.password_confirm, class="form-control") }}
+            {{ render_field(form.uac_flags, class="form-control") }}
         </ul>
 
         {% if parent %}
@@ -29,9 +32,18 @@
     </form>
     <script>
         $(document).ready(function () {
+            $(document).on("click", ".remove-alias", function () {
+                $(this).parent('.div-identifier').remove();
+            });
             $("#add-alias-btn").click(function () {
-                $("#add-alias").append("<input type=\"email\" name=\"alias_mail\" placeholder=\"new alias\">");
+                $("#add-alias").append("    \
+                        <div class=\"div-identifier input-group mb-3 \">    \
+                            <input class=\"form-control\" type=\"email\" name=\"alias_mail\" placeholder=\"new alias\">  \
+                            <input type=\"button\" value=\"-\" class=\"btn btn-danger remove-alias\">    \
+                        </div>  \
+                            ");
             });
         });
+
     </script>
     {% endblock %}
