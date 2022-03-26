@@ -16,28 +16,29 @@
 # You can find the license on Debian systems in the file
 # /usr/share/common-licenses/GPL-2
 
-from cProfile import label
-from libs.common import iri_for as url_for
-from libs.common import namefrom_dn
-from settings import Settings
-from flask import abort, flash, g, render_template, redirect, request, session
-from flask_wtf import FlaskForm
-from wtforms import PasswordField, SelectMultipleField, TextAreaField, \
-    StringField, SelectField, DecimalField, IntegerField, BooleanField, FieldList, SubmitField
-from wtforms.validators import DataRequired,  EqualTo, Optional, Length
-from datetime import datetime
-from pytz import timezone
 import base64
-
-
-from libs.ldap_func import ldap_auth, ldap_change_password, \
-    ldap_create_entry, ldap_delete_entry, ldap_get_user, \
-    ldap_get_membership, ldap_get_group, ldap_in_group, ldap_get_entry_simple, \
-    ldap_update_attribute, ldap_user_exists, ldap_get_entries, LDAP_AD_USERACCOUNTCONTROL_VALUES
-
-from libs.common import get_parsed_pager_attribute
+from cProfile import label
+from datetime import datetime
 
 import ldap
+from flask import abort, flash, g, redirect, render_template, request, session
+from flask_wtf import FlaskForm
+from libs.common import get_parsed_pager_attribute
+from libs.common import iri_for as url_for
+from libs.common import namefrom_dn
+from libs.ldap_func import (LDAP_AD_USERACCOUNTCONTROL_VALUES, ldap_auth,
+                            ldap_change_password, ldap_create_entry,
+                            ldap_delete_entry, ldap_get_entries,
+                            ldap_get_entry_simple, ldap_get_group,
+                            ldap_get_membership, ldap_get_user, ldap_in_group,
+                            ldap_update_attribute, ldap_user_exists)
+from pytz import timezone
+from settings import Settings
+from wtforms import (BooleanField, DecimalField, EmailField, FieldList,
+                     IntegerField, PasswordField, SelectField,
+                     SelectMultipleField, StringField, SubmitField,
+                     TextAreaField)
+from wtforms.validators import DataRequired, EqualTo, Length, Optional
 
 
 class UserSSHEdit(FlaskForm):
@@ -52,9 +53,10 @@ class UserProfileEdit(FlaskForm):
     first_name = StringField('Name', [DataRequired(), Length(max=64)])
     last_name = StringField('Last Name', [Length(max=64)])
     user_name = StringField('Username', [DataRequired(), Length(max=20)])
-    mail = StringField(u'Email address', [Length(max=256)])
-    alias = FieldList(StringField(), label='Other Email Addresses', min_entries=1)
-    new_alias = SubmitField(label='New Alias')
+    mail = StringField(u'Email Address', [Length(max=256)])
+    alias = EmailField('Other Email Addresses', [Length(max=256)])
+    # alias = FieldList(StringField(), label='Other Email Addresses', min_entries=1)
+    # new_alias = SubmitField(label='New Alias')
     uac_flags = SelectMultipleField('Flags', coerce=int)
 
 class SICCIPEdit(FlaskForm):
@@ -112,7 +114,6 @@ def init(app):
                          ('sAMAccountName', form.user_name),
                          ('mail', form.mail),
                          ('otherMailbox', form.alias),
-                         (None, form.new_alias),
                          (None, form.password),
                          (None, form.password_confirm),
                          ('userAccountControl', form.uac_flags),
@@ -146,9 +147,11 @@ def init(app):
                                 current_uac += key
                         attributes[attribute] = [str(current_uac).encode('utf-8')]
                     elif attribute == 'otherMailbox':
-                        for mail in field.data:
-                            attributes[attribute] = [mail.encode('utf-8')]
-
+                        x = list(filter(None, request.form.getlist('alias_mail')))
+                        if len(x):
+                            for mail in x:#TODO: save x to the otherMailbox's list
+                                attributes[attribute] = [mail.encode('utf-8')]
+                        print(attributes[attribute])
                     elif attribute and field.data:
                         if isinstance(field, BooleanField):
                             if field.data:
@@ -174,8 +177,8 @@ def init(app):
         elif form.errors:
             print(form.errors)
             flash("Some fields failed validation.", "error")
-        return render_template("forms/basicform.html", form=form, title=title,
-                               action="Adicionar Usuario",
+        return render_template("forms/user_add.html", form=form, title=title,
+                               action="Add User",
                                parent=url_for('tree_base'))
 
     @app.route('/user/<username>', methods=['GET', 'POST'])

@@ -119,7 +119,6 @@ def init(app):
             entries.append(entry)
 
         for entry in other_entries:
-            print(entry)
             if entry not in users:
                 if 'description' not in entry:
                     if 'sAMAccountName' in entry:
