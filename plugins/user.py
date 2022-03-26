@@ -371,6 +371,7 @@ def init(app):
 
         form.visible_fields = [field[1] for field in field_mapping]
         if form.validate_on_submit():
+            #TODO: append the newly added othermailboxes from the user edit template to the othermailbox's list
             try:
                 for attribute, field in field_mapping:
                     value = field.data
