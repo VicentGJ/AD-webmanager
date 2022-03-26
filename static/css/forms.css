@@ -48,7 +48,7 @@ input[type="text"] {
     -webkit-border-radius: 2px;
     border-radius: 2px;
     background: #f8f9fd;
-    overflow: auto;
+    overflow-wrap:break-word;
     white-space: nowrap;
     word-wrap: normal;
 }
