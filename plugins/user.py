@@ -366,13 +366,11 @@ def init(app):
                          ('sAMAccountName', form.user_name),
                          ('mail', form.mail),
                          ('otherMailbox', form.alias),
-                         (None, form.new_alias),
                          ('userAccountControl', form.uac_flags)]
 
         form.uac_flags.choices = [(key, value[0]) for key, value in LDAP_AD_USERACCOUNTCONTROL_VALUES.items()]
 
         form.visible_fields = [field[1] for field in field_mapping]
-        # form.visible_fields.append()
         if form.validate_on_submit():
             try:
                 for attribute, field in field_mapping:
@@ -380,9 +378,6 @@ def init(app):
                     given_name = user.get('givenName')
                     last_name = user.get('lastName')
                     if value != user.get(attribute):
-                        if type(field.data) is bool:
-                            form.alias.append_entry()
-                            continue
                         if attribute == 'sAMAccountName':
                             # Rename the account
                             ldap_update_attribute(user['distinguishedName'], "sAMAccountName", value)
@@ -430,14 +425,7 @@ def init(app):
             form.last_name.data = user.get('sn')
             form.user_name.data = user.get('sAMAccountName')
             form.mail.data = user.get('mail')
-            if len(user.get('otherMailbox')):
-                form.alias.pop_entry()
-
-            for i in user.get('otherMailbox'):
-               form.alias.append_entry(i)
-
-            form.alias.append_entry()
-
+#TODO: show the other mail boxes on the user edit template
             form.uac_flags.data = [key for key, flag in
                                    LDAP_AD_USERACCOUNTCONTROL_VALUES.items()
                                    if (flag[1] and

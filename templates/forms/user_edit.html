@@ -1,5 +1,8 @@
 {% extends "base-modal_es.html" %}
 {% block title %}{{ title }}{% endblock %}
+{% block js %}
+    <script src="../../static/js/jquery.min.js"></script>
+{% endblock js %}
 {% block content %}
 {% from "forms/macros.html" import render_field %}
 {% if request.query_string %}
@@ -9,17 +12,28 @@
         {% endif %}
         {{ form.csrf_token }}
         <ul>
-            {% for field in form.visible_fields %}
-            {% if field != form.new_alias%}
-            {{ render_field(field) }}
-            {% else %}
-            {{ render_field(field, show_label=False) }}
-            {% endif %}
-            {% endfor %}
+            {{ render_field(form.first_name) }}
+            {{ render_field(form.last_name) }}
+            {{ render_field(form.last_name) }}
+            {{ render_field(form.user_name) }}
+            {{ render_field(form.mail) }}
+            <li>
+                <span id="add-alias">{{ form.alias.label }}</span>
+                <input type="button" value="+" id="add-alias-btn">
+            </li>
+            {{ render_field(form.uac_flags) }}
         </ul>
+
         {% if parent %}
         <a class="link-button" href="{{ parent }}">Cancel</a>
         {% endif %}
         <input class="right" type="submit" value="{{ action }}" />
     </form>
+    <script>
+        $(document).ready(function () {
+            $("#add-alias-btn").click(function () {
+                $("#add-alias").append("<li><input type=\"email\" name=\"alias_mail\"></li>");
+            });
+        });
+    </script>
     {% endblock %}
