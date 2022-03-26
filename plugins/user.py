@@ -151,7 +151,7 @@ def init(app):
                         if len(x):
                             for mail in x:#TODO: save x to the otherMailbox's list
                                 attributes[attribute] = [mail.encode('utf-8')]
-                        print(attributes[attribute])
+                            print(attributes)
                     elif attribute and field.data:
                         if isinstance(field, BooleanField):
                             if field.data:
@@ -407,13 +407,8 @@ def init(app):
                             ldap_update_attribute(user['distinguishedName'], attribute, value)
 
                 flash(u"Profile updated successfully.", "success")
-                if form.new_alias.data:
-                    return render_template("forms/user_edit.html", form=form, title=title,
-                               action="Save changes",
-                               parent=url_for('user_overview',
-                                              username=username))
-                else:
-                    return redirect(url_for('user_overview', username=form.user_name.data))
+                return redirect(url_for('user_overview', username=form.user_name.data))
+
             except ldap.LDAPError as e:
                 e = dict(e.args[0])
                 flash(e['info'], "error")
@@ -425,13 +420,14 @@ def init(app):
             form.last_name.data = user.get('sn')
             form.user_name.data = user.get('sAMAccountName')
             form.mail.data = user.get('mail')
+            othermails = user.get('otherMailbox')
             form.uac_flags.data = [key for key, flag in
                                    LDAP_AD_USERACCOUNTCONTROL_VALUES.items()
                                    if (flag[1] and
                                        user['userAccountControl'] & key)]
         #TODO: pass also a list with the othermailbox
         return render_template("forms/user_edit.html", form=form, title=title,
-                               action="Save changes",username=username,
+                               action="Save changes",username=username,othermails=othermails,
                                parent=url_for('user_overview',
                                               username=username))
 
