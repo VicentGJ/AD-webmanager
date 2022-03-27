@@ -148,14 +148,12 @@ def init(app):
                         attributes[attribute] = [str(current_uac).encode('utf-8')]
                     elif attribute == 'otherMailbox':
                         alias_list = list(filter(None, request.form.getlist('alias_mail')))
-                        print(alias_list)
                         if len(alias_list):
                             for i in range(0, len(alias_list)):
                                 alias_list[i] = alias_list[i].encode('utf-8')
                             attributes[attribute] = alias_list
                         else:
                             attributes[attribute] = [b'0'] #it needs to have an element
-                        print(attributes)
                     elif attribute and field.data:
                         if isinstance(field, BooleanField):
                             if field.data:
@@ -410,6 +408,9 @@ def init(app):
                             ldap_update_attribute(user['distinguishedName'], 'displayName', displayName)
                         elif attribute == 'otherMailbox':
                             alias_list = list(filter(None, request.form.getlist('alias_mail')))
+                            if len(alias_list) == 0:
+                                print('here..alias_list len is 0')
+                                alias_list = ['0']
                             print(alias_list)
                             ldap_update_attribute(user['distinguishedName'], attribute, alias_list)
                         else:
@@ -429,13 +430,10 @@ def init(app):
             form.last_name.data = user.get('sn')
             form.user_name.data = user.get('sAMAccountName')
             form.mail.data = user.get('mail')
-            print(user.get('otherMailbox'))
             if user.get('otherMailbox') is not None:
                 othermails = user.get('otherMailbox')
-                print('here1')
             else:
                 othermails = []
-                print('here2')
             form.uac_flags.data = [key for key, flag in
                                    LDAP_AD_USERACCOUNTCONTROL_VALUES.items()
                                    if (flag[1] and
