@@ -53,7 +53,7 @@ class UserProfileEdit(FlaskForm):
     first_name = StringField('Name', [DataRequired(), Length(max=64)])
     last_name = StringField('Last Name', [Length(max=64)])
     user_name = StringField('Username', [DataRequired(), Length(max=20)])
-    mail = StringField(u'Email Address', [Length(max=256)])
+    mail = EmailField(u'Email Address', [Length(max=256)])
     alias = EmailField('Other Email Addresses', [Length(max=256)])
     # alias = FieldList(StringField(), label='Other Email Addresses', min_entries=1)
     # new_alias = SubmitField(label='New Alias')
