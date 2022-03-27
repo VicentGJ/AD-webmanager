@@ -404,6 +404,9 @@ def init(app):
                             ldap_update_attribute(user['distinguishedName'], attribute, value)
                             displayName = given_name + ' ' + last_name
                             ldap_update_attribute(user['distinguishedName'], 'displayName', displayName)
+                        elif attribute == 'otherMailbox':
+                            alias_list = list(filter(None, request.form.getlist('alias_mail')))
+                            ldap_update_attribute(user['distinguishedName'], attribute, alias_list)
                         else:
                             ldap_update_attribute(user['distinguishedName'], attribute, value)
 
