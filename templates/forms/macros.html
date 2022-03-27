@@ -1,15 +1,13 @@
-{% macro render_field(field, show_label=True) %}
-    {% if field.errors %}
-    <li class="error">
+{% macro render_field(field) %}
+{% if field.errors %}
+<li class="error">
     {% else %}
-    <li>
+<li>
     {% endif %}
-    {% if show_label==True %}
-    <label>{{ field.label.text }}{% if field.flags.required %} <span class="required">(required)</span>{% endif %}</label>
+    <label>{{ field.label.text }}{% if field.flags.required %} <span class="required">(required)</span>{% endif%}</label>
+    {{ field(**kwargs)|safe }}
+    {% if field.errors %}
+        <span class="field-error">{{ field.errors|join("<br />") }}</span>
     {% endif %}
-        {{ field(**kwargs)|safe }}
-        {% if field.errors %}
-            <span class="field-error">{{ field.errors|join("<br />") }}</span>
-        {% endif %}
-    </li>
+</li>
 {% endmacro %}
