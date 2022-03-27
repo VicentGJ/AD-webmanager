@@ -147,10 +147,11 @@ def init(app):
                                 current_uac += key
                         attributes[attribute] = [str(current_uac).encode('utf-8')]
                     elif attribute == 'otherMailbox':
-                        x = list(filter(None, request.form.getlist('alias_mail')))
-                        if len(x):
-                            for mail in x:#TODO: save x to the otherMailbox's list
-                                attributes[attribute] = [mail.encode('utf-8')]
+                        alias_list = list(filter(None, request.form.getlist('alias_mail')))
+                        if len(alias_list):
+                            for i in range(0, len(alias_list)):
+                                alias_list[i] = alias_list[i].encode('utf-8')
+                            attributes[attribute] = alias_list
                     elif attribute and field.data:
                         if isinstance(field, BooleanField):
                             if field.data:
