@@ -13,7 +13,6 @@
             {{ render_field(form.last_name, class="form-control") }}
             {{ render_field(form.user_name, class="form-control") }}
             {{ render_field(form.mail, class="form-control") }}
-
             <label>{{ form.alias.label }}</label>
             <li id="add-alias">
                 {% if othermails is iterable %}
@@ -27,7 +26,7 @@
                 {% endif %}
 
             </li>
-            <input type="button" value="+" id="add-alias-btn">
+            <input type="button" value="+" id="add-alias-btn" class="btn btn-success w-100">
 
             {{ render_field(form.uac_flags, class="form-control") }}
         </ul>
