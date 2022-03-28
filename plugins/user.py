@@ -104,6 +104,7 @@ def init(app):
     @ldap_auth(Settings.ADMIN_GROUP)
     def user_add():
         title = "Add User"
+        base = request.args.get('base')
 
         if g.extra_fields:
             form = UserAddExtraFields(request.form)
@@ -129,8 +130,6 @@ def init(app):
 
         if form.validate_on_submit():
             try:
-                base = request.args.get("b'base")
-                base = base.rstrip("'")
                 # Default attributes
                 upn = "%s@%s" % (form.user_name.data, g.ldap['domain'])
                 attributes = {'objectClass': [b'top', b'person', b'organizationalPerson', b'user', b'inetOrgPerson'],
@@ -180,6 +179,7 @@ def init(app):
         elif form.errors:
             print(form.errors)
             flash("Some fields failed validation.", "error")
+        
         return render_template("forms/user_add.html", form=form, title=title,
                                action="Add User",
                                parent=url_for('tree_base'))
@@ -375,7 +375,6 @@ def init(app):
 
         form.visible_fields = [field[1] for field in field_mapping]
         if form.validate_on_submit():
-            #TODO: append the newly added othermailboxes from the user edit template to the othermailbox's list
             try:
                 for attribute, field in field_mapping:
                     value = field.data
@@ -439,9 +438,8 @@ def init(app):
                                    LDAP_AD_USERACCOUNTCONTROL_VALUES.items()
                                    if (flag[1] and
                                        user['userAccountControl'] & key)]
-        #TODO: pass also a list with the othermailbox
         return render_template("forms/user_edit.html", form=form, title=title,
-                               action="Save changes",username=username,othermails=othermails,
+                               action="Save changes",username=username, othermails=othermails,
                                parent=url_for('user_overview',
                                               username=username))
 
