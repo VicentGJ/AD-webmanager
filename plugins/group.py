@@ -16,20 +16,23 @@
 # You can find the license on Debian systems in the file
 # /usr/share/common-licenses/GPL-2
 
-from libs.common import iri_for as url_for
-from settings import Settings
-from flask import abort, flash, g, render_template, redirect, request
-from flask_wtf import FlaskForm
-from wtforms import RadioField, TextAreaField, StringField, HiddenField
-from wtforms.validators import DataRequired
-
-from libs.ldap_func import ldap_auth, ldap_create_entry, ldap_delete_entry, \
-    ldap_get_entry_simple, ldap_get_members, ldap_get_membership, \
-    ldap_get_group, ldap_in_group, ldap_update_attribute, ldap_group_exists, \
-    LDAP_AD_GROUPTYPE_VALUES, ldap_add_users_to_group
+from email.mime import base
+from operator import indexOf
+import struct
 
 import ldap
-import struct
+from flask import abort, flash, g, redirect, render_template, request
+from flask_wtf import FlaskForm
+from libs.common import iri_for as url_for, namefrom_dn
+from libs.ldap_func import (LDAP_AD_GROUPTYPE_VALUES, ldap_add_users_to_group,
+                            ldap_auth, ldap_create_entry, ldap_delete_entry,
+                            ldap_get_entry_simple, ldap_get_group,
+                            ldap_get_members, ldap_get_membership,
+                            ldap_group_exists, ldap_in_group,
+                            ldap_update_attribute)
+from settings import Settings
+from wtforms import RadioField, StringField, TextAreaField
+from wtforms.validators import DataRequired
 
 
 class GroupDelMember(FlaskForm):
@@ -140,11 +143,12 @@ def init(app):
                          entry['sAMAccountName'])
 
         parent = ",".join(group['distinguishedName'].split(',')[1:])
-
+        parent_name = namefrom_dn(parent)
         return render_template("pages/group_overview_es.html", g=g, title=title,
                                group=group, identity_fields=identity_fields,
                                group_fields=group_fields, admin=admin,
                                groups=groups, members=members, parent=parent,
+                               parent_name=parent_name,
                                grouptype_values=LDAP_AD_GROUPTYPE_VALUES)
 
     @app.route('/group/<groupname>/+delete', methods=['GET', 'POST'])
@@ -213,9 +217,11 @@ def init(app):
                             ldap_update_attribute(group['distinguishedName'],
                                                   "sAMAccountName", value)
                             # Finish by renaming the whole record
+                            dn: str = group['distinguishedName'].split(",", 1)[1]
+                            dn = "CN={0},{1}".format(value, dn)
                             ldap_update_attribute(group['distinguishedName'],
-                                                  "cn", value)
-                            group = ldap_get_group(value)
+                                                  "distinguishedName", "CN={0}".format(value))
+                            group['distinguishedName'] = dn
                         elif attribute == "groupType":
                             group_type = int(form.group_type.data) + \
                                 int(form.group_flags.data)
@@ -235,6 +241,7 @@ def init(app):
             except ldap.LDAPError as e:
                 e = dict(e.args[0])
                 flash(e['info'], "error")
+
         elif form.errors:
             flash(u"Data verification failed.", "error")
 

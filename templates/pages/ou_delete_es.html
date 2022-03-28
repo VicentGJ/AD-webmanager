@@ -1,0 +1,21 @@
+{% extends "base-modal_es.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+{% from "forms/macros.html" import render_field %}
+<form method="post" action="?" class="form">
+    {{ form.csrf_token }}
+    <p>
+        If you continue the OU: '{{ name }}' will be permanently deleted.<br />
+        Are you sure?
+    </p>
+    <ul>
+        {% for field in form.visible_fields %}
+        {{ render_field(field) }}
+        {% endfor %}
+    </ul>
+    {% if parent %}
+    <a class="link-button" href="{{ parent }}">Cancel</a>
+    {% endif %}
+    <input class="right" type="submit" value="{{ action }}" />
+</form>
+{% endblock %}

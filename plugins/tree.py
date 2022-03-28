@@ -17,6 +17,7 @@
 # /usr/share/common-licenses/GPL-2
 
 from libs.common import iri_for as url_for
+from libs.common import namefrom_dn, get_objclass
 from settings import Settings
 from flask import g, render_template, request, redirect, abort
 from libs.ldap_func import ldap_auth, ldap_get_entries, ldap_in_group
@@ -68,9 +69,11 @@ def init(app):
             if not base_split[0].lower().startswith("dc"):
                 parent = ",".join(base_split[1:])
 
+            name = namefrom_dn(base)
             return render_template("pages/tree_base_es.html", form=form, parent=parent,
-                                   admin=admin, base=base, entries=entries,
-                                   entry_fields=entry_fields)
+                                   admin=admin, base=base.upper(), entries=entries,
+                                   entry_fields=entry_fields, root=g.ldap['search_dn'].upper(), name=name,
+                                   objclass=get_objclass(base))
 
     def get_entries(filter_str, filter_select, base, scope):
         """

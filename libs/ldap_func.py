@@ -135,6 +135,14 @@ def ldap_get_group(groupname, key="sAMAccountName"):
     return ldap_get_entry_simple({'objectClass': 'group',
                                   key: groupname})
 
+def ldap_get_ou(ou_name, key="distinguishedName"):
+    """
+        Return the attributes for the ou or None if it doesn't exist.
+    """
+
+    return ldap_get_entry_simple({'objectClass': 'organizationalUnit',
+                                  key: ou_name})
+
 
 def ldap_get_entry_simple(filter_dict):
     """
@@ -331,20 +339,18 @@ def ldap_update_attribute(dn, attribute, value=None, objectClass=None):
     if not current_entry:
         raise Exception(dn)
 
-    """ if dn.lower().startswith("%s=" % attribute.lower()):
-        # It's a rename, not an attribute update
-        connection.rename_s(dn, "%s=%s" % (attribute, value))
-        return True """
+    if (attribute == 'distinguishedName'):
+        connection.rename_s(dn, value)
     
-    """ if objectClass and objectClass not in current_entry['objectClass']:
-        # It's add a new class to the object,  its not an attribute update
-        new_class_list = current_entry['objectClass'].append(objectClass)
-        old = {'objectClass': current_entry['objectClass']}
-        new = {'objectClass': new_class_list}
-        ldif = modlist.modifyModlist(old, new)
-        connection.modify_s(dn, ldif) """
+    # if objectClass and objectClass not in current_entry['objectClass']:
+    #     # It's add a new class to the object,  its not an attribute update
+    #     new_class_list = current_entry['objectClass'].append(objectClass)
+    #     old = {'objectClass': current_entry['objectClass']}
+    #     new = {'objectClass': new_class_list}
+    #     ldif = modlist.modifyModlist(old, new)
+    #     connection.modify_s(dn, ldif)
     
-    if isinstance(value, list):
+    elif isinstance(value, list):
         # Flush all entries and re-add everything
         new_values = []
         

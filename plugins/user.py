@@ -16,26 +16,29 @@
 # You can find the license on Debian systems in the file
 # /usr/share/common-licenses/GPL-2
 
-from libs.common import iri_for as url_for
-from settings import Settings
-from flask import abort, flash, g, render_template, redirect, request, session
-from flask_wtf import FlaskForm
-from wtforms import PasswordField, SelectMultipleField, TextAreaField, \
-    StringField, SelectField, DecimalField, IntegerField, BooleanField
-from wtforms.validators import DataRequired,  EqualTo, Optional, Length
-from datetime import datetime
-from pytz import timezone
 import base64
-
-
-from libs.ldap_func import ldap_auth, ldap_change_password, \
-    ldap_create_entry, ldap_delete_entry, ldap_get_user, \
-    ldap_get_membership, ldap_get_group, ldap_in_group, ldap_get_entry_simple, \
-    ldap_update_attribute, ldap_user_exists, ldap_get_entries, LDAP_AD_USERACCOUNTCONTROL_VALUES
-
-from libs.common import get_parsed_pager_attribute
+from cProfile import label
+from datetime import datetime
 
 import ldap
+from flask import abort, flash, g, redirect, render_template, request, session
+from flask_wtf import FlaskForm
+from libs.common import get_parsed_pager_attribute
+from libs.common import iri_for as url_for
+from libs.common import namefrom_dn
+from libs.ldap_func import (LDAP_AD_USERACCOUNTCONTROL_VALUES, ldap_auth,
+                            ldap_change_password, ldap_create_entry,
+                            ldap_delete_entry, ldap_get_entries,
+                            ldap_get_entry_simple, ldap_get_group,
+                            ldap_get_membership, ldap_get_user, ldap_in_group,
+                            ldap_update_attribute, ldap_user_exists)
+from pytz import timezone
+from settings import Settings
+from wtforms import (BooleanField, DecimalField, EmailField, FieldList,
+                     IntegerField, PasswordField, SelectField,
+                     SelectMultipleField, StringField, SubmitField,
+                     TextAreaField)
+from wtforms.validators import DataRequired, EqualTo, Length, Optional
 
 
 class UserSSHEdit(FlaskForm):
@@ -50,9 +53,11 @@ class UserProfileEdit(FlaskForm):
     first_name = StringField('Name', [DataRequired(), Length(max=64)])
     last_name = StringField('Last Name', [Length(max=64)])
     user_name = StringField('Username', [DataRequired(), Length(max=20)])
-    mail = StringField(u'Email address', [Length(max=256)])
+    mail = EmailField(u'Email Address', [Length(max=256)])
+    alias = EmailField('Other Email Addresses', [Length(max=256)])
+    # alias = FieldList(StringField(), label='Other Email Addresses', min_entries=1)
+    # new_alias = SubmitField(label='New Alias')
     uac_flags = SelectMultipleField('Flags', coerce=int)
-
 
 class SICCIPEdit(FlaskForm):
     internet_type = SelectField(u'Internet access type', [Optional()],
@@ -100,8 +105,6 @@ def init(app):
     def user_add():
         title = "Add User"
 
-
-
         if g.extra_fields:
             form = UserAddExtraFields(request.form)
         else:
@@ -110,9 +113,11 @@ def init(app):
                          ('sn', form.last_name),
                          ('sAMAccountName', form.user_name),
                          ('mail', form.mail),
+                         ('otherMailbox', form.alias),
                          (None, form.password),
                          (None, form.password_confirm),
-                         ('userAccountControl', form.uac_flags)]
+                         ('userAccountControl', form.uac_flags),
+                         ]
         if g.extra_fields:
             extra_field_mapping = [('cUJAEPersonExternal', form.manual),
                                    ('cUJAEPersonType', form.person_type),
@@ -141,6 +146,14 @@ def init(app):
                             if flag[1] and key in field.data:
                                 current_uac += key
                         attributes[attribute] = [str(current_uac).encode('utf-8')]
+                    elif attribute == 'otherMailbox':
+                        alias_list = list(filter(None, request.form.getlist('alias_mail')))
+                        if len(alias_list):
+                            for i in range(0, len(alias_list)):
+                                alias_list[i] = alias_list[i].encode('utf-8')
+                            attributes[attribute] = alias_list
+                        else:
+                            attributes[attribute] = [b'0'] #it needs to have an element
                     elif attribute and field.data:
                         if isinstance(field, BooleanField):
                             if field.data:
@@ -166,8 +179,8 @@ def init(app):
         elif form.errors:
             print(form.errors)
             flash("Some fields failed validation.", "error")
-        return render_template("forms/basicform.html", form=form, title=title,
-                               action="Adicionar Usuario",
+        return render_template("forms/user_add.html", form=form, title=title,
+                               action="Add User",
                                parent=url_for('tree_base'))
 
     @app.route('/user/<username>', methods=['GET', 'POST'])
@@ -181,7 +194,6 @@ def init(app):
         user = ldap_get_user(username=username)
         admin = ldap_in_group(Settings.ADMIN_GROUP)
         logged_user = g.ldap['username']
-        
         if logged_user == user['sAMAccountName'] or admin:
 
             identity_fields = [('givenName', "Name"),
@@ -265,11 +277,11 @@ def init(app):
         
         else:
             abort(401)
-
+        name = namefrom_dn(parent)
         return render_template("pages/user_overview_es.html", g=g, title=title, form=form,
                                user=user, identity_fields=identity_fields,
                                group_fields=group_fields, admin=admin, groups=groups, siccip_data=siccip_data,
-                               parent=parent, uac_values=LDAP_AD_USERACCOUNTCONTROL_VALUES)
+                               parent=parent, uac_values=LDAP_AD_USERACCOUNTCONTROL_VALUES, name=name)
 
     @app.route('/user/<username>/+changepw', methods=['GET', 'POST'])
     @ldap_auth("Domain Users")
@@ -355,13 +367,14 @@ def init(app):
                          ('sn', form.last_name),
                          ('sAMAccountName', form.user_name),
                          ('mail', form.mail),
+                         ('otherMailbox', form.alias),
                          ('userAccountControl', form.uac_flags)]
 
         form.uac_flags.choices = [(key, value[0]) for key, value in LDAP_AD_USERACCOUNTCONTROL_VALUES.items()]
 
         form.visible_fields = [field[1] for field in field_mapping]
-
         if form.validate_on_submit():
+            #TODO: append the newly added othermailboxes from the user edit template to the othermailbox's list
             try:
                 for attribute, field in field_mapping:
                     value = field.data
@@ -393,11 +406,19 @@ def init(app):
                             ldap_update_attribute(user['distinguishedName'], attribute, value)
                             displayName = given_name + ' ' + last_name
                             ldap_update_attribute(user['distinguishedName'], 'displayName', displayName)
+                        elif attribute == 'otherMailbox':
+                            alias_list = list(filter(None, request.form.getlist('alias_mail')))
+                            if len(alias_list) == 0:
+                                print('here..alias_list len is 0')
+                                alias_list = ['0']
+                            print(alias_list)
+                            ldap_update_attribute(user['distinguishedName'], attribute, alias_list)
                         else:
                             ldap_update_attribute(user['distinguishedName'], attribute, value)
 
                 flash(u"Profile updated successfully.", "success")
                 return redirect(url_for('user_overview', username=form.user_name.data))
+
             except ldap.LDAPError as e:
                 e = dict(e.args[0])
                 flash(e['info'], "error")
@@ -409,13 +430,17 @@ def init(app):
             form.last_name.data = user.get('sn')
             form.user_name.data = user.get('sAMAccountName')
             form.mail.data = user.get('mail')
+            if user.get('otherMailbox') is not None:
+                othermails = user.get('otherMailbox')
+            else:
+                othermails = []
             form.uac_flags.data = [key for key, flag in
                                    LDAP_AD_USERACCOUNTCONTROL_VALUES.items()
                                    if (flag[1] and
                                        user['userAccountControl'] & key)]
-
-        return render_template("forms/basicform.html", form=form, title=title,
-                               action="Save changes",
+        #TODO: pass also a list with the othermailbox
+        return render_template("forms/user_edit.html", form=form, title=title,
+                               action="Save changes",username=username,othermails=othermails,
                                parent=url_for('user_overview',
                                               username=username))
 

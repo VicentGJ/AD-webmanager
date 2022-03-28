@@ -1,0 +1,47 @@
+{% extends "base-modal_es.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+{% from "forms/macros.html" import render_field %}
+{% if request.query_string %}
+<form method="post" action="?{{ request.query_string }}" class="form">
+    {% else %}
+    <form method="post" action="?" class="form">
+        {% endif %}
+        {{ form.csrf_token }}
+        <ul>
+            {{ render_field(form.first_name, class="form-control") }}
+            {{ render_field(form.last_name, class="form-control") }}
+            {{ render_field(form.user_name, class="form-control") }}
+            {{ render_field(form.mail, class="form-control") }}
+
+            <label>{{ form.alias.label }}</label>
+            <li id="add-alias"></li>
+            <input type="button" value="+" id="add-alias-btn" class="btn btn-success w-100">
+
+            {{ render_field(form.password, class="form-control") }}
+            {{ render_field(form.password_confirm, class="form-control") }}
+            {{ render_field(form.uac_flags, class="form-control") }}
+        </ul>
+
+        {% if parent %}
+        <a class="link-button" href="{{ parent }}">Cancel</a>
+        {% endif %}
+        <input class="right" type="submit" value="{{ action }}" />
+    </form>
+    <script>
+        $(document).ready(function () {
+            $(document).on("click", ".remove-alias", function () {
+                $(this).parent('.div-identifier').remove();
+            });
+            $("#add-alias-btn").click(function () {
+                $("#add-alias").append(`
+                <div class="div-identifier input-group mb-1 ">
+                    <input class="form-control" type="email" name="alias_mail" placeholder="new alias">
+                    <input type="button" value="-" class="btn btn-danger remove-alias">
+                </div>  
+                    `);
+            });
+        });
+
+    </script>
+    {% endblock %}

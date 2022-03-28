@@ -1,5 +1,5 @@
 {% extends "base_es.html" %}
-{% block title %}{{ base }}{% endblock %}
+{% block title %}{{ name }}{% endblock %}
 {% block content %}
 
 <div class="tree_base" style="min-height:10em;">
@@ -25,6 +25,11 @@
 {% if admin %}
             <a href="{{ url_for('group_add', base=base) }}" class="button">Add group</a>
             <a href="{{ url_for('user_add', base=base) }}" class="button">Add user</a>
+            <a href="{{ url_for('ou_add', base=base) }}" class="button">Add OU</a>
+            {% if root != base and objclass=="OU"%}
+            <a href="{{ url_for('ou_edit', ou_name=base) }}" class="button">Edit OU</a>
+            <a href="{{ url_for('ou_delete', ou_name=base) }}" class="button">Delete OU</a>
+            {% endif %}
             <!--<a href="{{ url_for('core_index') }}" class="button">Create container</a>-->
 {% endif %}
 

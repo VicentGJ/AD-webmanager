@@ -83,3 +83,9 @@ def get_parsed_pager_attribute(pager):
                 'email_quota': email_quota, 'dansguardian_filter': dansguardian_filter_number}
     except ValueError:
         return None
+
+def namefrom_dn(dn):
+    return dn.split('=')[1].split(',')[0]
+    
+def get_objclass(dn):
+    return dn.split('=')[0]
