@@ -149,9 +149,10 @@ def init(app):
                     elif attribute == 'otherMailbox':
                         alias_list = list(filter(None, request.form.getlist('alias_mail')))
                         if len(alias_list):
-                            for i in range(0, len(alias_list)):
-                                alias_list[i] = alias_list[i].encode('utf-8')
-                            attributes[attribute] = alias_list
+                            encoded_mails = []
+                            for i in alias_list:
+                                encoded_mails.append(i.encode('utf-8'))
+                            attributes[attribute] = encoded_mails
                         else:
                             attributes[attribute] = [b'0'] #it needs to have an element
                     elif attribute and field.data:
