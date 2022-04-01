@@ -127,9 +127,9 @@ input[type="submit"].secondary:hover {
     background-image: -ms-linear-gradient(bottom, rgb(51,51,51) 0%, rgb(90,90,90) 100%);
 }
 /* Disabled buttons */
-.yui3-button.disabled,
-.button.disabled,
-button.disabled {
+.yui3-button:disabled,
+.button:disabled,
+button:disabled{
     cursor: not-allowed;
     border-color: #999;
     background-image: linear-gradient(bottom, rgb(200,200,200) 0%, rgb(150,150,150) 100%);
