@@ -5,60 +5,117 @@
 <div class="tree_base" style="min-height:10em;">
     <div>
         <p>
-{% if request.query_string %}
-    <form method="post" action="?{{ request.query_string }}" class="form">
-{% else %}
-    <div class="right">
-        <form method="post" action="?" class="form">
-            {{ form.csrf_token }}
-            {{ form.filter_select }}
-            {{ form.filter_str }}
-            <input type="submit" value="Search">
-        
-        </form>
-    </div>
-{% endif %}
+            {% if request.query_string %}
+        <form method="post" action="?{{ request.query_string }}" class="form">
+            {% else %}
+            <div class="right">
+                <form method="post" action="?" class="form">
+                    {{ form.csrf_token }}
+                    {{ form.filter_select }}
+                    {{ form.filter_str }}
+                    <input type="submit" value="Search">
 
-{% if parent %}
+                </form>
+            </div>
+            {% endif %}
+
+            {% if parent %}
             <a href="{{ url_for('tree_base', base=parent) }}" class="button">Up a level</a>
-{% endif %}
-{% if admin %}
+            {% endif %}
+            {% if admin %}
             <a href="{{ url_for('group_add', base=base) }}" class="button">Add group</a>
             <a href="{{ url_for('user_add', base=base) }}" class="button">Add user</a>
             <a href="{{ url_for('ou_add', base=base) }}" class="button">Add OU</a>
             {% if root != base and objclass=="OU"%}
             <a href="{{ url_for('ou_edit', ou_name=base) }}" class="button">Edit OU</a>
-            <a href="{{ url_for('ou_delete', ou_name=base) }}" class="button">Delete OU</a>
+
+            <a href="{{ url_for('ou_delete', ou_name=base) }}">
+                <button class="button" style="margin-top:3px" id="delete-selection-btn" disabled>
+                    Delete Selection
+                </button>
+            </a>
             {% endif %}
             <!--<a href="{{ url_for('core_index') }}" class="button">Create container</a>-->
-{% endif %}
+            {% endif %}
 
-        </p>
+            </p>
     </div>
     <h2>Register</h2>
-
     <table>
         <tr>
-{% for key, title in entry_fields %}
+            {% for key, title in entry_fields %}
+            {% if key == "name" %}
+
+            <th> <input type="checkbox" id="select-all"> {{ title }}</th>
+
+            {% else %}
             <th>{{ title }}</th>
-{% endfor %}
+            {% endif %}
+
+            {% endfor %}
         </tr>
 
-{% for entry in entries %}
+        {% for entry in entries %}
         <tr>
-{% for key, title in entry_fields %}
-{% if key == "name" and key in entry %}
-            <td style='padding-right:10px;white-space:nowrap;'><a href="{{ entry['__target'] }}">{{ entry[key] }}</a></td>
-{% elif key == "__type" and key in entry %}
+            {% for key, title in entry_fields %}
+            {% if key == "name" and key in entry %}
+            <td style='padding-right:10px;white-space:nowrap;'>
+                <input type="checkbox" name="checkedItems" class="item-to-check" onchange="changeButton();">
+                <a href="{{ entry['__target'] }}">{{entry[key] }}</a>
+            </td>
+            {% elif key == "__type" and key in entry %}
             <td>{{ entry[key] }}</td>
-{% elif key in entry %}
+            {% elif key in entry %}
             <td>{{ entry[key]|truncate(40) }}</td>
-{% else %}
+            {% else %}
             <td>&nbsp;</td>
-{% endif %}
-{% endfor %}
+            {% endif %}
+            {% endfor %}
         </tr>
-{% endfor %}
+        {% endfor %}
     </table>
 </div>
+
+<script>
+    document.getElementById("select-all").onclick = selectAll
+
+    function changeButton() {
+        const checkBoxes = Array.from(document.getElementsByClassName('item-to-check'))
+        const deleteBtn = document.getElementById("delete-selection-btn")
+        const selectAllBox = document.getElementById('select-all')
+
+        let allDisabled = true
+
+        checkBoxes.map(box => {
+            box.checked ? allDisabled = false : null
+        })
+        deleteBtn.disabled = allDisabled
+        allDisabled ? selectAllBox.checked = false : null
+
+    }
+
+    function selectAll() {//    select / unsselect all items if those aren't disabled
+        const deleteBtn = document.getElementById("delete-selection-btn")
+        const selectAllBox = document.getElementById('select-all')
+        const checkBoxes = Array.from(document.getElementsByClassName('item-to-check'))
+
+        if (selectAllBox.checked) {
+            checkBoxes.map(box => {
+                if (!box.disabled) {
+                    box.checked = true
+                    deleteBtn.disabled = false
+
+                }
+            })
+        } else {
+            checkBoxes.map(box => {
+                if (!box.disabled) {
+                    box.checked = false
+                    deleteBtn.disabled = true
+
+                }
+            })
+        }
+    }
+</script>
 {% endblock %}
