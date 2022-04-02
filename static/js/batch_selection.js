@@ -10,10 +10,19 @@ function changeButton() {
     deleteBtn.disabled = !oneSelected
     selectAllBox.checked = allSelected
 }
+
 const checkAllSelected = (checkBoxes) => {
     let count = 0
-    checkBoxes.map(box => box.checked ? count++ : null)
-    if (count === checkBoxes.length) {
+    let countDisabled = 0
+    checkBoxes.map(box => {
+        if (box.disabled) {
+            countDisabled++
+        }
+        if (box.checked && !box.disabled) {
+            count++
+        }
+    })
+    if (count === (checkBoxes.length - countDisabled)) {
         return true
     }
     return false
