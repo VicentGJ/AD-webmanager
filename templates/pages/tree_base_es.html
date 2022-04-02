@@ -60,7 +60,11 @@
             {% if key == "name" and key in entry %}
             <td style='padding-right:10px;white-space:nowrap;'>
                 {% if objclass=="OU" %}
+                {% if entry['__type'] == 'Organization Unit'%}
+                <input type="checkbox" name="checkedItems" class="item-to-check" onclick="changeButton();" disabled>
+                {% else %}
                 <input type="checkbox" name="checkedItems" class="item-to-check" onclick="changeButton();">
+                {% endif %}
                 {% endif %}
                 <a href="{{ entry['__target'] }}">{{entry[key] }}</a>
             </td>
@@ -76,5 +80,6 @@
         {% endfor %}
     </table>
 </div>
+
 <script src="../../static/js/batch_selection.js"></script>
 {% endblock %}
