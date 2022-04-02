@@ -21,7 +21,7 @@ from flask_wtf import FlaskForm
 from libs.common import get_objclass
 from libs.common import iri_for as url_for
 from libs.common import namefrom_dn
-from libs.ldap_func import (ldap_auth, ldap_delete_entry, ldap_get_entries, ldap_get_group, ldap_get_user,
+from libs.ldap_func import (ldap_auth, ldap_delete_entry, ldap_get_entries, ldap_get_group, ldap_get_ou, ldap_get_user,
                             ldap_in_group)
 from settings import Settings
 from wtforms import SelectField, StringField
@@ -84,9 +84,13 @@ def init(app):
                                 if obj[key] == 'User':
                                     user = ldap_get_user(username=obj['username'])
                                     ldap_delete_entry(user['distinguishedName'])
-                                if obj[key] == 'Group':
+                                elif obj[key] == 'Group':
                                     group = ldap_get_group(groupname=obj['name'])
                                     ldap_delete_entry(group['distinguishedName'])
+                                elif obj[key] == 'Organization Unit':
+                                    ou = ldap_get_ou(ou_name=obj['name'])
+                                    #if not hasChildren(ou): 
+                                    # ldap_delete_entry(ou['distinguishedName'])
                 except:
                     #error handling ? 
                     pass
