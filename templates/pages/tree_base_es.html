@@ -30,9 +30,9 @@
             <a href="{{ url_for('ou_edit', ou_name=base) }}" class="button">Edit OU</a>
 
             <a href="{{ url_for('ou_delete', ou_name=base) }}">
-                <button class="button" style="margin-top:3px" id="delete-selection-btn" disabled>
-                    Delete Selection
-                </button>
+                <!-- class="button" style="margin-top:3px" id="delete-selection-btn" disabled -->
+                <input type="submit" value="Delete Selection" class="button" style="margin-top:3px"
+                    id="delete-selection-btn" disabled>
             </a>
             {% endif %}
             <!--<a href="{{ url_for('core_index') }}" class="button">Create container</a>-->

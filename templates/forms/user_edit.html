@@ -16,14 +16,14 @@
             <label>{{ form.alias.label }}</label>
             <li id="add-alias">
                 <!-- if user didnt set othermails, othermails[0] == '0' -->
-                {% if othermails[0] !=  '0'%}
-                    {% for mail in othermails %}
-                    <div class="input-group mb-1 div-identifier">
-                        <input class="form-control" type="email" name="alias_mail" value="{{ mail }}"
-                            placeholder="new alias">
-                        <input type="button" value="-" class="btn btn-danger remove-alias">
-                    </div>
-                    {% endfor %}
+                {% if othermails[0] != '0'%}
+                {% for mail in othermails %}
+                <div class="input-group mb-1 div-identifier">
+                    <input class="form-control" type="email" name="alias_mail" value="{{ mail }}"
+                        placeholder="new alias">
+                    <input type="button" value="-" class="btn btn-danger remove-alias">
+                </div>
+                {% endfor %}
                 {% endif %}
 
             </li>
@@ -37,20 +37,6 @@
         {% endif %}
         <input class="right" type="submit" value="{{ action }}" />
     </form>
-    <script>
-        $(document).ready(function () {
-            $(document).on("click", ".remove-alias", function () {
-                $(this).parent('.div-identifier').remove();
-            });
-            $("#add-alias-btn").click(function () {
-                $("#add-alias").append(`
-                    <div class="div-identifier input-group mb-1 ">
-                        <input class="form-control" type="email" name="alias_mail" placeholder="new alias">
-                        <input type="button" value="-" class="btn btn-danger remove-alias">
-                    </div>  
-                `);
-            });
-        });
 
-    </script>
+    <script src="../../static/js/otherMailbox_field.js"></script>
     {% endblock %}
