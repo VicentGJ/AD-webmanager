@@ -14,8 +14,6 @@
                     {{ form.filter_select }}
                     {{ form.filter_str }}
                     <input type="submit" value="Search">
-
-                </form>
             </div>
             {% endif %}
 
@@ -28,16 +26,9 @@
             <a href="{{ url_for('ou_add', base=base) }}" class="button">Add OU</a>
             {% if root != base and objclass=="OU"%}
             <a href="{{ url_for('ou_edit', ou_name=base) }}" class="button">Edit OU</a>
-
-            <a href="{{ url_for('ou_delete', ou_name=base) }}">
-                <!-- class="button" style="margin-top:3px" id="delete-selection-btn" disabled -->
-                <input type="submit" value="Delete Selection" class="button" style="margin-top:3px"
-                    id="delete-selection-btn" disabled>
-            </a>
             {% endif %}
             <!--<a href="{{ url_for('core_index') }}" class="button">Create container</a>-->
             {% endif %}
-
             </p>
     </div>
     <h2>Register</h2>
@@ -61,12 +52,14 @@
             <td style='padding-right:10px;white-space:nowrap;'>
                 {% if objclass=="OU" %}
                 {% if entry['__type'] == 'Organization Unit'%}
-                <input type="checkbox" name="checkedItems" class="item-to-check" onclick="changeButton();" disabled>
+                <input type="checkbox" name="checkedItems" class="item-to-check" onclick="changeButton();" disabled
+                    value="{name:'{{ entry[key] }}', type:'{{ entry['__type'] }}', target:'{{ entry['__target'] }}'}">
                 {% else %}
-                <input type="checkbox" name="checkedItems" class="item-to-check" onclick="changeButton();">
+                <input type="checkbox" name="checkedItems" class="item-to-check" onclick="changeButton();"
+                    value="{name:'{{ entry[key] }}', type:'{{ entry['__type'] }}', target:'{{ entry['__target'] }}'}">
                 {% endif %}
                 {% endif %}
-                <a href="{{ entry['__target'] }}">{{entry[key] }}</a>
+                <a href="{{ entry['__target'] }}">{{ entry[key] }}</a>
             </td>
             {% elif key == "__type" and key in entry %}
             <td>{{ entry[key] }}</td>
@@ -79,6 +72,11 @@
         </tr>
         {% endfor %}
     </table>
+    {% if root != base and objclass=="OU"%}
+    <input type="submit" value="Delete Selection" class="button" style="margin-top: 20px;" id="delete-selection-btn"
+        disabled>
+    {% endif %}
+    </form>
 </div>
 
 <script src="../../static/js/batch_selection.js"></script>

@@ -16,13 +16,15 @@
 # You can find the license on Debian systems in the file
 # /usr/share/common-licenses/GPL-2
 
-from libs.common import iri_for as url_for
-from libs.common import namefrom_dn, get_objclass
-from settings import Settings
-from flask import g, render_template, request, redirect, abort
-from libs.ldap_func import ldap_auth, ldap_get_entries, ldap_in_group
+from flask import abort, g, redirect, render_template, request
 from flask_wtf import FlaskForm
-from wtforms import StringField, SelectField
+from libs.common import get_objclass
+from libs.common import iri_for as url_for
+from libs.common import namefrom_dn
+from libs.ldap_func import (ldap_auth, ldap_delete_entry, ldap_get_entries, ldap_get_group, ldap_get_user,
+                            ldap_in_group)
+from settings import Settings
+from wtforms import SelectField, StringField
 
 
 class FilterTreeView(FlaskForm):
@@ -59,6 +61,37 @@ def init(app):
                 filter_select = form.filter_select.data
                 scope = "subtree"
                 entries = get_entries(filter_str, filter_select, base, scope)
+                
+                #delete all selections
+                checkedDataToDelete = request.form.getlist("checkedItems") #returns an array of Strings, tho the strings have dict format
+                toDelete = []
+                for x in checkedDataToDelete: #transform all strings to dicts and append them to a new list
+                    dicts = {}
+                    key1 = x.split("name:'")[1].split("'")[0]
+                    key2 = x.split("type:'")[1].split("'")[0]
+                    key3 = x.split("target:'")[1].replace("'}", "") 
+                    key4 = key3.split("/")[2] # getting the username from the target url
+                    dicts['name'] = key1
+                    dicts['type'] = key2
+                    # dicts['target'] = key3
+                    dicts['username'] = key4.replace("%20", " ")
+                    toDelete.append(dicts)
+                #all selections are saved in toDelete list as dicts
+                try:
+                    for obj in toDelete:
+                        for key in obj:
+                            if key == 'type':
+                                if obj[key] == 'User':
+                                    user = ldap_get_user(username=obj['username'])
+                                    ldap_delete_entry(user['distinguishedName'])
+                                if obj[key] == 'Group':
+                                    group = ldap_get_group(groupname=obj['name'])
+                                    ldap_delete_entry(group['distinguishedName'])
+                except:
+                    #error handling ? 
+                    pass
+                return redirect(url_for('tree_base', base=base))
+                
             else:
                 filter_str = None
                 scope = "onelevel"
