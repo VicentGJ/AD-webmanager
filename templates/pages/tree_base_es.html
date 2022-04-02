@@ -60,7 +60,7 @@
             {% if key == "name" and key in entry %}
             <td style='padding-right:10px;white-space:nowrap;'>
                 {% if objclass=="OU" %}
-                <input type="checkbox" name="checkedItems" class="item-to-check" onchange="changeButton();">
+                <input type="checkbox" name="checkedItems" class="item-to-check" onclick="changeButton();">
                 {% endif %}
                 <a href="{{ entry['__target'] }}">{{entry[key] }}</a>
             </td>
@@ -76,58 +76,5 @@
         {% endfor %}
     </table>
 </div>
-
-<script>
-    document.getElementById("select-all").onclick = selectAll
-
-    function changeButton() {
-        const checkBoxes = Array.from(document.getElementsByClassName('item-to-check'))
-        const deleteBtn = document.getElementById("delete-selection-btn")
-        const selectAllBox = document.getElementById('select-all')
-        const allSelected = checkAllSelected(checkBoxes)
-        const oneSelected = checkOneSelected(checkBoxes)
-
-        deleteBtn.disabled = !oneSelected
-        selectAllBox.checked = allSelected
-    }
-    const checkAllSelected = (checkBoxes) => {
-        let count = 0
-        checkBoxes.map(box => box.checked ? count++ : null)
-        if (count === checkBoxes.length) {
-            return true
-        }
-        return false
-    }
-    const checkOneSelected = (checkBoxes) => {
-        for (let i = 0; i < checkBoxes.length; i++) {
-            if (checkBoxes[i].checked) {
-                return true
-            }
-        }
-        return false
-    }
-    function selectAll() {//    select / unsselect all items if those aren't disabled
-        const deleteBtn = document.getElementById("delete-selection-btn")
-        const selectAllBox = document.getElementById('select-all')
-        const checkBoxes = Array.from(document.getElementsByClassName('item-to-check'))
-
-        if (selectAllBox.checked) {
-            checkBoxes.map(box => {
-                if (!box.disabled) {
-                    box.checked = true
-                    deleteBtn.disabled = false
-
-                }
-            })
-        } else {
-            checkBoxes.map(box => {
-                if (!box.disabled) {
-                    box.checked = false
-                    deleteBtn.disabled = true
-
-                }
-            })
-        }
-    }
-</script>
+<script src="../../static/js/batch_selection.js"></script>
 {% endblock %}
