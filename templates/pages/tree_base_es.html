@@ -44,8 +44,7 @@
     <table>
         <tr>
             {% for key, title in entry_fields %}
-            {% if key == "name" %}
-
+            {% if key == "name" and objclass=="OU"%}
             <th> <input type="checkbox" id="select-all"> {{ title }}</th>
 
             {% else %}
@@ -60,7 +59,9 @@
             {% for key, title in entry_fields %}
             {% if key == "name" and key in entry %}
             <td style='padding-right:10px;white-space:nowrap;'>
+                {% if objclass=="OU" %}
                 <input type="checkbox" name="checkedItems" class="item-to-check" onchange="changeButton();">
+                {% endif %}
                 <a href="{{ entry['__target'] }}">{{entry[key] }}</a>
             </td>
             {% elif key == "__type" and key in entry %}
@@ -83,17 +84,28 @@
         const checkBoxes = Array.from(document.getElementsByClassName('item-to-check'))
         const deleteBtn = document.getElementById("delete-selection-btn")
         const selectAllBox = document.getElementById('select-all')
+        const allSelected = checkAllSelected(checkBoxes)
+        const oneSelected = checkOneSelected(checkBoxes)
 
-        let allDisabled = true
-
-        checkBoxes.map(box => {
-            box.checked ? allDisabled = false : null
-        })
-        deleteBtn.disabled = allDisabled
-        allDisabled ? selectAllBox.checked = false : null
-
+        deleteBtn.disabled = !oneSelected
+        selectAllBox.checked = allSelected
     }
-
+    const checkAllSelected = (checkBoxes) => {
+        let count = 0
+        checkBoxes.map(box => box.checked ? count++ : null)
+        if (count === checkBoxes.length) {
+            return true
+        }
+        return false
+    }
+    const checkOneSelected = (checkBoxes) => {
+        for (let i = 0; i < checkBoxes.length; i++) {
+            if (checkBoxes[i].checked) {
+                return true
+            }
+        }
+        return false
+    }
     function selectAll() {//    select / unsselect all items if those aren't disabled
         const deleteBtn = document.getElementById("delete-selection-btn")
         const selectAllBox = document.getElementById('select-all')
