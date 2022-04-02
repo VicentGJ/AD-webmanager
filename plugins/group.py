@@ -300,7 +300,7 @@ def init(app):
             flash(u"Data validation failed.", "error")
 
         return render_template("forms/basicform.html", form=form, title=title,
-                               action="Adicionar miembros",
+                               action="Add members",
                                parent=url_for('group_overview',
                                               groupname=groupname))
 
