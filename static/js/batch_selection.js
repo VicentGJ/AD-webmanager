@@ -1,5 +1,3 @@
-document.getElementById("select-all").onclick = selectAll
-
 function changeButton() {
     const checkBoxes = Array.from(document.getElementsByClassName('item-to-check'))
     const deleteBtn = document.getElementById("delete-selection-btn")
