@@ -70,7 +70,6 @@ def init(app):
                                action="Add OU",
                                parent=url_for('tree_base'))
                                
-    #FIXME:   delete all children          
     @app.route('/ou/<ou_name>/+delete', methods=['GET', 'POST'])
     @ldap_auth(Settings.ADMIN_GROUP)
     def ou_delete(ou_name):
@@ -87,6 +86,7 @@ def init(app):
                 ou = ldap_get_ou(ou_name=ou_name)
                 ldap_delete_entry(ou['distinguishedName'])
                 flash(u"OU removed successfully.", "success")
+                return redirect(url_for('tree_base'))
             except ldap.LDAPError as e:
                 error = e.message['info'].split(":", 2)[-1].strip()
                 error = str(error[0].upper() + error[1:])
