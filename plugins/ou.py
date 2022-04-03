@@ -87,8 +87,10 @@ def init(app):
                 return redirect(url_for('tree_base'))
 
             except ldap.LDAPError as e:
-                error = e.message['info'].split(":", 2)[-1].strip()
-                error = str(error[0].upper() + error[1:])
+                # error = e.message['info'].split(":", 2)[-1].strip()
+                # error = str(error[0].upper() + error[1:])
+                # error = str(e).replace("{'msgtype': 107, 'msgid': 7, 'result': 66, 'desc': 'Operation not allowed on non-leaf', 'ctrls': [], 'info': '00002015: subtree_delete: ", "").replace("'}", "")
+                error = (str(e).split("subtree_delete: ")[1]).replace("!'}", "")
                 flash(error, "error")
                 
         elif form.errors:
