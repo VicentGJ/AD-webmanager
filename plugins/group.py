@@ -114,7 +114,8 @@ def init(app):
         title = "Group details - %s" % groupname
 
         if not ldap_group_exists(groupname=groupname):
-            abort(404)
+            flash(f"The group: {groupname}, doesn't exists (err404)", "error")
+            return redirect(url_for('tree_base'))
 
         identity_fields = [('sAMAccountName', "Name"),
                            ('description', u"Description")]
@@ -156,8 +157,9 @@ def init(app):
     def group_delete(groupname):
         title = "Delete group"
 
-        if not ldap_group_exists(groupname):
-            abort(404)
+        if not ldap_group_exists(groupname=groupname):
+            flash(f"The group: {groupname}, doesn't exists (err404)", "error")
+            return redirect(url_for('tree_base'))
 
         form = FlaskForm(request.form)
 
@@ -185,8 +187,9 @@ def init(app):
     def group_edit(groupname):
         title = "Edit group"
 
-        if not ldap_group_exists(groupname):
-            abort(404)
+        if not ldap_group_exists(groupname=groupname):
+            flash(f"The group: {groupname}, doesn't exists (err404)", "error")
+            return redirect(url_for('tree_base'))
 
         group = ldap_get_group(groupname)
 
@@ -265,8 +268,9 @@ def init(app):
     def group_addmembers(groupname):
         title = "Add members"
 
-        if not ldap_group_exists(groupname):
-            abort(404)
+        if not ldap_group_exists(groupname=groupname):
+            flash(f"The group: {groupname}, doesn't exists (err404)", "error")
+            return redirect(url_for('tree_base'))
 
         form = GroupAddMembers(request.form)
         form.visible_fields = [form.new_members]

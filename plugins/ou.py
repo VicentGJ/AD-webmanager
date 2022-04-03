@@ -16,13 +16,12 @@
 # You can find the license on Debian systems in the file
 # /usr/share/common-licenses/GPL-2
 
-from email.mime import base
 import ldap
 from flask import abort, flash, redirect, render_template, request, url_for
 from flask_wtf import FlaskForm
 from libs.common import namefrom_dn
 from libs.ldap_func import (ldap_auth, ldap_create_entry, ldap_delete_entry,
-                            ldap_get_ou, ldap_update_attribute)
+                            ldap_get_ou,ldap_ou_exists, ldap_update_attribute)
 from settings import Settings
 from wtforms import StringField, TextAreaField
 from wtforms.validators import DataRequired, Optional
@@ -77,6 +76,10 @@ def init(app):
     def ou_delete(ou_name):
         title = "Delete OU"
 
+        if not ldap_ou_exists(ou_name=ou_name):
+            flash(f"The OU: {namefrom_dn(ou_name)} doesn't exists (err404)", "error")
+            return redirect(url_for('tree_base'))
+
         form = FlaskForm(request.form)
 
         if form.validate_on_submit():
@@ -84,13 +87,11 @@ def init(app):
                 ou = ldap_get_ou(ou_name=ou_name)
                 ldap_delete_entry(ou['distinguishedName'])
                 flash(u"OU removed successfully.", "success")
-                return redirect(url_for('tree_base'))
-
             except ldap.LDAPError as e:
-                # error = e.message['info'].split(":", 2)[-1].strip()
-                # error = str(error[0].upper() + error[1:])
-                error = (str(e).split("subtree_delete: ")[1]).replace("!'}", "").upper()
-                flash(error, "error")
+                error = e.message['info'].split(":", 2)[-1].strip()
+                error = str(error[0].upper() + error[1:])
+                # error = (str(e).split("subtree_delete: ")[1]).replace("!'}", "").upper()
+                flash(e, "error")
                 
         elif form.errors:
                 flash(u"Data validation failed.", "error")
@@ -104,6 +105,10 @@ def init(app):
     @ldap_auth(Settings.ADMIN_GROUP)
     def ou_edit(ou_name):
         title = "Edit OU"
+
+        if not ldap_ou_exists(ou_name=ou_name):
+            flash(f"The OU: {namefrom_dn(ou_name)} doesn't exists (err404)", "error")
+            return redirect(url_for('tree_base'))
 
         ou = ldap_get_ou(ou_name)
 
