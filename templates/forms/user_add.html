@@ -1,7 +1,7 @@
 {% extends "base-modal_es.html" %}
 {% block title %}{{ title }}{% endblock %}
 {% block content %}
-{% from "forms/macros.html" import render_field %}
+{% from "macros.html" import render_field %}
 {% if request.query_string %}
 <form method="post" action="?{{ request.query_string }}" class="form">
     {% else %}
