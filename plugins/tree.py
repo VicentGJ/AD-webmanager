@@ -65,7 +65,8 @@ def init(app):
             form = FilterTreeView(request.form)
             batch_select = BatchSelect()
 
-            if form.validate_on_submit():
+            if form.search.data and form.validate():
+                print('here 1')
                 filter_str = form.filter_str.data
                 filter_select = form.filter_select.data
                 scope = "subtree"
@@ -74,9 +75,9 @@ def init(app):
                 filter_str = None
                 scope = "onelevel"
                 entries = get_entries("top", "objectClass", base, scope)
-
-            #TODO: batch delete confirmation page
-            if batch_select.is_submitted():
+            
+           #TODO: batch delete confirmation page
+            if batch_select.delete.data:
                 #delete all selections
                 checkedDataToDelete = request.form.getlist("checkedItems") #returns an array of Strings, tho the strings have dict format
                 toDelete = []
