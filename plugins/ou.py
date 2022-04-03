@@ -89,8 +89,7 @@ def init(app):
             except ldap.LDAPError as e:
                 # error = e.message['info'].split(":", 2)[-1].strip()
                 # error = str(error[0].upper() + error[1:])
-                # error = str(e).replace("{'msgtype': 107, 'msgid': 7, 'result': 66, 'desc': 'Operation not allowed on non-leaf', 'ctrls': [], 'info': '00002015: subtree_delete: ", "").replace("'}", "")
-                error = (str(e).split("subtree_delete: ")[1]).replace("!'}", "")
+                error = (str(e).split("subtree_delete: ")[1]).replace("!'}", "").upper()
                 flash(error, "error")
                 
         elif form.errors:
