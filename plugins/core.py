@@ -16,9 +16,10 @@
 # You can find the license on Debian systems in the file
 # /usr/share/common-licenses/GPL-2
 
+from flask import g, redirect, session
 from libs.common import iri_for as url_for
-from flask import g, redirect, session, Flask
 from libs.ldap_func import ldap_auth, ldap_get_entry_simple
+
 
 def init(app):
     @app.route('/')

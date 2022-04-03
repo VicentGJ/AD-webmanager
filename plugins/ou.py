@@ -17,11 +17,11 @@
 # /usr/share/common-licenses/GPL-2
 
 import ldap
-from flask import abort, flash, redirect, render_template, request, url_for
+from flask import flash, redirect, render_template, request, url_for
 from flask_wtf import FlaskForm
 from libs.common import namefrom_dn
 from libs.ldap_func import (ldap_auth, ldap_create_entry, ldap_delete_entry,
-                            ldap_get_ou,ldap_ou_exists, ldap_update_attribute)
+                            ldap_get_ou, ldap_ou_exists, ldap_update_attribute)
 from settings import Settings
 from wtforms import StringField, TextAreaField
 from wtforms.validators import DataRequired, Optional
