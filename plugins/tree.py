@@ -16,6 +16,8 @@
 # You can find the license on Debian systems in the file
 # /usr/share/common-licenses/GPL-2
 
+from urllib import parse
+
 import ldap
 from flask import abort, flash, g, redirect, render_template, request
 from flask_wtf import FlaskForm
@@ -24,7 +26,7 @@ from libs.common import iri_for as url_for
 from libs.common import namefrom_dn
 from libs.ldap_func import (ldap_auth, ldap_delete_entry, ldap_get_entries,
                             ldap_get_group, ldap_get_ou, ldap_get_user,
-                            ldap_in_group)
+                            ldap_in_group, ldap_obj_has_children)
 from settings import Settings
 from wtforms import SelectField, StringField, SubmitField
 
@@ -89,7 +91,11 @@ def init(app):
                     dicts['name'] = key1
                     dicts['type'] = key2
                     dicts['target'] = key3
-                    dicts['username'] = key4.replace("%20", " ")
+                    if key2 != 'Organization Unit':
+                        dicts['username'] = key4
+                    else:
+                        dicts['dn'] = parse.unquote(key4)
+
                     toDelete.append(dicts)
                 #all selections are saved in toDelete list as dicts
                 try:
@@ -101,13 +107,14 @@ def init(app):
                                     ldap_delete_entry(user['distinguishedName'])
                                 elif obj[key] == 'Group':
                                     group = ldap_get_group(groupname=obj['name'])
-                                    print(group)
                                     ldap_delete_entry(group['distinguishedName'])
                                 elif obj[key] == 'Organization Unit':
-                                    ou = ldap_get_ou(ou_name=obj['name'])
-                                    print(ou)
-                                    # ldap_delete_entry(ou['distinguishedName'])
-                                    #if not hasChildren(ou): 
+                                    canDelete = not ldap_obj_has_children(base=obj['dn'])
+                                    ou = ldap_get_ou(ou_name=obj['dn'])
+                                    if canDelete:
+                                        ldap_delete_entry(ou['distinguishedName'])
+                                    else:
+                                        flash(f"Can't delete OU: '{ou['ou']}' because is not empty", "error")
                 except ldap.LDAPError as e:
                     flash(e,"error")
                 return redirect(url_for('tree_base', base=base))
