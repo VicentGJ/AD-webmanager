@@ -16,21 +16,27 @@
 # You can find the license on Debian systems in the file
 # /usr/share/common-licenses/GPL-2
 
+from sys import flags
 from flask import abort, g, redirect, render_template, request
 from flask_wtf import FlaskForm
 from libs.common import get_objclass
 from libs.common import iri_for as url_for
 from libs.common import namefrom_dn
-from libs.ldap_func import (ldap_auth, ldap_delete_entry, ldap_get_entries, ldap_get_group, ldap_get_ou, ldap_get_user,
+from libs.ldap_func import (ldap_auth, ldap_delete_entry, ldap_get_entries, ldap_get_entry, ldap_get_entry_simple, ldap_get_group, ldap_get_ou, ldap_get_user,
                             ldap_in_group)
 from settings import Settings
-from wtforms import SelectField, StringField
+from wtforms import SelectField, StringField, SubmitField
 
 
 class FilterTreeView(FlaskForm):
     filter_str = StringField()
     filter_select = SelectField(choices=Settings.SEARCH_ATTRS)
+    search = SubmitField('Search')
 
+
+class BatchSelect(FlaskForm):
+    box = SelectField()
+    delete = SubmitField('Delete Selection')
 
 def init(app):
     @app.route('/tree', methods=['GET', 'POST'])
@@ -55,13 +61,19 @@ def init(app):
                     entry_fields.append((item[0], item[1])) 
 
             form = FilterTreeView(request.form)
+            batch_select = BatchSelect()
 
             if form.validate_on_submit():
                 filter_str = form.filter_str.data
                 filter_select = form.filter_select.data
                 scope = "subtree"
-                entries = get_entries(filter_str, filter_select, base, scope)
-                
+                entries = get_entries(filter_str, filter_select, base, scope)     
+            else:
+                filter_str = None
+                scope = "onelevel"
+                entries = get_entries("top", "objectClass", base, scope)
+
+            if batch_select.is_submitted():
                 #delete all selections
                 checkedDataToDelete = request.form.getlist("checkedItems") #returns an array of Strings, tho the strings have dict format
                 toDelete = []
@@ -77,6 +89,7 @@ def init(app):
                     dicts['username'] = key4.replace("%20", " ")
                     toDelete.append(dicts)
                 #all selections are saved in toDelete list as dicts
+                print(toDelete)
                 try:
                     for obj in toDelete:
                         for key in obj:
@@ -94,23 +107,69 @@ def init(app):
                 except:
                     #error handling ? 
                     pass
+                # return render_template('pages/tree_batch_delete.html', title='Batch Delete',
+                #                         action='Delete', toDelete=toDelete, 
+                #                         parent=base)
                 return redirect(url_for('tree_base', base=base))
-                
-            else:
-                filter_str = None
-                scope = "onelevel"
-                entries = get_entries("top", "objectClass", base, scope)
 
-            parent = None
-            base_split = base.split(',')
-            if not base_split[0].lower().startswith("dc"):
-                parent = ",".join(base_split[1:])
 
-            name = namefrom_dn(base)
-            return render_template("pages/tree_base_es.html", form=form, parent=parent,
-                                   admin=admin, base=base.upper(), entries=entries,
-                                   entry_fields=entry_fields, root=g.ldap['search_dn'].upper(), name=name,
-                                   objclass=get_objclass(base))
+        parent = None
+        base_split = base.split(',')
+        if not base_split[0].lower().startswith("dc"):
+            parent = ",".join(base_split[1:])
+
+        name = namefrom_dn(base)
+        return render_template("pages/tree_base_es.html", form=form, parent=parent, batch_select=batch_select,
+                                admin=admin, base=base.upper(), entries=entries,
+                                entry_fields=entry_fields, root=g.ldap['search_dn'].upper(), name=name,
+                                objclass=get_objclass(base))
+
+    # @app.route('/tree/batch_deleting', methods=['GET', 'POST'])
+    # def tree_batch_delete():
+    #     if request.method == 'POST':
+        #     #delete all selections
+        #     checkedDataToDelete = request.form.getlist("checkedItems") #returns an array of Strings, tho the strings have dict format
+        #     toDelete = []
+        #     for x in checkedDataToDelete: #transform all strings to dicts and append them to a new list
+        #         dicts = {}
+        #         key1 = x.split("name:'")[1].split("'")[0]
+        #         key2 = x.split("type:'")[1].split("'")[0]
+        #         key3 = x.split("target:'")[1].replace("'}", "") 
+        #         key4 = key3.split("/")[2] # getting the username from the target url
+        #         dicts['name'] = key1
+        #         dicts['type'] = key2
+        #         # dicts['target'] = key3
+        #         dicts['username'] = key4.replace("%20", " ")
+        #         toDelete.append(dicts)
+        #     #all selections are saved in toDelete list as dicts
+        #     print(toDelete)
+        #     try:
+        #         for obj in toDelete:
+        #             for key in obj:
+        #                 if key == 'type':
+        #                     if obj[key] == 'User':
+        #                         user = ldap_get_user(username=obj['username'])
+        #                         ldap_delete_entry(user['distinguishedName'])
+        #                     elif obj[key] == 'Group':
+        #                         group = ldap_get_group(groupname=obj['name'])
+        #                         ldap_delete_entry(group['distinguishedName'])
+        #                     elif obj[key] == 'Organization Unit':
+        #                         ou = ldap_get_ou(ou_name=obj['name'])
+        #                         #if not hasChildren(ou): 
+        #                         # ldap_delete_entry(ou['distinguishedName'])
+        #     except:
+        #         #error handling ? 
+        #         pass
+        #     # return render_template('pages/tree_batch_delete.html', title='Batch Delete',
+        #     #                         action='Delete', toDelete=toDelete, 
+        #     #                         parent=base)
+        #     return redirect(url_for('tree_base'))
+        # else:
+        #     if not base:
+        #         base = g.ldap['dn']
+        #     elif not base.lower().endswith(g.ldap['dn'].lower()):
+        #         base += ",%s" % g.ldap['dn']
+        #     return redirect(url_for('tree_base', base=base))
 
     def get_entries(filter_str, filter_select, base, scope):
         """

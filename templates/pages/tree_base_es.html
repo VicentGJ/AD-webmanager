@@ -1,7 +1,7 @@
 {% extends "base_es.html" %}
 {% block title %}{{ name }}{% endblock %}
 {% block content %}
-
+{% from 'macros.html' import render_button %}
 <div class="tree_base" style="min-height:10em;">
     <div>
         <p>
@@ -13,69 +13,67 @@
                     {{ form.csrf_token }}
                     {{ form.filter_select }}
                     {{ form.filter_str }}
-                    <input type="submit" value="Search">
+                    {{ form.search }}
+                    <!-- <input type="submit" value="Search"> -->
             </div>
-            {% endif %}
+        </form>
+        {% endif %}
 
-            {% if parent %}
-            <a href="{{ url_for('tree_base', base=parent) }}" class="button">Up a level</a>
-            {% endif %}
-            {% if admin %}
-            <a href="{{ url_for('group_add', base=base) }}" class="button">Add group</a>
-            <a href="{{ url_for('user_add', base=base) }}" class="button">Add user</a>
-            <a href="{{ url_for('ou_add', base=base) }}" class="button">Add OU</a>
-            {% if root != base and objclass=="OU"%}
-            <a href="{{ url_for('ou_edit', ou_name=base) }}" class="button">Edit OU</a>
-            {% endif %}
-            <!--<a href="{{ url_for('core_index') }}" class="button">Create container</a>-->
-            {% endif %}
-            </p>
+        {% if parent %}
+        <a href="{{ url_for('tree_base', base=parent) }}" class="button">Up a level</a>
+        {% endif %}
+        {% if admin %}
+        <a href="{{ url_for('group_add', base=base) }}" class="button">Add group</a>
+        <a href="{{ url_for('user_add', base=base) }}" class="button">Add user</a>
+        <a href="{{ url_for('ou_add', base=base) }}" class="button">Add OU</a>
+        {% if root != base and objclass=="OU"%}
+        <a href="{{ url_for('ou_edit', ou_name=base) }}" class="button">Edit OU</a>
+        {% endif %}
+        <!--<a href="{{ url_for('core_index') }}" class="button">Create container</a>-->
+        {% endif %}
+        </p>
     </div>
     <h2>Register</h2>
-    <table>
-        <tr>
-            {% for key, title in entry_fields %}
-            {% if key == "name" and objclass=="OU"%}
-            <th> <input type="checkbox" id="select-all"> {{ title }}</th>
-
-            {% else %}
-            <th>{{ title }}</th>
-            {% endif %}
-
-            {% endfor %}
-        </tr>
-
-        {% for entry in entries %}
-        <tr>
-            {% for key, title in entry_fields %}
-            {% if key == "name" and key in entry %}
-            <td style='padding-right:10px;white-space:nowrap;'>
-                {% if objclass=="OU" %}
-                {% if entry['__type'] == 'Organization Unit'%}
-                <input type="checkbox" name="checkedItems" class="item-to-check" onclick="changeButton();" disabled
-                    value="{name:'{{ entry[key] }}', type:'{{ entry['__type'] }}', target:'{{ entry['__target'] }}'}">
+    <form action="?" method="post">
+        <table>
+            <tr>
+                {% for key, title in entry_fields %}
+                {% if key == "name"%}
+                <th> <input type="checkbox" id="select-all" onclick=selectAll()> {{ title }}</th>
                 {% else %}
-                <input type="checkbox" name="checkedItems" class="item-to-check" onclick="changeButton();"
-                    value="{name:'{{ entry[key] }}', type:'{{ entry['__type'] }}', target:'{{ entry['__target'] }}'}">
+                <th>{{ title }}</th>
                 {% endif %}
+
+                {% endfor %}
+            </tr>
+
+            {% for entry in entries %}
+            <tr>
+                {% for key, title in entry_fields %}
+                {% if key == "name" and key in entry %}
+                <td style='padding-right:10px;white-space:nowrap;'>
+                    {% if entry['__type'] == 'Organization Unit'%}
+                    <input type="checkbox" name="checkedItems" class="item-to-check" onclick="changeButton();" disabled
+                        value="{name:'{{ entry[key] }}', type:'{{ entry['__type'] }}', target:'{{ entry['__target'] }}'}">
+                    {% else %}
+                    <input type="checkbox" name="checkedItems" class="item-to-check" onclick="changeButton();"
+                        value="{name:'{{ entry[key] }}', type:'{{ entry['__type'] }}', target:'{{ entry['__target'] }}'}">
+                    {% endif %}
+                    <a href="{{ entry['__target'] }}">{{ entry[key] }}</a>
+                </td>
+                {% elif key == "__type" and key in entry %}
+                <td>{{ entry[key] }}</td>
+                {% elif key in entry %}
+                <td>{{ entry[key]|truncate(40) }}</td>
+                {% else %}
+                <td>&nbsp;</td>
                 {% endif %}
-                <a href="{{ entry['__target'] }}">{{ entry[key] }}</a>
-            </td>
-            {% elif key == "__type" and key in entry %}
-            <td>{{ entry[key] }}</td>
-            {% elif key in entry %}
-            <td>{{ entry[key]|truncate(40) }}</td>
-            {% else %}
-            <td>&nbsp;</td>
-            {% endif %}
+                {% endfor %}
+            </tr>
             {% endfor %}
-        </tr>
-        {% endfor %}
-    </table>
-    {% if root != base and objclass=="OU"%}
-    <input type="submit" value="Delete Selection" class="button" style="margin-top: 20px;" id="delete-selection-btn"
-        disabled>
-    {% endif %}
+        </table>
+        {{ render_button(batch_select.delete, disabled=true, id="delete-selection-btn",class="button",
+        style="margin-top: 20px") }}
     </form>
 </div>
 
