@@ -76,8 +76,6 @@ def init(app):
                 entries = get_entries("top", "objectClass", base, scope)
 
             #TODO: batch delete confirmation page
-            #TODO: check if OU has children
-            #TODO: delete OUs
             if batch_select.is_submitted():
                 #delete all selections
                 checkedDataToDelete = request.form.getlist("checkedItems") #returns an array of Strings, tho the strings have dict format

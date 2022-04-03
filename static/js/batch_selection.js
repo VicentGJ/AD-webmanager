@@ -63,7 +63,7 @@ function enableOUDeleteButton() {
 
     if (checkBoxes.length === 0) {
         ouDelete.disabled = false
-        selectAllBox.disabled = true
+        selectAllBox.style.display = "none"
         batchDeleteBtn.style.display = "none"
     }
 }
