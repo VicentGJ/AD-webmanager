@@ -16,14 +16,13 @@
 # You can find the license on Debian systems in the file
 # /usr/share/common-licenses/GPL-2
 
-from email.mime import base
-from operator import indexOf
 import struct
 
 import ldap
 from flask import abort, flash, g, redirect, render_template, request
 from flask_wtf import FlaskForm
-from libs.common import iri_for as url_for, namefrom_dn
+from libs.common import iri_for as url_for
+from libs.common import namefrom_dn
 from libs.ldap_func import (LDAP_AD_GROUPTYPE_VALUES, ldap_add_users_to_group,
                             ldap_auth, ldap_create_entry, ldap_delete_entry,
                             ldap_get_entry_simple, ldap_get_group,

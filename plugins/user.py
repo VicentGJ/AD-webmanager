@@ -17,11 +17,10 @@
 # /usr/share/common-licenses/GPL-2
 
 import base64
-from cProfile import label
 from datetime import datetime
 
 import ldap
-from flask import abort, flash, g, redirect, render_template, request, session
+from flask import abort, flash, g, redirect, render_template, request
 from flask_wtf import FlaskForm
 from libs.common import get_parsed_pager_attribute
 from libs.common import iri_for as url_for
@@ -34,10 +33,9 @@ from libs.ldap_func import (LDAP_AD_USERACCOUNTCONTROL_VALUES, ldap_auth,
                             ldap_update_attribute, ldap_user_exists)
 from pytz import timezone
 from settings import Settings
-from wtforms import (BooleanField, DecimalField, EmailField, FieldList,
-                     IntegerField, PasswordField, SelectField,
-                     SelectMultipleField, StringField, SubmitField,
-                     TextAreaField)
+from wtforms import (BooleanField, DecimalField, EmailField, IntegerField,
+                     PasswordField, SelectField, SelectMultipleField,
+                     StringField, TextAreaField)
 from wtforms.validators import DataRequired, EqualTo, Length, Optional
 
 
