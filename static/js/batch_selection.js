@@ -43,7 +43,6 @@ function selectAll() {//    select / unsselect all items if those aren't disable
             if (!box.disabled) {
                 box.checked = true
                 deleteBtn.disabled = false
-
             }
         })
     } else {
@@ -51,8 +50,15 @@ function selectAll() {//    select / unsselect all items if those aren't disable
             if (!box.disabled) {
                 box.checked = false
                 deleteBtn.disabled = true
-
             }
         })
+    }
+}
+document.onload = enableOUDeleteButton()
+function enableOUDeleteButton() {
+    const ouDelete = document.getElementById('ou-delete-btn')
+    const checkBoxes = Array.from(document.getElementsByClassName('item-to-check'))
+    if (checkBoxes.length === 0) {
+        ouDelete.disabled = false
     }
 }
