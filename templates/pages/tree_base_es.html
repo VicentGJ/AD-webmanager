@@ -28,7 +28,11 @@
         <a href="{{ url_for('ou_add', base=base) }}" class="button">Add OU</a>
         {% if root != base and objclass=="OU"%}
         <a href="{{ url_for('ou_edit', ou_name=base) }}" class="button">Edit OU</a>
-        <a href="{{ url_for('ou_delete', ou_name=base) }}" class="button" style="margin-top: 3px;">Delete {{name}}</a>
+
+        <a href="{{ url_for('ou_delete', ou_name=base) }}">
+            <input type="button" value="Delete {{name}}" class="button" style="margin-top: 3px;" id="ou-delete-btn"
+                disabled>
+        </a>
         {% endif %}
         <!--<a href="{{ url_for('core_index') }}" class="button">Create container</a>-->
         {% endif %}
@@ -53,13 +57,8 @@
                 {% for key, title in entry_fields %}
                 {% if key == "name" and key in entry %}
                 <td style='padding-right:10px;white-space:nowrap;'>
-                    {% if entry['__type'] == 'Organization Unit'%}
-                    <input type="checkbox" name="checkedItems" class="item-to-check" onclick="changeButton();" disabled
-                        value="{name:'{{ entry[key] }}', type:'{{ entry['__type'] }}', target:'{{ entry['__target'] }}'}">
-                    {% else %}
                     <input type="checkbox" name="checkedItems" class="item-to-check" onclick="changeButton();"
                         value="{name:'{{ entry[key] }}', type:'{{ entry['__type'] }}', target:'{{ entry['__target'] }}'}">
-                    {% endif %}
                     <a href="{{ entry['__target'] }}">{{ entry[key] }}</a>
                 </td>
                 {% elif key == "__type" and key in entry %}
