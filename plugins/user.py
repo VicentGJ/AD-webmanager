@@ -104,7 +104,6 @@ def init(app):
     @ldap_auth(Settings.ADMIN_GROUP)
     def user_add():
         title = "Add User"
-        base = request.args.get('base')
 
         if g.extra_fields:
             form = UserAddExtraFields(request.form)
@@ -130,6 +129,8 @@ def init(app):
 
         if form.validate_on_submit():
             try:
+                base = request.args.get("b'base")
+                base = base.rstrip("'")
                 # Default attributes
                 upn = "%s@%s" % (form.user_name.data, g.ldap['domain'])
                 attributes = {'objectClass': [b'top', b'person', b'organizationalPerson', b'user', b'inetOrgPerson'],
@@ -190,7 +191,8 @@ def init(app):
         title = "User details - %s" % username
 
         if not ldap_user_exists(username=username):
-            abort(404)
+            flash(f"The user: {username}, doesn't exists (err404)", "error")
+            return redirect(url_for('tree_base'))
 
         user = ldap_get_user(username=username)
         admin = ldap_in_group(Settings.ADMIN_GROUP)
@@ -290,7 +292,8 @@ def init(app):
         title = u"Change Password"
 
         if not ldap_user_exists(username=username):
-            abort(404)
+            flash(f"The user: {username}, doesn't exists (err404)", "error")
+            return redirect(url_for('tree_base'))
 
         admin = ldap_in_group(Settings.ADMIN_GROUP)
 
@@ -332,7 +335,8 @@ def init(app):
         title = "Delete User"
 
         if not ldap_user_exists(username=username):
-            abort(404)
+            flash(f"The user: {username}, doesn't exists (err404)", "error")
+            return redirect(url_for('tree_base'))
 
         form = FlaskForm(request.form)
 
@@ -360,7 +364,8 @@ def init(app):
         title = "Edit user"
 
         if not ldap_user_exists(username=username):
-            abort(404)
+            flash(f"The user: {username}, doesn't exists (err404)", "error")
+            return redirect(url_for('tree_base'))
 
         user = ldap_get_user(username=username)
         form = UserProfileEdit(request.form)
@@ -449,7 +454,8 @@ def init(app):
         title = u"Edit SICC-IP Configuration"
 
         if not ldap_user_exists(username=username):
-            abort(404)
+            flash(f"The user: {username}, doesn't exists (err404)", "error")
+            return redirect(url_for('tree_base'))
 
         user = ldap_get_user(username=username)
         pager = user['pager'][0] if 'pager' in user else None
@@ -506,7 +512,8 @@ def init(app):
         title = "Edit SSH keys"
 
         if not ldap_user_exists(username=username):
-            abort(404)
+            flash(f"The user: {username}, doesn't exists (err404)", "error")
+            return redirect(url_for('tree_base'))
 
         user = ldap_get_user(username=username)
 
