@@ -244,7 +244,13 @@ def ldap_get_entries(ldap_filter, base=None, scope=None, ignore_erros=False):
         entries.append(attributes)
     return entries
 
-
+def ldap_obj_has_children (base):
+    connection = g.ldap['connection']
+    scope = ldap.SCOPE_ONELEVEL
+    result = connection.search_s(base, scope, filterstr=None, attrlist=['dn'])
+    if len(result):
+        return True
+    return False
 
 def ldap_get_members(name=None):
     """
