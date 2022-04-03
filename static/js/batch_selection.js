@@ -58,7 +58,12 @@ document.onload = enableOUDeleteButton()
 function enableOUDeleteButton() {
     const ouDelete = document.getElementById('ou-delete-btn')
     const checkBoxes = Array.from(document.getElementsByClassName('item-to-check'))
+    const selectAllBox = document.getElementById('select-all')
+    const batchDeleteBtn = document.getElementById("delete-selection-btn")
+
     if (checkBoxes.length === 0) {
         ouDelete.disabled = false
+        selectAllBox.disabled = true
+        batchDeleteBtn.style.display = "none"
     }
 }
