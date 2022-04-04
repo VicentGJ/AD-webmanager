@@ -98,22 +98,32 @@ def init(app):
                     toDelete.append(dicts)
                 #all selections are saved in toDelete list as dicts
                 try:
+                    deleted_list = []
                     for obj in toDelete:
                         for key in obj:
                             if key == 'type':
                                 if obj[key] == 'User':
                                     user = ldap_get_user(username=obj['username'])
                                     ldap_delete_entry(user['distinguishedName'])
+                                    deleted_list.append(obj['username'])
                                 elif obj[key] == 'Group':
                                     group = ldap_get_group(groupname=obj['name'])
                                     ldap_delete_entry(group['distinguishedName'])
+                                    deleted_list.append(obj['name'])
                                 elif obj[key] == 'Organization Unit':
                                     canDelete = not ldap_obj_has_children(base=obj['dn'])
                                     ou = ldap_get_ou(ou_name=obj['dn'])
                                     if canDelete:
                                         ldap_delete_entry(ou['distinguishedName'])
+                                        deleted_list.append(obj['name'])
                                     else:
                                         flash(f"Can't delete OU: '{ou['ou']}' because is not empty", "error")
+                    if len(deleted_list):
+                        if len(deleted_list) == 1:
+                            flash("1 element deleted successfully", "success")
+                        else:
+                            flash(f"{len(deleted_list)} elements deleted successfully", "success")
+
                 except ldap.LDAPError as e:
                     flash(e,"error")
                 return redirect(url_for('tree_base', base=base))
