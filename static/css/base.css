@@ -4,7 +4,7 @@ html, body {
 }
 body {
     background: #054cde;
-    background-image: url("/static/img/wp8145206.jpg");
+    background-image: url("/static/img/wp-old.jpg");
     background-attachment: fixed;
     background-position: center;
     background-size: cover;
@@ -19,7 +19,7 @@ table td, table th {
     vertical-align: top;
 }
 table tr:hover {
-    background-color: #f6f6f6;
+    background-color: #ededed;
 }
 pre {
     background-color: #f2f2f2;

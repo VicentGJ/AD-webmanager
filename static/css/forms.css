@@ -89,11 +89,8 @@ input[type="submit"] {
 .button:hover,
 button:hover,
 input[type="submit"]:hover {
-    background-image: linear-gradient(bottom, #35a2eb 0%, #57b5f5 100%);
-    background-image: -o-linear-gradient(bottom, #35a2eb 0%, #57b5f5 100%);
-    background-image: -moz-linear-gradient(bottom, #35a2eb 0%, #57b5f5 100%);
-    background-image: -webkit-linear-gradient(bottom, #35a2eb 0%, #57b5f5 100%);
-    background-image: -ms-linear-gradient(bottom, #35a2eb 0%, #57b5f5 100%);
+    background-color: #57b5f5;
+    border-color: #57b5f5;
     text-decoration: none;
 }
 .yui3-button,
@@ -132,12 +129,9 @@ input[type="submit"].secondary:hover {
 button:disabled,
 input[type="submit"]:disabled{
     cursor: not-allowed;
-    border-color: #999;
-    background-image: linear-gradient(bottom, rgb(200,200,200) 0%, rgb(150,150,150) 100%);
-    background-image: -o-linear-gradient(bottom, rgb(200,200,200) 0%, rgb(150,150,150) 100%);
-    background-image: -moz-linear-gradient(bottom, rgb(200,200,200) 0%, rgb(150,150,150) 100%);
-    background-image: -webkit-linear-gradient(bottom, rgb(200,200,200) 0%, rgb(150,150,150) 100%);
-    background-image: -ms-linear-gradient(bottom, rgb(200,200,200) 0%, rgb(150,150,150) 100%);
+    border-color: #7ec0e3;
+    background-color: #7ec0e3;
+    background-image: none;
 }
 .link-button {
     display: inline-block;
@@ -147,7 +141,6 @@ input[type="submit"]:disabled{
     float: right;
     margin: 8px 10px 0 0;
 }
-
 
 /******************************************************************************
     modifier: inline-form
