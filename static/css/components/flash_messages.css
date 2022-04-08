@@ -33,11 +33,20 @@
     background-color: #19B6EE;
 }
 #flash-messages li.success {
-    background-color: #38B44A;
+    background-color: #46ba61;
+}
+#flash-messages li.success:hover {
+    background-color: #6bc881;;
 }
 #flash-messages li.warning {
-    background-color: #ECA918;
+    background-color: #ECA700;
+}
+#flash-messages li.warning:hover {
+    background-color: #F0B933;
 }
 #flash-messages li.error {
-    background-color: #DF382C;
+    background-color: #E9322D;
+}
+#flash-messages li.error:hover {
+    background-color: #ED5B57;
 }
