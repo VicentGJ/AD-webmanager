@@ -183,8 +183,8 @@ input[type="text"] {
     width: inherit;
     float: none;
     padding: 30px 40px;
-    -webkit-box-shadow: 0 0 15px 0 rgba(0,0,0,1);
-    box-shadow: 0 0 15px 0 rgba(0,0,0,1);
+    -webkit-box-shadow: 0 0 15px 0 rgba(77, 77, 77, 0.5);
+    box-shadow: 0 0 15px 0 rgba(77, 77, 77, 0.5);
 }
 .login #content h2:first-child {
     margin: 0 0 20px 0;
