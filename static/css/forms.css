@@ -79,8 +79,8 @@ input[type="submit"] {
     color: #fff;
     font-size: 14px;
     text-align: center;
-    border: 1px solid #35a2eb;
-    background-color: #35a2eb;
+    border: 1px solid #0082c9;
+    background-color: #0082c9;
     -moz-border-radius: 3px;
     -webkit-border-radius: 3px;
     border-radius: 3px;
@@ -89,8 +89,8 @@ input[type="submit"] {
 .button:hover,
 button:hover,
 input[type="submit"]:hover {
-    background-color: #57b5f5;
-    border-color: #57b5f5;
+    background-color: #339bd4;
+    border-color: #339bd4;
     text-decoration: none;
 }
 .yui3-button,
@@ -147,16 +147,12 @@ input[type="submit"]:disabled{
   width: 1.1em;
   height: 1.1em;
   margin-top: 0.25em;
-  vertical-align: top;
   background-color: transparent;
   background-repeat: no-repeat;
   background-position: center;
   background-size: contain;
   border: 1px solid rgba(0, 0, 0, 0.25);
-  -webkit-appearance: none;
-  -moz-appearance: none;
   appearance: none;
-  -webkit-print-color-adjust: exact;
   color-adjust: exact;
   border-radius: 0.25em;
 }
@@ -175,8 +171,24 @@ input[type="submit"]:disabled{
 .form-check-input:disabled {
   pointer-events: none;
   filter: none;
-  opacity: 0.5;
+  opacity: 0.5; 
 }
+/* radios */
+.form-radio-input{
+  float: left;
+  width: 1.1em;
+  height: 1.1em;
+  margin-top: 0.25em;
+  background-color: transparent;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  appearance: none;
+  color-adjust: exact;
+  border-radius: 0.25em;
+}
+
 /******************************************************************************
     modifier: inline-form
 */
