@@ -44,7 +44,7 @@
             <tr>
                 {% for key, title in entry_fields %}
                 {% if key == "name"%}
-                <th> <input type="checkbox" id="select-all" onclick=selectAll()> {{ title }}</th>
+                <th> <input type="checkbox" id="select-all" class="form-check-input" onclick=selectAll()> {{ title }}</th>
                 {% else %}
                 <th>{{ title }}</th>
                 {% endif %}
@@ -57,7 +57,7 @@
                 {% for key, title in entry_fields %}
                 {% if key == "name" and key in entry %}
                 <td style='padding-right:10px;white-space:nowrap;'>
-                    <input type="checkbox" name="checkedItems" class="item-to-check" onclick="changeButton();"
+                    <input type="checkbox" name="checkedItems" class="item-to-check form-check-input"onclick="changeButton();"
                         value="{name:'{{ entry[key] }}', type:'{{ entry['__type'] }}', target:'{{ entry['__target'] }}'}">
                     <a href="{{ entry['__target'] }}">{{ entry[key] }}</a>
                 </td>

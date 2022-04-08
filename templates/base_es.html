@@ -19,12 +19,10 @@
     {% if self.header() %}
     <div id="header">{% block header %}{% endblock %}</div>
     {% endif %}
-
     <div class="center-page-wrapper">
         <div class="center-page-content">
             <div id="body">
                 <h1 id="page-title">{{ self.title() }}</h1>
-
                 {% if g.menu %}
                 <div id="menu">
                     <ul class="nav">
@@ -32,14 +30,10 @@
                         <li><a href="{{ url }}">{{ link }}</a></li>
                         {% endfor %}
                     </ul>
-
                     <div class="clear"></div>
                 </div>
                 {% endif %}
-
-
                 <div id="content">
-
                     {% if get_flashed_messages(with_categories=true) %}
                     <ul id="flash-messages">
                         {% for category, msg in get_flashed_messages(with_categories=true) %}
@@ -47,14 +41,11 @@
                         {% endfor %}
                     </ul>
                     {% endif %}
-
                     {% block content %}{% endblock %}
-
                     <div class="clear"></div>
                 </div>
                 <div class="clear"></div>
             </div>
-
             <div id="footer">
                 {% block footer %}{% endblock%}
                 <p>&copy; 2017-2021 Vicente and Alain Garófalo. <a href="https://github.com/VicentGJ/AD-webmanager"> AD
