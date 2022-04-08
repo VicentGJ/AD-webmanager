@@ -1,5 +1,9 @@
 body {
-    font-family: Ubuntu, 'Bitstream Vera Sans', 'DejaVu Sans', Tahoma, sans-serif;
+    font-family:  -apple-system, BlinkMacSystemFont, Segoe UI, 
+                Roboto, Oxygen-Sans, Cantarell, 
+                Ubuntu, Helvetica Neue, Arial, 
+                Noto Color Emoji, sans-serif, Apple Color Emoji, 
+                Segoe UI Emoji, Segoe UI Symbol;
     font-size: 13px;
     line-height: 18px;
     color: #525c72;
