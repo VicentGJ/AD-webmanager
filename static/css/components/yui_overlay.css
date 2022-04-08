@@ -1,8 +1,8 @@
 .yui3-overlay {
     background-color: #fff;
-    -moz-border-radius: 0 0 6px 6px;
-    -webkit-border-radius: 0 0 6px 6px;
-    border-radius: 0 0 6px 6px;
+    -moz-border-radius: 0 0 3px 3px;
+    -webkit-border-radius: 0 0 3px 3px;
+    border-radius: 0 0 3px 3px;
     -webkit-box-shadow: 0 0 10px 0 rgba(0,0,0,0.5);
     box-shadow: 0 0 10px 0 rgba(0,0,0,0.5);
 }

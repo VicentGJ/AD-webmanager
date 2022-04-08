@@ -5,9 +5,9 @@
 .yui3-panel {
     background-color: #FFF;
     padding: 50px 80px 50px 80px;
-    -moz-border-radius: 0 0 6px 6px;
-    -webkit-border-radius: 0 0 6px 6px;
-    border-radius: 0 0 6px 6px;
+    -moz-border-radius: 0 0 3px 3px;
+    -webkit-border-radius: 0 0 3px 3px;
+    border-radius: 0 0 3px 3px;
     -webkit-box-shadow: 0 0 15px 0 rgba(0,0,0,1);
     box-shadow: 0 0 15px 0 rgba(0,0,0,1);
 }

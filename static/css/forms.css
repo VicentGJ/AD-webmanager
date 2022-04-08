@@ -44,9 +44,9 @@ input[type="text"] {
     padding: 4px;
     border: 1px solid #999;
     font-size: 13px;
-    -moz-border-radius: 2px;
-    -webkit-border-radius: 2px;
-    border-radius: 2px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    border-radius: 3px;
     background: #f8f9fd;
     overflow-wrap:break-word;
     white-space: nowrap;
@@ -154,7 +154,7 @@ input[type="submit"]:disabled{
   border: 1px solid rgba(0, 0, 0, 0.25);
   appearance: none;
   color-adjust: exact;
-  border-radius: 0.25em;
+  border-radius: 3px;
 }
 
 .form-check-input:active {
@@ -186,7 +186,7 @@ input[type="submit"]:disabled{
   border: 1px solid rgba(0, 0, 0, 0.25);
   appearance: none;
   color-adjust: exact;
-  border-radius: 0.25em;
+  border-radius: 3px;
 }
 
 /******************************************************************************

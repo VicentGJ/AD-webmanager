@@ -16,15 +16,15 @@ table.list td {
 }
 table.list.clickable td:first-child {
     border-left-width: 1px;
-    -moz-border-radius: 4px 0 0 4px;
-    -webkit-border-radius: 4px 0 0 4px;
-    border-radius: 4px 0 0 4px;
+    -moz-border-radius: 3px 0 0 4px;
+    -webkit-border-radius: 3px 0 0 3px;
+    border-radius: 3px 0 0 3px;
 }
 table.list.clickable td:last-child {
     border-right-width: 1px;
-    -moz-border-radius: 0 4px 4px 0;
-    -webkit-border-radius: 0 4px 4px 0;
-    border-radius: 0 4px 4px 0;
+    -moz-border-radius: 0 3px 3px 0;
+    -webkit-border-radius: 0 3px 3px 0;
+    border-radius: 0 3px 3px 0;
 }
 table.list.clickable tr:hover td {
     border-color: #dd4814;
