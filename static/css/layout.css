@@ -40,7 +40,7 @@
 }
 #main-nav {
     margin-left: 10px;
-    font-size: 14px;
+    font-size: 15px;
 }
 #right-nav li a,
 #main-nav li a {
@@ -80,7 +80,7 @@ input[type="text"] {
     width: 150px;
     padding: 4px;
     border: 1px solid #999;
-    font-size: 13px;
+    font-size: 15px;
     -moz-border-radius: 3px;
     -webkit-border-radius: 3px;
     border-radius: 3px;
@@ -118,7 +118,7 @@ input[type="text"] {
 #page-title {
     /* Need to set relative so the tail appears above shadows. */
     position: relative;
-    font-size: 36px;
+    font-size: 32px;
     color: #fff;
     margin: 0 190px;
     padding: 14px 0 20px 0;
@@ -253,7 +253,7 @@ input[type="text"] {
     width: 82.8%;
     padding: 12px 10px;
     color: #aea79f;
-    font-size: 12px;
+    font-size: 15px;
     float: right;
 
     background-color: #0a3341c9;
