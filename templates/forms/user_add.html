@@ -13,10 +13,11 @@
             {{ render_field(form.last_name) }}
             {{ render_field(form.user_name) }}
             {{ render_field(form.mail, class="main-mail") }}
-
-            <label for="add-alias-btn">{{ form.alias.label }}</label>
+            <div class="input-group asdasd">
+                <input type="button" value="+" id="add-alias-btn" class="button">
+                <span>{{ form.alias.label }}</span>
+            </div>
             <li id="add-alias"></li>
-            <li><input type="button" value="+" id="add-alias-btn" class="button" onclick="addNewAliasField()"></li>
 
             {{ render_field(form.password) }}
             {{ render_field(form.password_confirm) }}
