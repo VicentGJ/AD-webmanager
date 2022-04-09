@@ -8,10 +8,10 @@
             {% if request.query_string %}
         <form method="post" action="?{{ request.query_string }}" class="form">
             {% else %}
-            <div class="right">
+            <div class="right input-group">
                 <form method="post" action="?" class="form">
                     {{ form.csrf_token }}
-                    {{ form.filter_select }}
+                    {{ form.filter_select(class="button") }}
                     {{ form.filter_str }}
                     {{ form.search }}
                     <!-- <input type="submit" value="Search"> -->
