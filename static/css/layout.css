@@ -252,11 +252,11 @@ input[type="text"] {
     margin-top: 5px;
     width: 82.8%;
     padding: 12px 10px;
-    color: #aea79f;
+    color: #000000;
     font-size: 15px;
     float: right;
 
-    background-color: #0a3341c9;
+    background-color: #fffdfd7c;
     -moz-border-radius: 3px;
     -webkit-border-radius: 3px;
     border-radius: 3px;
