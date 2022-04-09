@@ -13,9 +13,12 @@
             {{ render_field(form.last_name) }}
             {{ render_field(form.user_name) }}
             {{ render_field(form.mail, class="main-mail") }}
-            <label>{{ form.alias.label }}</label>
+            <div class="input-group">
+                <input type="button" value="+" id="add-alias-btn" class="button">
+                <span>{{ form.alias.label }}</span>
+            </div>
             <li id="add-alias">
-                <!-- if user didnt set othermails, othermails[0] == '0' -->
+                <!-- if user didnt set othermails, othermails[0] == '0' is true -->
                 {% if othermails[0] != '0'%}
                 {% for mail in othermails %}
                 <div class="div-identifier input-group">
@@ -27,7 +30,6 @@
                 {% endif %}
 
             </li>
-            <input type="button" value="+" id="add-alias-btn" class="button">
 
             {{ render_field(form.uac_flags, class="form-control") }}
         </ul>
