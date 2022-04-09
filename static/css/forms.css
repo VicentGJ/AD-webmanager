@@ -88,6 +88,7 @@ input[type="submit"] {
     -moz-border-radius: 3px;
     -webkit-border-radius: 3px;
     border-radius: 3px;
+    cursor: pointer;
 }
 .yui3-button:hover,
 .button:hover,
@@ -200,6 +201,7 @@ input[type="submit"]:disabled{
   display: flex;
   flex-wrap: wrap;
   align-items: stretch;
+  margin-bottom: 3px;
 }
 .remove-alias{
     width: fit-content;
@@ -207,4 +209,11 @@ input[type="submit"]:disabled{
     padding-right: 5px;
     height: 27px;
     border-radius: 0 3px 3px 0;
+    font-weight: bolder;
+}
+#add-alias-btn{
+    font-weight: bolder;
+    font-size: larger;
+    padding: 0 5px 0 5px;
+    margin-right: 3px;
 }
