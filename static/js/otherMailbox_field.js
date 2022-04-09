@@ -1,11 +1,11 @@
-document.getElementById("add-alias-btn").onclick = addNewAliasField
+// document.getElementById("add-alias-btn").onclick = addNewAliasField
 
 function addNewAliasField() {
     const addNew = document.getElementById("add-alias")
 
-    addNew.innerHTML += `<div class="div-identifier input-group mb-1 ">
-                            <input class="form-control" type="email" name="alias_mail" placeholder="new alias" style="margin-top:10px">
-                            <input type="button" value="-" class="btn btn-danger remove-alias">
+    addNew.innerHTML += `<div class="div-identifier">
+                            <input class="other-mail" type="email" name="alias_mail" placeholder="new alias">
+                            <input type="button" value="x" class="button remove-alias">
                         </div>`
 }
 

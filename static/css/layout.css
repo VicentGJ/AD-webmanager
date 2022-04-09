@@ -75,6 +75,8 @@
 }
 
 #right textarea,
+.main-mail,
+.other-mail,
 input[type="password"],
 input[type="text"] {
     width: 150px;
@@ -89,7 +91,6 @@ input[type="text"] {
     white-space: nowrap;
     word-wrap: normal;
 }
-
 
 /******************************************************************************
     Header search

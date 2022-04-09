@@ -52,6 +52,9 @@ input[type="text"] {
     white-space: nowrap;
     word-wrap: normal;
 }
+.other-mail{
+    margin-bottom: 3px;
+}
 textarea:focus,
 input[type="password"]:focus,
 input[type="text"]:focus {
@@ -132,6 +135,8 @@ input[type="submit"]:disabled{
     float: right;
     margin: 8px 10px 0 0;
 }
+
+
 /* checkboxes */
 .form-check-input {
   float: left;
