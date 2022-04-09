@@ -79,7 +79,7 @@
 .other-mail,
 input[type="password"],
 input[type="text"] {
-    width: 150px;
+    width: 200px;
     padding: 4px;
     border: 1px solid #999;
     font-size: 15px;
