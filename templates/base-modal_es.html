@@ -28,7 +28,9 @@
                     {% if get_flashed_messages(with_categories=true) %}
                     <ul id="flash-messages">
                         {% for category, msg in get_flashed_messages(with_categories=true) %}
-                        <li class="flash-messages {{ category }}" onclick="removeFlash(this)">{{ msg }}</li>
+                        <div class="div-identifier">
+                            <li class="flash-messages {{ category }}">{{ msg }}</li>
+                        </div>
                         {% endfor %}
                     </ul>
                     {% endif %}

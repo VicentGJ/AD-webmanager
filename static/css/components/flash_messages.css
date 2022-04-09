@@ -1,6 +1,7 @@
 #flash-messages {
     margin: 0;
     padding: 0;
+    cursor: default;
 }
 #flash-messages li {
     list-style: none;
