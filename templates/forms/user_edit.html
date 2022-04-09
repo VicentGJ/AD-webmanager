@@ -18,7 +18,7 @@
                 <!-- if user didnt set othermails, othermails[0] == '0' -->
                 {% if othermails[0] != '0'%}
                 {% for mail in othermails %}
-                <div class="div-identifier">
+                <div class="div-identifier input-group">
                     <input class="other-mail" type="email" name="alias_mail" value="{{ mail }}"
                         placeholder="new alias">
                     <input type="button" value="-" class="remove-alias button">

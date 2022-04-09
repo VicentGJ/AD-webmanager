@@ -193,3 +193,16 @@ input[type="submit"]:disabled{
     display: inline;
     margin-right: 4px;
 }
+
+.input-group{
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+}
+.remove-alias{
+    width: fit-content;
+    padding-left: 5px;
+    padding-right: 5px;
+    height: 27px;
+}
