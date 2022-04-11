@@ -146,7 +146,6 @@ def init(app):
         entries = []
 
         users = ldap_get_entries("objectClass=top", base, scope, ignore_erros=True)
-        print(users)
         users = filter(lambda entry: 'displayName' in entry, users)
         users = filter(lambda entry: 'sAMAccountName' in entry, users)
         users = filter(lambda entry: filter_select in entry, users)
