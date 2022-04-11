@@ -146,6 +146,7 @@ def init(app):
         entries = []
 
         users = ldap_get_entries("objectClass=top", base, scope, ignore_erros=True)
+        print(users)
         users = filter(lambda entry: 'displayName' in entry, users)
         users = filter(lambda entry: 'sAMAccountName' in entry, users)
         users = filter(lambda entry: filter_select in entry, users)
@@ -202,8 +203,13 @@ def init(app):
                     entry['__type'] = "Container"
                 elif 'builtinDomain' in entry['objectClass']:
                     entry['__type'] = "Built-in"
+                # Hacky solution for when there is Person objects that do not have displayName and can be misclassified
+                # TODO: Probably a good indication that is time to refactor this mess
+                elif 'person' in entry['objectClass']:
+                    entry['__type'] = "User"
+                    entry['__target'] = url_for('user_overview', username=entry['sAMAccountName'])
                 else:
-                    entry['__type'] = "Unknown"
+                    entry['__type'] = entry['objectClass'][1]
                 entries.append(entry)
                 for blacklist in Settings.TREE_BLACKLIST:
                     if entry['distinguishedName'].startswith(blacklist):
