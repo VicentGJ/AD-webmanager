@@ -27,9 +27,9 @@
 #header {
     min-height: 64px;
     background: #dd4814 url(../img/header_stripes.png) repeat-x top left;
-    -moz-border-radius: 0 0 4px 4px;
-    -webkit-border-radius: 0 0 4px 4px;
-    border-radius: 0 0 4px 4px;
+    -moz-border-radius: 0 0 3px 3px;
+    -webkit-border-radius: 0 0 3px 3px;
+    border-radius: 0 0 3px 3px;
 }
 #global-header,
 #global-header a,
@@ -40,7 +40,7 @@
 }
 #main-nav {
     margin-left: 10px;
-    font-size: 14px;
+    font-size: 15px;
 }
 #right-nav li a,
 #main-nav li a {
@@ -75,21 +75,22 @@
 }
 
 #right textarea,
+.main-mail,
+.other-mail,
 input[type="password"],
 input[type="text"] {
-    width: 150px;
+    width: 200px;
     padding: 4px;
     border: 1px solid #999;
-    font-size: 13px;
-    -moz-border-radius: 2px;
-    -webkit-border-radius: 2px;
-    border-radius: 2px;
+    font-size: 15px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    border-radius: 3px;
     background: #FFF;
     overflow: auto;
     white-space: nowrap;
     word-wrap: normal;
 }
-
 
 /******************************************************************************
     Header search
@@ -100,9 +101,9 @@ input[type="text"] {
 
 #header-search input[type="text"] {
     width: 200px;
-    -moz-border-radius: 4px;
-    -webkit-border-radius: 4px;
-    border-radius: 4px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    border-radius: 3px;
 }
 
 
@@ -118,7 +119,7 @@ input[type="text"] {
 #page-title {
     /* Need to set relative so the tail appears above shadows. */
     position: relative;
-    font-size: 36px;
+    font-size: 32px;
     color: #fff;
     margin: 0 190px;
     padding: 14px 0 20px 0;
@@ -130,9 +131,9 @@ input[type="text"] {
     width: 160px;
     padding: 10px 10px 10px 10px;
     background-color: #fff;
-    -moz-border-radius: 4px;
-    -webkit-border-radius: 4px;
-    border-radius: 4px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    border-radius: 3px;
 }
 
 #menu a {
@@ -157,9 +158,9 @@ input[type="text"] {
     float: right;
     padding: 20px 20px 40px 20px;
     background-color: #f8f9fd;
-    -moz-border-radius: 4px;
-    -webkit-border-radius: 4px;
-    border-radius: 4px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    border-radius: 3px;
 }
 
 
@@ -173,7 +174,7 @@ input[type="text"] {
     width: 670px;
 }
 .login #body {
-    margin-top: 100px;
+    margin-top: 10%;
 }
 .login #page-title {
     margin: 0 20px;
@@ -183,8 +184,8 @@ input[type="text"] {
     width: inherit;
     float: none;
     padding: 30px 40px;
-    -webkit-box-shadow: 0 0 15px 0 rgba(0,0,0,1);
-    box-shadow: 0 0 15px 0 rgba(0,0,0,1);
+    -webkit-box-shadow: 0 0 15px 0 rgba(77, 77, 77, 0.5);
+    box-shadow: 0 0 15px 0 rgba(77, 77, 77, 0.5);
 }
 .login #content h2:first-child {
     margin: 0 0 20px 0;
@@ -252,14 +253,14 @@ input[type="text"] {
     margin-top: 5px;
     width: 82.8%;
     padding: 12px 10px;
-    color: #aea79f;
-    font-size: 12px;
+    color: #000000;
+    font-size: 15px;
     float: right;
 
-    background-color: #0a3341c9;
-    -moz-border-radius: 4px;
-    -webkit-border-radius: 4px;
-    border-radius: 4px;
+    background-color: #fffdfd7c;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    border-radius: 3px;
 }
 #footer img {
     float: right;

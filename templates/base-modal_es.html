@@ -7,7 +7,6 @@
     {% block css %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/import.css') }}" />
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
-    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}"> -->
     {% endblock %}
     {% block js %}
     <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
@@ -29,7 +28,9 @@
                     {% if get_flashed_messages(with_categories=true) %}
                     <ul id="flash-messages">
                         {% for category, msg in get_flashed_messages(with_categories=true) %}
-                        <li class="flash-messages {{ category }}">{{ msg }}</li>
+                        <div class="div-identifier">
+                            <li class="flash-messages {{ category }}">{{ msg }}</li>
+                        </div>
                         {% endfor %}
                     </ul>
                     {% endif %}
@@ -42,6 +43,7 @@
             </div>
         </div>
     </div>
+    <script src="../static/js/quit_flash_message.js"></script>
 </body>
 
 </html>

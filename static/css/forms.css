@@ -43,14 +43,18 @@ input[type="text"] {
     width: 350px;
     padding: 4px;
     border: 1px solid #999;
-    font-size: 13px;
-    -moz-border-radius: 2px;
-    -webkit-border-radius: 2px;
-    border-radius: 2px;
+    font-size: 15px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    border-radius: 3px;
     background: #f8f9fd;
     overflow-wrap:break-word;
     white-space: nowrap;
     word-wrap: normal;
+}
+.other-mail{
+    margin-bottom: 3px;
+    border-radius: 3px 0 0 3px !important;
 }
 textarea:focus,
 input[type="password"]:focus,
@@ -77,23 +81,21 @@ button,
 input[type="submit"] {
     padding: 4px 20px;
     color: #fff;
-    font-size: 14px;
+    font-size: 15px;
     text-align: center;
-    border: 1px solid #35a2eb;
-    background-color: #35a2eb;
+    border: 1px solid #0082c9;
+    background-color: #0082c9;
     -moz-border-radius: 3px;
     -webkit-border-radius: 3px;
     border-radius: 3px;
+    cursor: pointer;
 }
 .yui3-button:hover,
 .button:hover,
 button:hover,
 input[type="submit"]:hover {
-    background-image: linear-gradient(bottom, #35a2eb 0%, #57b5f5 100%);
-    background-image: -o-linear-gradient(bottom, #35a2eb 0%, #57b5f5 100%);
-    background-image: -moz-linear-gradient(bottom, #35a2eb 0%, #57b5f5 100%);
-    background-image: -webkit-linear-gradient(bottom, #35a2eb 0%, #57b5f5 100%);
-    background-image: -ms-linear-gradient(bottom, #35a2eb 0%, #57b5f5 100%);
+    background-color: #339bd4;
+    border-color: #339bd4;
     text-decoration: none;
 }
 .yui3-button,
@@ -108,23 +110,14 @@ button.secondary,
 input[type="submit"].secondary {
     border-color: #262626;
     background-color: #333;
-    background-image: linear-gradient(bottom, rgb(51,51,51) 0%, rgb(77,77,77) 100%);
-    background-image: -o-linear-gradient(bottom, rgb(51,51,51) 0%, rgb(77,77,77) 100%);
-    background-image: -moz-linear-gradient(bottom, rgb(51,51,51) 0%, rgb(77,77,77) 100%);
-    background-image: -webkit-linear-gradient(bottom, rgb(51,51,51) 0%, rgb(77,77,77) 100%);
-    background-image: -ms-linear-gradient(bottom, rgb(51,51,51) 0%, rgb(77,77,77) 100%);
-    -webkit-box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
-    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+    -webkit-box-shadow: inset 0 1px 0 0 rgba(77, 77, 77, 0.5);
+    box-shadow: inset 0 1px 0 0 rgba(77, 77, 77, 0.5);
 }
 .yui3-button.secondary:hover,
 .button.secondary:hover,
 button.secondary:hover,
 input[type="submit"].secondary:hover {
-    background-image: linear-gradient(bottom, rgb(51,51,51) 0%, rgb(90,90,90) 100%);
-    background-image: -o-linear-gradient(bottom, rgb(51,51,51) 0%, rgb(90,90,90) 100%);
-    background-image: -moz-linear-gradient(bottom, rgb(51,51,51) 0%, rgb(90,90,90) 100%);
-    background-image: -webkit-linear-gradient(bottom, rgb(51,51,51) 0%, rgb(90,90,90) 100%);
-    background-image: -ms-linear-gradient(bottom, rgb(51,51,51) 0%, rgb(90,90,90) 100%);
+    background-color: rgb(90,90,90);
 }
 /* Disabled buttons */
 .yui3-button:disabled,
@@ -132,12 +125,9 @@ input[type="submit"].secondary:hover {
 button:disabled,
 input[type="submit"]:disabled{
     cursor: not-allowed;
-    border-color: #999;
-    background-image: linear-gradient(bottom, rgb(200,200,200) 0%, rgb(150,150,150) 100%);
-    background-image: -o-linear-gradient(bottom, rgb(200,200,200) 0%, rgb(150,150,150) 100%);
-    background-image: -moz-linear-gradient(bottom, rgb(200,200,200) 0%, rgb(150,150,150) 100%);
-    background-image: -webkit-linear-gradient(bottom, rgb(200,200,200) 0%, rgb(150,150,150) 100%);
-    background-image: -ms-linear-gradient(bottom, rgb(200,200,200) 0%, rgb(150,150,150) 100%);
+    border-color: #7ec0e3;
+    background-color: #7ec0e3;
+    background-image: none;
 }
 .link-button {
     display: inline-block;
@@ -149,10 +139,81 @@ input[type="submit"]:disabled{
 }
 
 
+/* checkboxes */
+.form-check-input {
+  float: left;
+  width: 1.1em;
+  height: 1.1em;
+  margin-top: 0.25em;
+  background-color: transparent;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  appearance: none;
+  color-adjust: exact;
+  border-radius: 3px;
+}
+
+/* checkboxes */
+.form-check-input:active {
+  filter: brightness(90%);
+}
+
+.form-check-input:checked {
+  background-color: #0d9efd;
+  border-color: #0d9efd;
+}
+.form-check-input:checked[type=checkbox] {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3l6-6'/%3e%3c/svg%3e");
+}
+.form-check-input:disabled {
+  pointer-events: none;
+  filter: none;
+  opacity: 0.5; 
+}
+/* radios */
+.form-radio-input{
+  float: left;
+  width: 1.1em;
+  height: 1.1em;
+  margin-top: 0.25em;
+  background-color: transparent;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  appearance: none;
+  color-adjust: exact;
+  border-radius: 3px;
+}
+
 /******************************************************************************
     modifier: inline-form
 */
 .inline-form label {
     display: inline;
     margin-right: 4px;
+}
+
+.input-group{
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  margin-bottom: 3px;
+}
+.remove-alias{
+    width: fit-content;
+    padding-left: 5px;
+    padding-right: 5px;
+    height: 27px;
+    border-radius: 0 3px 3px 0;
+    font-weight: bolder;
+}
+#add-alias-btn{
+    font-weight: bolder;
+    font-size: larger;
+    padding: 0 5px 0 5px;
+    margin-right: 3px;
 }

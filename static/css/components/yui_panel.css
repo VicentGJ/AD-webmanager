@@ -5,11 +5,11 @@
 .yui3-panel {
     background-color: #FFF;
     padding: 50px 80px 50px 80px;
-    -moz-border-radius: 0 0 6px 6px;
-    -webkit-border-radius: 0 0 6px 6px;
-    border-radius: 0 0 6px 6px;
-    -webkit-box-shadow: 0 0 15px 0 rgba(0,0,0,1);
-    box-shadow: 0 0 15px 0 rgba(0,0,0,1);
+    -moz-border-radius: 0 0 3px 3px;
+    -webkit-border-radius: 0 0 3px 3px;
+    border-radius: 0 0 3px 3px;
+    -webkit-box-shadow: 0 0 15px 0 rgba(77, 77, 77, 0.5);
+    box-shadow: 0 0 15px 0 rgba(77, 77, 77, 0.5);
 }
 .yui3-widget-hd {
     margin-bottom: 30px;
@@ -33,5 +33,5 @@
     background: none;
     -webkit-box-shadow: none;
     box-shadow: none;
-    font-size: 13px;
+    font-size: 15px;
 }

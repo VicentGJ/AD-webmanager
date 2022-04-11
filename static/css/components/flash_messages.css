@@ -1,22 +1,23 @@
 #flash-messages {
     margin: 0;
     padding: 0;
+    cursor: default;
 }
 #flash-messages li {
     list-style: none;
     padding: 8px 20px;
     margin: 0 10px;
-    box-shadow: 1px 1px 4px rgba(0,0,0,0.2);
+    box-shadow: 1px 1px 4px rgba(77, 77, 77, 0.5);
     font-weight: bold;
-    text-shadow: 0 -1px 0 rgba(0,0,0,0.3);
+    text-shadow: 0 -1px 0 rgba(77, 77, 77, 0.5);
     color: #FFF;
 }
 #flash-messages li:first-child {
     margin-top: 10px;
     -webkit-border-top-left-radius: 4px;
     -webkit-border-top-right-radius: 4px;
-    -moz-border-radius-topleft: 4px;
-    -moz-border-radius-topright: 4px;
+    -moz-border-radius-topleft: 3px;
+    -moz-border-radius-topright: 3px;
     border-top-left-radius: 4px;
     border-top-right-radius: 4px;
 }
@@ -24,8 +25,8 @@
     margin-bottom: 5px;
     -webkit-border-bottom-right-radius: 4px;
     -webkit-border-bottom-left-radius: 4px;
-    -moz-border-radius-bottomright: 4px;
-    -moz-border-radius-bottomleft: 4px;
+    -moz-border-radius-bottomright: 3px;
+    -moz-border-radius-bottomleft: 3px;
     border-bottom-right-radius: 4px;
     border-bottom-left-radius: 4px;
 }
@@ -33,11 +34,20 @@
     background-color: #19B6EE;
 }
 #flash-messages li.success {
-    background-color: #38B44A;
+    background-color: #46ba61;
+}
+#flash-messages li.success:hover {
+    background-color: #6bc881;;
 }
 #flash-messages li.warning {
-    background-color: #ECA918;
+    background-color: #ECA700;
+}
+#flash-messages li.warning:hover {
+    background-color: #F0B933;
 }
 #flash-messages li.error {
-    background-color: #DF382C;
+    background-color: #E9322D;
+}
+#flash-messages li.error:hover {
+    background-color: #ED5B57;
 }

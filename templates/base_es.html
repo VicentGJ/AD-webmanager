@@ -1,61 +1,64 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
-    <head>
-        <title>AD Web Manager - {% block title %}{% endblock %}</title>
-        {% block css %}
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/import.css') }}" />
-        <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
-        {% endblock %}
-    </head>
-    <body>
-        {% if self.header() %}
-        <div id="header">{% block header %}{% endblock %}</div>
-        {% endif %}
 
-        <div class="center-page-wrapper">
-            <div class="center-page-content">
-                <div id="body">
-                    <h1 id="page-title">{{ self.title() }}</h1>
+<head>
+    <title>AD Web Manager - {% block title %}{% endblock %}</title>
+    {% block css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/import.css') }}" />
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    {% endblock %}
+    {% block js %}
+    <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
 
-                    {% if g.menu %}
-                    <div id="menu">
-                        <ul class="nav">
-                            {% for url, link in g.menu %}
-                            <li><a href="{{ url }}">{{ link }}</a></li>
-                            {% endfor %}
-                        </ul>
+    {% endblock js %}
+</head>
 
-                        <div class="clear"></div>
-                    </div>
-                    {% endif %}
-
-
-                    <div id="content">
-
-                        {% if get_flashed_messages(with_categories=true) %}
-                        <ul id="flash-messages">
-                            {% for category, msg in get_flashed_messages(with_categories=true) %}
+<body>
+    {% if self.header() %}
+    <div id="header">{% block header %}{% endblock %}</div>
+    {% endif %}
+    <div class="center-page-wrapper">
+        <div class="center-page-content">
+            <div id="body">
+                <h1 id="page-title">{{ self.title() }}</h1>
+                {% if g.menu %}
+                <div id="menu">
+                    <ul class="nav">
+                        {% for url, link in g.menu %}
+                        <li><a href="{{ url }}">{{ link }}</a></li>
+                        {% endfor %}
+                    </ul>
+                    <div class="clear"></div>
+                </div>
+                {% endif %}
+                <div id="content">
+                    {% if get_flashed_messages(with_categories=true) %}
+                    <ul id="flash-messages">
+                        {% for category, msg in get_flashed_messages(with_categories=true) %}
+                        <div class="div-identifier">
                             <li class="flash-messages {{ category }}">{{ msg }}</li>
-                            {% endfor %}
-                        </ul>
-                        {% endif %}
-
-                        {% block content %}{% endblock %}
-
-                        <div class="clear"></div>
-                    </div>
+                        </div>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                    {% block content %}{% endblock %}
                     <div class="clear"></div>
                 </div>
-
-                <div id="footer">
-                    {% block footer %}{% endblock%}
-                    <p>&copy; 2017-2021 Vicente and Alain Garófalo. <a href="https://github.com/VicentGJ/AD-webmanager"> AD WebManager</a>.</p>
-                    <p>Forked in 2017 from <a href="https://github.com/stgraber/samba4-manager">Samba4 web manager</a> by Stéphane Graber.</p>
-                    <div class="clear"></div>
-                </div>
+                <div class="clear"></div>
+            </div>
+            <div id="footer">
+                {% block footer %}{% endblock%}
+                <p>&copy; 2017-2021 Vicente and Alain Garófalo. <a href="https://github.com/VicentGJ/AD-webmanager"> AD
+                        WebManager</a>.</p>
+                <p>Forked in 2017 from <a href="https://github.com/stgraber/samba4-manager">Samba4 web manager</a> by
+                    Stéphane Graber.</p>
+                <div class="clear"></div>
             </div>
         </div>
-    </body>
+    </div>
+    <script src="../static/js/quit_flash_message.js"></script>
+</body>
+
 </html>

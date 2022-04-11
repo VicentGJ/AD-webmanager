@@ -4,15 +4,15 @@
 .page-title-form input {
     border: 2px solid transparent;
     background-color: transparent;
-    font-size: 36px;
+    font-size: 32px;
     line-height: 26px;
     color: #fff;
     margin: 6px 10px;
     padding: 4px;
     width: 97%;
-    -moz-border-radius: 6px;
-    -webkit-border-radius: 6px;
-    border-radius: 6px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    border-radius: 3px;
 }
 .page-title-form input:focus,
 .page-title-form input:hover {
