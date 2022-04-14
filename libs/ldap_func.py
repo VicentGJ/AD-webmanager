@@ -28,7 +28,7 @@ LDAP_SCOPES = {"base": ldap.SCOPE_BASE,
                "onelevel": ldap.SCOPE_ONELEVEL,
                "subtree": ldap.SCOPE_SUBTREE}
 
-LDAP_AD_GROUPTYPE_VALUES = {1: ('Sistem', False),
+LDAP_AD_GROUPTYPE_VALUES = {1: ('System', False),
                             2: ('Global', True),
                             4: ('Local Domain', True),
                             8: ('Universal', True),
