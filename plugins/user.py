@@ -99,9 +99,9 @@ class PasswordChangeUser(PasswordChange):
 
 
 def init(app):
-    @app.route('/users/+add', methods=['GET', 'POST'])
+    @app.route('/users/+add/<base>', methods=['GET', 'POST'])
     @ldap_auth(Settings.ADMIN_GROUP)
-    def user_add():
+    def user_add(base):
         title = "Add User"
 
         if g.extra_fields:
@@ -128,8 +128,6 @@ def init(app):
 
         if form.validate_on_submit():
             try:
-                base = request.args.get("b'base")
-                base = base.rstrip("'")
                 # Default attributes
                 upn = "%s@%s" % (form.user_name.data, g.ldap['domain'])
                 attributes = {'objectClass': [b'top', b'person', b'organizationalPerson', b'user', b'inetOrgPerson'],

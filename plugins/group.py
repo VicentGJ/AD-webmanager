@@ -54,9 +54,9 @@ class GroupEdit(FlaskForm):
 
 
 def init(app):
-    @app.route('/groups/+add', methods=['GET', 'POST'])
+    @app.route('/groups/+add/<base>', methods=['GET', 'POST'])
     @ldap_auth(Settings.ADMIN_GROUP)
-    def group_add():
+    def group_add(base):
         title = "Add group"
 
         form = GroupEdit(request.form)
@@ -74,8 +74,6 @@ def init(app):
 
         if form.validate_on_submit():
             try:
-                base = request.args.get("b'base")
-                base = base.rstrip("'")
                 # Default attributes
                 attributes = {'objectClass': b"group"}
 
@@ -86,8 +84,6 @@ def init(app):
                                                                   struct.pack("I", int(group_type)))[0]).encode('utf-8')
                     elif attribute and field.data:
                         attributes[attribute] = field.data.encode('utf-8')
-                print(attributes)
-                print("cn=%s,%s" % (form.name.data, base))
                 ldap_create_entry("cn=%s,%s" % (form.name.data, base), attributes)
 
                 flash(u"Group created successfully.", "success")

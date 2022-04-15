@@ -33,9 +33,9 @@ class OU_form(FlaskForm):
 
 
 def init(app):
-    @app.route('/ou/+add', methods=['GET', 'POST'])
+    @app.route('/ou/+add/<base>', methods=['GET', 'POST'])
     @ldap_auth(Settings.ADMIN_GROUP)
-    def ou_add():
+    def ou_add(base):
         title = "Add OU"
         form: FlaskForm = OU_form(request.form)
         
@@ -46,8 +46,6 @@ def init(app):
 
         if form.validate_on_submit():
             try:
-                base = request.args.get("b'base")
-                base = base.rstrip("'")
                 attributes = {
                     'objectClass': b"organizationalUnit",
                     }
