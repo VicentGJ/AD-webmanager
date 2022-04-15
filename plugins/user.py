@@ -16,16 +16,15 @@
 # You can find the license on Debian systems in the file
 # /usr/share/common-licenses/GPL-2
 
-from ast import alias
 import base64
 from datetime import datetime
 
 import ldap
 from flask import abort, flash, g, redirect, render_template, request
 from flask_wtf import FlaskForm
-from libs.common import get_parsed_pager_attribute
+from libs.common import flash_password_errors, get_parsed_pager_attribute
 from libs.common import iri_for as url_for
-from libs.common import namefrom_dn
+from libs.common import namefrom_dn, password_is_valid
 from libs.ldap_func import (LDAP_AD_USERACCOUNTCONTROL_VALUES, ldap_auth,
                             ldap_change_password, ldap_create_entry,
                             ldap_delete_entry, ldap_get_entries,
@@ -166,16 +165,18 @@ def init(app):
                     attributes['displayName'] = [attributes['displayName'].encode('utf-8')]
                 else:
                     attributes['displayName'] = attributes['givenName']
-
-                ldap_create_entry("cn=%s,%s" % (form.user_name.data, base), attributes)
-                ldap_change_password(None, form.password.data, form.user_name.data)
-                flash(u"User created successfully.", "success")
-                return redirect(url_for('user_overview', username=form.user_name.data))
+                password_validation = password_is_valid(form.password.data)
+                if password_validation['password_ok']:
+                    ldap_create_entry("cn=%s,%s" % (form.user_name.data, base), attributes)
+                    ldap_change_password(None, form.password.data, form.user_name.data)
+                    flash(u"User created successfully.", "success")
+                    return redirect(url_for('user_overview', username=form.user_name.data))
+                else:
+                    flash_password_errors(password_validation)
             except ldap.LDAPError as e:
                 e = dict(e.args[0])
                 flash(e['info'], "error")
         elif form.errors:
-            print(form.errors)
             flash("Some fields failed validation.", "error")
         
         return render_template("forms/user_add.html", form=form, title=title,

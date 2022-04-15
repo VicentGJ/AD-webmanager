@@ -16,9 +16,9 @@
 # You can find the license on Debian systems in the file
 # /usr/share/common-licenses/GPL-2
 
-from flask import url_for
+import re
+from flask import url_for, flash
 from werkzeug.urls import uri_to_iri
-from configparser import SafeConfigParser
 
 
 class ReverseProxied(object):
@@ -89,3 +89,69 @@ def namefrom_dn(dn):
     
 def get_objclass(dn):
     return dn.split('=')[0]
+
+def password_is_valid(password):
+    """
+    Verify the strength of 'password'
+    Returns a dict with 
+    error-keys: length_errors, digit_errors, lowercase_errors, uppercase_errors, symbol_errors;
+    values: True or False, being True on a key if there was an error found
+
+    there is password_ok key that is True if all the other keys are False
+
+    A password is considered valid if:
+        8 characters length or more
+        1 digit or more
+        1 symbol or more
+        1 uppercase letter or more
+        1 lowercase letter or more
+    """
+
+    # calculating the length
+    length_error = len(password) < 8
+
+    # searching for digits
+    digit_error = re.search(r"\d", password) is None
+
+    # searching for uppercase
+    uppercase_error = re.search(r"[A-Z]", password) is None
+
+    # searching for lowercase
+    lowercase_error = re.search(r"[a-z]", password) is None
+
+    # searching for symbols 
+    # The \W metacharacter is used to find a non-word character. 
+    # A word character is a character from a-z, A-Z, 0-9, including the _    
+    symbol_error = (re.search(r"\W", password) is None) and (password.count('_') == 0)
+
+    # overall result
+    password_ok = not ( length_error or digit_error or uppercase_error or lowercase_error or symbol_error )
+
+    return {
+        'password_ok' : password_ok,
+        'length_error' : length_error,
+        'digit_error' : digit_error,
+        'uppercase_error' : uppercase_error,
+        'lowercase_error' : lowercase_error,
+        'symbol_error' : symbol_error,
+    }
+
+def flash_password_errors(password_validation):
+    """
+    Flashes all error messages from the password validation
+    
+    Args:
+        password_validation (dict): dict returned from password_is_valid()
+    """
+    for error_key, password_error in password_validation.items():
+        if password_error:
+            if error_key == 'length_error':
+                flash("Password must have at least 8 characters", "error")
+            if error_key == 'digit_error':
+                flash("Password must have at least a digit","error")
+            if error_key == 'uppercase_error':
+                flash("Password must have at least an upercase letter","error")
+            if error_key == 'lowercase_error':
+                flash("Password must have at least a lowercase letter","error")
+            if error_key == 'symbol_error':
+                flash("Password must have at least a symbol","error")
