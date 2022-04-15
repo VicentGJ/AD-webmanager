@@ -8,7 +8,7 @@
         endif%}</label>
     {{ field(**kwargs)|safe }}
     {% if field.errors %}
-    <span class="field-error">{{ field.errors|join("<br />") }}</span>
+    <br><span class="field-error">{{ field.errors|join("<br />") }}</span>
     {% endif %}
 </li>
 {% endmacro %}
