@@ -16,6 +16,7 @@
 # You can find the license on Debian systems in the file
 # /usr/share/common-licenses/GPL-2
 
+from ast import alias
 import base64
 from datetime import datetime
 
@@ -411,10 +412,8 @@ def init(app):
                             ldap_update_attribute(user['distinguishedName'], 'displayName', displayName)
                         elif attribute == 'otherMailbox':
                             alias_list = list(filter(None, request.form.getlist('alias_mail')))
-                            if len(alias_list) == 0:
-                                print('here..alias_list len is 0')
-                                alias_list = ['0']
-                            print(alias_list)
+                            if not len(alias_list):
+                                alias_list.append('0')
                             ldap_update_attribute(user['distinguishedName'], attribute, alias_list)
                         else:
                             ldap_update_attribute(user['distinguishedName'], attribute, value)
@@ -428,7 +427,7 @@ def init(app):
         elif form.errors:
             flash(u"Data validation failed.", "error")
 
-        if not form.is_submitted():
+        elif not form.is_submitted():
             form.first_name.data = user.get('givenName')
             form.last_name.data = user.get('sn')
             form.user_name.data = user.get('sAMAccountName')
