@@ -265,4 +265,6 @@ input[type="text"] {
 #footer img {
     float: right;
 }
-
+.footer-link{
+    color: rgb(45, 45, 224);
+}
