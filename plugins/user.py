@@ -166,7 +166,7 @@ def init(app):
                 else:
                     attributes['displayName'] = attributes['givenName']
                 password_validation = password_is_valid(form.password.data)
-                if password_validation['password_ok']:
+                if not password_validation:
                     ldap_create_entry("cn=%s,%s" % (form.user_name.data, base), attributes)
                     ldap_change_password(None, form.password.data, form.user_name.data)
                     flash(u"User created successfully.", "success")
