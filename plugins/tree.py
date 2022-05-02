@@ -40,6 +40,9 @@ class FilterTreeView(FlaskForm):
 class BatchSelect(FlaskForm):
     delete = SubmitField('Delete Selection')
 
+class ToDelete:
+    toDelete = None
+
 def init(app):
     @app.route('/tree', methods=['GET', 'POST'])
     @app.route('/tree/<base>', methods=['GET', 'POST'])
@@ -75,58 +78,6 @@ def init(app):
                 filter_str = None
                 scope = "onelevel"
                 entries = get_entries("top", "objectClass", base, scope)
-            
-           #TODO: batch delete confirmation page
-            if batch_select.delete.data:
-                #delete all selections
-                checkedDataToDelete = request.form.getlist("checkedItems") #returns an array of Strings, tho the strings have dict format
-                toDelete = []
-                for x in checkedDataToDelete: #transform all strings to dicts and append them to a new list
-                    dicts = {}
-                    key1 = x.split("name:'")[1].split("'")[0]
-                    key2 = x.split("type:'")[1].split("'")[0]
-                    key3 = x.split("target:'")[1].replace("'}", "") 
-                    key4 = key3.split("/")[2] # getting the username from the target url
-                    dicts['name'] = key1
-                    dicts['type'] = key2
-                    dicts['target'] = key3
-                    if key2 != 'Organization Unit':
-                        dicts['username'] = key4
-                    else:
-                        dicts['dn'] = parse.unquote(key4)
-
-                    toDelete.append(dicts)
-                #all selections are saved in toDelete list as dicts
-                try:
-                    deleted_list = []
-                    for obj in toDelete:
-                        for key in obj:
-                            if key == 'type':
-                                if obj[key] == 'User':
-                                    user = ldap_get_user(username=obj['username'])
-                                    ldap_delete_entry(user['distinguishedName'])
-                                    deleted_list.append(obj['username'])
-                                elif obj[key] == 'Group':
-                                    group = ldap_get_group(groupname=obj['name'])
-                                    ldap_delete_entry(group['distinguishedName'])
-                                    deleted_list.append(obj['name'])
-                                elif obj[key] == 'Organization Unit':
-                                    canDelete = not ldap_obj_has_children(base=obj['dn'])
-                                    ou = ldap_get_ou(ou_name=obj['dn'])
-                                    if canDelete:
-                                        ldap_delete_entry(ou['distinguishedName'])
-                                        deleted_list.append(obj['name'])
-                                    else:
-                                        flash(f"Can't delete OU: '{ou['ou']}' because is not empty", "error")
-                    if len(deleted_list):
-                        if len(deleted_list) == 1:
-                            flash("1 element deleted successfully", "success")
-                        else:
-                            flash(f"{len(deleted_list)} elements deleted successfully", "success")
-
-                except ldap.LDAPError as e:
-                    flash(e,"error")
-                return redirect(url_for('tree_base', base=base))
 
         parent = None
         base_split = base.split(',')
@@ -138,6 +89,65 @@ def init(app):
                                 admin=admin, base=base.upper(), entries=entries,
                                 entry_fields=entry_fields, root=g.ldap['search_dn'].upper(), name=name,
                                 objclass=get_objclass(base))
+    @app.route("/batch_confirmation", methods=['POST'])
+    def batch_confirmation():
+        #TODO: batch delete confirmation page
+        if request.method == "POST":
+            #delete all selections
+            checkedDataToDelete = request.form.getlist("checkedItems") #returns an array of Strings, tho the strings have dict format
+            toDelete = []
+            for x in checkedDataToDelete: #transform all strings to dicts and append them to a new list
+                dicts = {}
+                key1 = x.split("name:'")[1].split("'")[0]
+                key2 = x.split("type:'")[1].split("'")[0]
+                key3 = x.split("target:'")[1].replace("'}", "") 
+                key4 = key3.split("/")[2] # getting the username from the target url
+                dicts['name'] = key1
+                dicts['type'] = key2
+                dicts['target'] = key3
+                if key2 != 'Organization Unit':
+                    dicts['username'] = key4
+                else:
+                    dicts['dn'] = parse.unquote(key4)
+
+                toDelete.append(dicts)
+                #all selections are saved in toDelete list as dicts
+                ToDelete.toDelete = toDelete
+            return render_template("pages/batch_delete.html", toDelete = toDelete)
+            # return redirect(url_for('tree_base', base=base))
+
+    @app.route("/batch_delete", methods=['POST'])
+    def batch_delete():
+        toDelete = ToDelete.toDelete
+        try:
+                deleted_list = []
+                for obj in toDelete:
+                    for key in obj:
+                        if key == 'type':
+                            if obj[key] == 'User':
+                                user = ldap_get_user(username=obj['username'])
+                                ldap_delete_entry(user['distinguishedName'])
+                                deleted_list.append(obj['username'])
+                            elif obj[key] == 'Group':
+                                group = ldap_get_group(groupname=obj['name'])
+                                ldap_delete_entry(group['distinguishedName'])
+                                deleted_list.append(obj['name'])
+                            elif obj[key] == 'Organization Unit':
+                                canDelete = not ldap_obj_has_children(base=obj['dn'])
+                                ou = ldap_get_ou(ou_name=obj['dn'])
+                                if canDelete:
+                                    ldap_delete_entry(ou['distinguishedName'])
+                                    deleted_list.append(obj['name'])
+                                else:
+                                    flash(f"Can't delete OU: '{ou['ou']}' because is not empty", "error")
+                if len(deleted_list):
+                    if len(deleted_list) == 1:
+                        flash("1 element deleted successfully", "success")
+                    else:
+                        flash(f"{len(deleted_list)} elements deleted successfully", "success")
+        except ldap.LDAPError as e:
+            flash(e,"error")
+        return redirect(url_for("tree_base"))
 
     def get_entries(filter_str, filter_select, base, scope):
         """

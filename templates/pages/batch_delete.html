@@ -1,0 +1,30 @@
+{% extends "base-modal_es.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% from "macros.html" import render_field %}
+{% block content %}
+<form method="post" action="/batch_delete" class="form">
+    {{ form.csrf_token }}
+    <p>
+        If you continue, you will permanently delete the following:<br />
+    </p>
+    <ul>
+        {% for dict_element in toDelete %}
+        <li>
+            <ul>
+                {% for key in dict_element %}
+                {% if key == "name" || key == "type" %}
+                <li>{{ dict_element[key] }}</li>
+                {% endif %}
+                {% endfor %}
+            </ul>
+        </li>
+        {% endfor %}
+    </ul>
+    <p> Are you sure? </p>
+
+    {% if parent %}
+    <a class="link-button" href="#" onclick="window.history.back()">Cancel</a>
+    {% endif %}
+    <input class="right" type="submit" value="{{ action }}" />
+</form>
+{% endblock %}
