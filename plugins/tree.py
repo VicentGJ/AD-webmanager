@@ -37,8 +37,11 @@ class FilterTreeView(FlaskForm):
     search = SubmitField('Search')
 
 
-class BatchSelect(FlaskForm):
+class BatchDelete(FlaskForm):
     delete = SubmitField('Delete Selection')
+
+class BatchMove(FlaskForm):
+    move = SubmitField('Move Selection')
 
 def init(app):
     @app.route('/tree', methods=['GET', 'POST'])
@@ -63,7 +66,8 @@ def init(app):
                     entry_fields.append((item[0], item[1])) 
 
             form = FilterTreeView(request.form)
-            batch_select = BatchSelect()
+            batch_delete = BatchDelete()
+            batch_move = BatchMove()
 
             if form.search.data and form.validate():
                 print('here 1')
@@ -77,7 +81,7 @@ def init(app):
                 entries = get_entries("top", "objectClass", base, scope)
             
            #TODO: batch delete confirmation page
-            if batch_select.delete.data:
+            if batch_delete.delete.data:
                 #delete all selections
                 checkedDataToDelete = request.form.getlist("checkedItems") #returns an array of Strings, tho the strings have dict format
                 toDelete = []
@@ -94,8 +98,8 @@ def init(app):
                         dicts['username'] = key4
                     else:
                         dicts['dn'] = parse.unquote(key4)
-
                     toDelete.append(dicts)
+
                 #all selections are saved in toDelete list as dicts
                 try:
                     deleted_list = []
@@ -128,14 +132,17 @@ def init(app):
                     flash(e,"error")
                 return redirect(url_for('tree_base', base=base))
 
+            elif batch_move.move.data:
+                print("HERE- 1")
+
         parent = None
         base_split = base.split(',')
         if not base_split[0].lower().startswith("dc"):
             parent = ",".join(base_split[1:])
 
         name = namefrom_dn(base)
-        return render_template("pages/tree_base_es.html", form=form, parent=parent, batch_select=batch_select,
-                                admin=admin, base=base.upper(), entries=entries,
+        return render_template("pages/tree_base_es.html", form=form, parent=parent, batch_delete=batch_delete,
+                                batch_move=batch_move, admin=admin, base=base.upper(), entries=entries,
                                 entry_fields=entry_fields, root=g.ldap['search_dn'].upper(), name=name,
                                 objclass=get_objclass(base))
 

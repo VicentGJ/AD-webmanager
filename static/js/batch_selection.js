@@ -1,11 +1,13 @@
 function changeButton() {
     const checkBoxes = Array.from(document.getElementsByClassName('item-to-check'))
     const deleteBtn = document.getElementById("delete-selection-btn")
+    const moveBtn = document.getElementById("move-selection-btn")
     const selectAllBox = document.getElementById('select-all')
     const allSelected = checkAllSelected(checkBoxes)
     const oneSelected = checkOneSelected(checkBoxes)
 
     deleteBtn.disabled = !oneSelected
+    moveBtn.disabled = !oneSelected
     selectAllBox.checked = allSelected
 }
 
@@ -35,6 +37,7 @@ const checkOneSelected = (checkBoxes) => {
 }
 function selectAll() {//    select / unsselect all items if those aren't disabled
     const deleteBtn = document.getElementById("delete-selection-btn")
+    const moveBtn = document.getElementById("move-selection-btn")
     const selectAllBox = document.getElementById('select-all')
     const checkBoxes = Array.from(document.getElementsByClassName('item-to-check'))
 
@@ -43,6 +46,7 @@ function selectAll() {//    select / unsselect all items if those aren't disable
             if (!box.disabled) {
                 box.checked = true
                 deleteBtn.disabled = false
+                moveBtn.disabled = false
             }
         })
     } else {
@@ -50,12 +54,13 @@ function selectAll() {//    select / unsselect all items if those aren't disable
             if (!box.disabled) {
                 box.checked = false
                 deleteBtn.disabled = true
+                moveBtn.disabled = true
             }
         })
     }
 }
-document.onload = enableOUDeleteButton()
-function enableOUDeleteButton() {
+document.onload = enableBatchButtons()
+function enableBatchButtons() {
     const ouDelete = document.getElementById('ou-delete-btn')
     const checkBoxes = Array.from(document.getElementsByClassName('item-to-check'))
     const selectAllBox = document.getElementById('select-all')
