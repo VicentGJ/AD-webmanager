@@ -72,8 +72,8 @@
             </tr>
             {% endfor %}
         </table>
-        {{ render_button(batch_select.delete, disabled=true, id="delete-selection-btn",class="button",
-        style="margin-top: 20px") }}
+        {{ render_button(batch_delete.delete, disabled=true, id="delete-selection-btn",class="button",style="margin-top: 20px") }}
+        {{ render_button(batch_move.move, disabled=true, id="move-selection-btn",class="button",style="margin-top: 20px") }}
     </form>
 </div>
 
