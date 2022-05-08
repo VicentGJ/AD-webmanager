@@ -44,7 +44,8 @@
             <tr>
                 {% for key, title in entry_fields %}
                 {% if key == "name"%}
-                <th> <input type="checkbox" id="select-all" class="form-check-input" onclick=selectAll()> {{ title }}</th>
+                <th> <input type="checkbox" id="select-all" class="form-check-input" onclick=selectAll()> {{ title }}
+                </th>
                 {% else %}
                 <th>{{ title }}</th>
                 {% endif %}
@@ -57,7 +58,8 @@
                 {% for key, title in entry_fields %}
                 {% if key == "name" and key in entry %}
                 <td style='padding-right:10px;white-space:nowrap;'>
-                    <input type="checkbox" name="checkedItems" class="item-to-check form-check-input"onclick="changeButton();"
+                    <input type="checkbox" name="checkedItems" class="item-to-check form-check-input"
+                        onclick="changeButton();"
                         value="{name:'{{ entry[key] }}', type:'{{ entry['__type'] }}', target:'{{ entry['__target'] }}'}">
                     <a href="{{ entry['__target'] }}">{{ entry[key] }}</a>
                 </td>
@@ -72,9 +74,23 @@
             </tr>
             {% endfor %}
         </table>
-        {{ render_button(batch_delete.delete, disabled=true, id="delete-selection-btn",class="button",style="margin-top: 20px") }}
-        {{ render_button(batch_move.move, disabled=true, id="move-selection-btn",class="button",style="margin-top: 20px") }}
-    </form>
+        <div class="row">
+
+            {{ render_button(batch_delete.delete, disabled=true, id="delete-selection-btn",class="button
+            col",style="margin-top: 20px") }}
+            
+            <input type="button" id="move-selection-btn" class="button col" style="margin-top: 20px" disabled=true
+            onclick="changeCheckedStyle();" value="Move Selection">
+           
+            <input type="button" id="paste-selection-btn" class="button col" style="margin-top: 20px; display:none;" value="Paste">
+           
+            <input type="button" id="cancel-move-btn" class="button col" style="margin-top: 20px; display:none;"
+            onclick="cancelMove()" value="Cancel">
+            
+        </div>
+        </form>
+    <!-- {{ render_button(batch_move.move, disabled=true, id="move-selection-btn",class="button",style="margin-top: 20px") }}
+        {{ render_button(batch_paste.paste, disabled=true, id="paste-selection-btn",class="button",style="margin-top: 20px; display:none") }} -->
 </div>
 
 <script src="../../static/js/batch_selection.js"></script>
