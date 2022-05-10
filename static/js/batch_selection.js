@@ -66,39 +66,44 @@ function enableBatchButtons() {
     const selectAllBox = document.getElementById('select-all')
     const batchDeleteBtn = document.getElementById("delete-selection-btn")
     const batchMoveBtn = document.getElementById("move-selection-btn")
+    const pasteBtn = document.getElementById("paste-selection-btn")
+
     if (checkBoxes.length == 0) {
         ouDelete.disabled = false
         selectAllBox.style.display = "none"
         batchDeleteBtn.style.display = "none"
         batchMoveBtn.style.display = "none"
+        pasteBtn.style.display = "none"
     }
+    /*TODO: validate that there have to be at least 2 elements 
+    and one of them has to be an OU for the move btn to show*/
 }
-function onMoveBtnClicked(){
+function onMoveBtnClicked() {
     const checkBoxes = Array.from(document.getElementsByClassName('item-to-check'))
     const upperBtns = Array.from(document.getElementsByClassName('upper-element'))
     const moveHere = Array.from(document.getElementsByClassName('move-here-element'))
     const selectAllBox = document.getElementById('select-all')
     const batchDeleteBtn = document.getElementById("delete-selection-btn")
     const batchMoveBtn = document.getElementById("move-selection-btn")
-    // const pasteBtn = document.getElementById("paste-selection-btn")
+    const pasteBtn = document.getElementById("paste-selection-btn")
     const cancelPasteBtn = document.getElementById("cancel-move-btn")
     upperBtns.map(btn => {
         btn.id != "move-to-root-btn"
             ? btn.style.display = "none"
-            :btn.style.display="inline"
-        
+            : btn.style.display = "inline"
+
     })
     checkBoxes.map(box => {
-        box.checked 
-            ? box.style.opacity = 0.5 
+        box.checked
+            ? box.style.opacity = 0.5
             : box.style.opacity = 0
-        
+
         box.disabled = true
     })
     moveHere.map(element => {
         element.style.display = "inline"
         checkBoxes.map(box => {
-            if(box.dataset.reference == element.dataset.reference && box.checked){
+            if (box.dataset.referenceName == element.dataset.referenceName && box.checked) {
                 element.disabled = true
             }
         })
@@ -108,11 +113,12 @@ function onMoveBtnClicked(){
     selectAllBox.disabled = true
     batchDeleteBtn.style.display = "none"
     batchMoveBtn.style.display = "none"
-    // pasteBtn.style.display = "inline"
+    pasteBtn.style.display = "inline"
+    pasteBtn.disabled = true
     cancelPasteBtn.style.display = "inline"
 
 }
-function cancelMove(){
+function cancelMove() {
     const checkBoxes = Array.from(document.getElementsByClassName('item-to-check'))
     const upperBtns = Array.from(document.getElementsByClassName('upper-element'))
     const moveHere = Array.from(document.getElementsByClassName('move-here-element'))
@@ -128,13 +134,15 @@ function cancelMove(){
 
     })
     checkBoxes.map(box => {
-            box.style.opacity = 1
-            // box.checked = false //keep selection checked
-            box.disabled = false
+        box.style.opacity = 1
+        // box.checked = false //keep selection checked
+        box.disabled = false
     })
     moveHere.map(element => {
         element.disabled = false
-        element.style.display="none"})
+        element.style.display = "none"
+        element.checked = false
+    })
 
     selectAllBox.style.opacity = 1
     selectAllBox.disabled = false
@@ -142,6 +150,41 @@ function cancelMove(){
     // batchDeleteBtn.disabled = true //selection keeps the check so theese two keep enabled
     // batchMoveBtn.disabled = true
     batchMoveBtn.style.display = "inline"
-    // pasteBtn.style.display = "none"
+    pasteBtn.style.display = "none"
     cancelPasteBtn.style.display = "none"
 }
+
+function radioClicked(){
+    const pasteBtn = document.getElementById("paste-selection-btn")
+    const moveHere = Array.from(document.getElementsByClassName('move-here-element'))
+    moveHere.map(radio => {
+        if(radio.checked){
+            pasteBtn.disabled = false
+        }
+    })
+}
+
+function pasteClicked(){
+    const checkBoxes = Array.from(document.getElementsByClassName('item-to-check'))
+    checkBoxes.map(box=> box.disabled = false)
+}
+
+// const elements = () => {
+//     const checkBoxes = Array.from(document.getElementsByClassName('item-to-check'))
+//     const upperBtns = Array.from(document.getElementsByClassName('upper-element'))
+//     const moveHere = Array.from(document.getElementsByClassName('move-here-element'))
+//     const selectAllBox = document.getElementById('select-all')
+//     const batchDeleteBtn = document.getElementById("delete-selection-btn")
+//     const batchMoveBtn = document.getElementById("move-selection-btn")
+//     const cancelPasteBtn = document.getElementById("cancel-move-btn")
+
+//     return{
+//         boxes:checkBoxes,
+//         upperBtns:upperBtns,
+//         pasteBtns:moveHere,
+//         selectAllBox: selectAllBox,
+//         batchDeleteBtn:batchDeleteBtn,
+//         batchMoveBtn:batchMoveBtn,
+//         cancelPasteBtn:cancelPasteBtn
+//     }
+// }

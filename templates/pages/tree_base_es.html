@@ -20,25 +20,20 @@
         {% endif %}
 
         {% if parent %}
-        <a href="{{ url_for('tree_base', base=parent) }}">
+        <a href="{{ url_for('tree_base', base=parent) }}" class="upper-element-link">
             <input type="button" value="Up a level" class="button upper-element"></a>
         {% endif %}
         {% if admin %}
-
-        <a href="{{ url_for('group_add', base=base) }}">
+        <a href="{{ url_for('group_add', base=base) }}" class="upper-element-link">
             <input type="button" value="Add group" class="button upper-element"></a>
-
         <a href="{{ url_for('user_add', base=base) }}">
             <input type="button" value="Add user" class="button upper-element"></a>
-
-        <a href="{{ url_for('ou_add', base=base) }}">
+        <a href="{{ url_for('ou_add', base=base) }}" class="upper-element-link">
             <input type="button" value="Add OU" class="button upper-element"></a>
-
         {% if root != base and objclass=="OU"%}
-        <a href="{{ url_for('ou_edit', ou_name=base) }}">
+        <a href="{{ url_for('ou_edit', ou_name=base) }}" class="upper-element-link">
             <input type="button" value="Edit {{name}}" class="button upper-element" style="margin-right:3px;"></a>
-
-        <a href="{{ url_for('ou_delete', ou_name=base) }}">
+        <a href="{{ url_for('ou_delete', ou_name=base) }}" class="upper-element-link">
             <input type="button" value="Delete {{name}}" class="button upper-element" style="margin-top: 3px;"
                 id="ou-delete-btn" disabled></a>
         <input type="button" value="To Root" id="move-to-root-btn" class="button button upper-element"
@@ -63,56 +58,58 @@
                 {% endfor %}
             </tr>
             {% for entry in entries %}
-                <tr>
-                    {% for key, title in entry_fields %}
-                        {% if key == "name" and key in entry %}
-                        <td style='padding-right:10px;white-space:nowrap;'>
-                            <input type="checkbox" 
-                                    name="checkedItems" 
-                                    class="item-to-check form-check-input"
-                                    onclick="boxClicked();"
-                                    data-reference="{{ entry[key] }}"
-                                    value="{name:'{{ entry[key] }}', type:'{{ entry['__type'] }}', target:'{{ entry['__target'] }}'}">
-                            
-                                <a href="{{ entry['__target'] }}">{{ entry[key] }}</a>
-                            
-                            {% if entry['__type'] == "Organization Unit" %}
-                                <button class="move-here-element"
-                                        name="moveHere"
-                                        data-reference="{{ entry[key] }}"
-                                        value="{{ entry['__target'] }}"
-                                        style="display: none;">&#11013;</button>
-                            {% endif %}
-                        </td>
-                        {% elif key == "__type" and key in entry %}
-                            <td>{{ entry[key] }}</td>
-                        {% elif key in entry %}
-                            <td>{{ entry[key]|truncate(40) }}</td>
-                        {% else %}
-                            <td>&nbsp;</td>
-                        {% endif %}
-                    {% endfor %}
-                </tr>
+            <tr>
+                {% for key, title in entry_fields %}
+                {% if key == "name" and key in entry %}
+                <td style='padding-right:10px;white-space:nowrap;'>
+                    <input type="checkbox" name="checkedItems" class="item-to-check form-check-input"
+                        onclick="boxClicked();" data-reference-name="{{ entry[key] }}"
+                        data-reference-type="{{ entry['__type'] }}"
+                        value="{name:'{{ entry[key] }}', type:'{{ entry['__type'] }}', target:'{{ entry['__target'] }}'}">
+
+                    <a href="{{ entry['__target'] }}">{{ entry[key] }}</a>
+
+                    {% if entry['__type'] == "Organization Unit" %}
+                        <input type="radio" 
+                            name="moveHere"
+                            class="move-here-element"
+                            value="{{ entry['__target'] }}"
+                            style="display: none;" 
+                            data-reference-name="{{ entry[key] }}"
+                            onclick="radioClicked()">
+                        <span class="move-here-element move-here-span" style="display: none; padding: 0;" >here</span>
+                    {% endif %}
+                    </td>
+                {% elif key == "__type" and key in entry %}
+                <td>{{ entry[key] }}</td>
+                {% elif key in entry %}
+                <td>{{ entry[key]|truncate(40) }}</td>
+                {% else %}
+                <td>&nbsp;</td>
+                {% endif %}
+                {% endfor %}
+            </tr>
             {% endfor %}
         </table>
         <div class="row">
 
             {{ render_button(batch_delete.delete, disabled=true, id="delete-selection-btn",class="button
             col",style="margin-top: 20px") }}
+            
+            {{ render_button(batch_paste.paste,
+                 id="paste-selection-btn",
+                 onclick="pasteClicked()",
+                 class="button col",
+                 style="margin-top: 20px; display:none;")}}
 
             <input type="button" id="move-selection-btn" class="button col" style="margin-top: 20px" disabled=true
                 onclick="onMoveBtnClicked();" value="Move Selection">
 
-                <!-- <input type="button" id="paste-selection-btn" class="button col" style="margin-top: 20px; display:none;"
-                    value="Paste"> -->
-                    
-                    <input type="button" id="cancel-move-btn" class="button col" style="margin-top: 20px; display:none;"
-                    onclick="cancelMove()" value="Cancel">
-                    
-                </div>
-            </form>
-            <!-- {{ render_button(batch_move.move, disabled=true, id="move-selection-btn",class="button",style="margin-top: 20px") }} -->
-        <!-- {{ render_button(batch_paste.paste, disabled=true, id="paste-selection-btn",class="button",style="margin-top: 20px; display:none") }} -->
+            <input type="button" id="cancel-move-btn" class="button col" style="margin-top: 20px; display:none;"
+                onclick="cancelMove()" value="Cancel">
+
+        </div>
+    </form>
 </div>
 
 <script src="../../static/js/batch_selection.js"></script>

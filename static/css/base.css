@@ -39,10 +39,17 @@ ul {
     padding: 0;
 }
 
+.upper-element-link{
+    text-decoration: none !important;
+}
 .move-here-element{
-    padding: 0 10px 0 10px;
+    /* padding: 0 10px 0 10px; */
     margin: 0;
+    margin-left: 1em;
     text-decoration: none;
+}
+.move-here-span{
+    margin: 0;
 }
 
 /* scrollbars  

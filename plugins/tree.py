@@ -16,8 +16,9 @@
 # You can find the license on Debian systems in the file
 # /usr/share/common-licenses/GPL-2
 
+from fnmatch import translate
+from time import process_time_ns
 from urllib import parse
-
 import ldap
 from flask import abort, flash, g, redirect, render_template, request
 from flask_wtf import FlaskForm
@@ -26,7 +27,7 @@ from libs.common import iri_for as url_for
 from libs.common import namefrom_dn
 from libs.ldap_func import (ldap_auth, ldap_delete_entry, ldap_get_entries,
                             ldap_get_group, ldap_get_ou, ldap_get_user,
-                            ldap_in_group, ldap_obj_has_children)
+                            ldap_in_group, ldap_obj_has_children, ldap_update_attribute, move)
 from settings import Settings
 from wtforms import SelectField, StringField, SubmitField
 
@@ -40,8 +41,9 @@ class FilterTreeView(FlaskForm):
 class BatchDelete(FlaskForm):
     delete = SubmitField('Delete Selection')
 
-class BatchMove(FlaskForm):
-    move = SubmitField('Move Selection')
+class BatchPaste(FlaskForm):
+    paste = SubmitField('Paste Selection')
+    
 
 def init(app):
     @app.route('/tree', methods=['GET', 'POST'])
@@ -67,10 +69,9 @@ def init(app):
 
             form = FilterTreeView(request.form)
             batch_delete = BatchDelete()
-            batch_move = BatchMove()
+            batch_paste = BatchPaste()
 
             if form.search.data and form.validate():
-                print('here 1')
                 filter_str = form.filter_str.data
                 filter_select = form.filter_select.data
                 scope = "subtree"
@@ -82,58 +83,28 @@ def init(app):
             
            #TODO: batch delete confirmation page
             if batch_delete.delete.data:
-                #delete all selections
-                checkedDataToDelete = request.form.getlist("checkedItems") #returns an array of Strings, tho the strings have dict format
-                toDelete = []
-                for x in checkedDataToDelete: #transform all strings to dicts and append them to a new list
-                    dicts = {}
-                    key1 = x.split("name:'")[1].split("'")[0]
-                    key2 = x.split("type:'")[1].split("'")[0]
-                    key3 = x.split("target:'")[1].replace("'}", "") 
-                    key4 = key3.split("/")[2] # getting the username from the target url
-                    dicts['name'] = key1
-                    dicts['type'] = key2
-                    dicts['target'] = key3
-                    if key2 != 'Organization Unit':
-                        dicts['username'] = key4
-                    else:
-                        dicts['dn'] = parse.unquote(key4)
-                    toDelete.append(dicts)
-
-                #all selections are saved in toDelete list as dicts
+                checkedData = request.form.getlist("checkedItems") #returns an array of Strings, tho the strings have dict format
+                toDelete = translation(checkedData)
                 try:
-                    deleted_list = []
-                    for obj in toDelete:
-                        for key in obj:
-                            if key == 'type':
-                                if obj[key] == 'User':
-                                    user = ldap_get_user(username=obj['username'])
-                                    ldap_delete_entry(user['distinguishedName'])
-                                    deleted_list.append(obj['username'])
-                                elif obj[key] == 'Group':
-                                    group = ldap_get_group(groupname=obj['name'])
-                                    ldap_delete_entry(group['distinguishedName'])
-                                    deleted_list.append(obj['name'])
-                                elif obj[key] == 'Organization Unit':
-                                    canDelete = not ldap_obj_has_children(base=obj['dn'])
-                                    ou = ldap_get_ou(ou_name=obj['dn'])
-                                    if canDelete:
-                                        ldap_delete_entry(ou['distinguishedName'])
-                                        deleted_list.append(obj['name'])
-                                    else:
-                                        flash(f"Can't delete OU: '{ou['ou']}' because is not empty", "error")
-                    if len(deleted_list):
-                        if len(deleted_list) == 1:
-                            flash("1 element deleted successfully", "success")
-                        else:
-                            flash(f"{len(deleted_list)} elements deleted successfully", "success")
-
+                    deleted_list = delete_batch(toDelete)
+                    flash_amount(deleted_list, deleted=True)
                 except ldap.LDAPError as e:
                     flash(e,"error")
                 return redirect(url_for('tree_base', base=base))
 
-            elif batch_move.move.data:
-                print("HERE- 1")
+            elif batch_paste.paste.data:
+                checkedData = request.form.getlist("checkedItems")
+                moveTo = request.form.get("moveHere")
+                moveTo = parse.unquote(moveTo.split("tree/")[1].split(",")[0])
+                print(moveTo)
+                toMove = translation(checkedData)
+                try:
+                    moved_list = move_batch(toMove,moveTo)
+                    flash_amount(moved_list,deleted=False)
+                except ldap.LDAPError as e:
+                    e = dict(e.args[0])
+                    flash(e['info'], "error")
+                return redirect(url_for('tree_base', base=base))
 
         parent = None
         base_split = base.split(',')
@@ -142,7 +113,7 @@ def init(app):
 
         name = namefrom_dn(base)
         return render_template("pages/tree_base_es.html", form=form, parent=parent, batch_delete=batch_delete,
-                                batch_move=batch_move, admin=admin, base=base.upper(), entries=entries,
+                                batch_paste=batch_paste, admin=admin, base=base.upper(), entries=entries,
                                 entry_fields=entry_fields, root=g.ldap['search_dn'].upper(), name=name,
                                 objclass=get_objclass(base))
 
@@ -220,4 +191,90 @@ def init(app):
                 for blacklist in Settings.TREE_BLACKLIST:
                     if entry['distinguishedName'].startswith(blacklist):
                         entries.remove(entry)
+                        translation
         return entries
+
+    def translation(checkedData:list):
+        '''
+        recieves a list of strings with format 
+        ``["{name:<>, type:<>, target:<>}",...]`` \n
+        and translates them into dicts with keys: 
+        ``name``, ``type``, ``username``(except if type is Organization Unit), and ``dn``;
+        extracted from those string
+        and returns them in a new list
+        '''
+
+        translated = []
+        for x in checkedData:
+            dicts = {}
+            key1 = x.split("name:'")[1].split("'")[0] #name of the object
+            key2 = x.split("type:'")[1].split("'")[0] #User, Group, Organization Unit
+            key3 = x.split("target:'")[1].replace("'}", "")
+            key4 = key3.split("/")[2] #username
+            if key2 == "User":
+                user = ldap_get_user(username=key4)
+                key5 = user['distinguishedName']
+            elif key2 == "Group":
+                group = ldap_get_group(groupname=key1)
+                key5 = group['distinguishedName']
+            elif key2 == "Organization Unit":
+                key5 = parse.unquote(key4)
+            dicts['name'] = key1
+            dicts['type'] = key2
+            if key2 != 'Organization Unit':
+                dicts['username'] = key4
+            dicts['dn'] = key5
+            translated.append(dicts)
+        print("After translation:\n")
+        print(translated)
+        return translated
+    
+    def delete_batch(translatedList:list):
+        """
+        Deletes the objects in the ``translatedList`` and saves the names of each element on a list to be returned
+        OU objects with children will not be deleted and will have an error flash
+        \n
+        recieves a ``translatedList`` with the format returned by ``translation()``
+        \n
+        Return: a list with the names of the deleted elements
+        """
+        deleted_list=[]
+        for obj in translatedList:
+            #since now there is a dn key there is no need to check what type is the current element to user the
+            #ldap_get_ou(), ldap_get_user(), ldap_get_group() just to get their dn
+            if obj['type'] != "Organization Unit":
+                ldap_delete_entry(obj['dn'])
+                deleted_list.append(obj['name'])
+            else:
+                canDelete = not ldap_obj_has_children(obj['dn'])
+                if canDelete:
+                    ldap_delete_entry(obj['dn'])
+                    deleted_list.append(obj['name'])
+                else:
+                    flash(f"Can't delete OU: '{obj['name']}' because is not empty", "error")
+        return deleted_list
+
+    def move_batch(translatedList: list, moveTo: str):  
+        moved_list = []
+        for obj in translatedList:
+            moved_list.append(obj['name'])
+            #TODO: dn change logic goes here
+            #since now there is a dn key there is no need to check what type is the current element to user the 
+            #ldap_get_ou(), ldap_get_user(), ldap_get_group() just to get their dn
+            pass
+        return moved_list
+    
+    def flash_amount(namesList:list, deleted:bool):
+        """
+        flashes how many elements were moved/deleted
+        recieves the list returned by ``move_batch()`` or ``delete_batch()`` and an extra argument to know if elements were moved or deleted
+        """
+        if deleted:
+            action = "deleted"
+        else:
+            action = "moved"
+        if len(namesList):
+            if len(namesList) == 1:
+                flash("1 element "+ action+ " successfully.", "success")
+            else:
+                flash(f"{len(namesList)} elements " +action+ " successfully", "success")
