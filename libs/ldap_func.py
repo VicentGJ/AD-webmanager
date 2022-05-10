@@ -610,3 +610,9 @@ def tryFunc():
     docstring
     """
     pass
+
+
+def move(dn, attribute, value):
+    connection = g.ldap['connection']
+    attribute = [attribute.encode('utf-8')]
+    connection.rename_s(dn, "%s=%s" % (attribute, value))
