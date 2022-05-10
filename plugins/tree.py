@@ -258,10 +258,13 @@ def init(app):
         moved_list = []
         for obj in translatedList:
             moved_list.append(obj['name'])
+            print(obj["dn"].split(",")[0])
+            print(obj["dn"])
+            print(moveTo)
+            ldap_update_attribute(dn=obj["dn"], attribute="distinguishedName", value=obj["dn"].split(",")[0], new_parent=moveTo)
             #TODO: dn change logic goes here
             #since now there is a dn key there is no need to check what type is the current element to user the 
             #ldap_get_ou(), ldap_get_user(), ldap_get_group() just to get their dn
-            pass
         return moved_list
     
     def flash_amount(namesList:list, deleted:bool):
