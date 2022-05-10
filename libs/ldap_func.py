@@ -329,7 +329,7 @@ def ldap_in_group(groupname, username=None):
     return group['distinguishedName'] in checked
 
 
-def ldap_update_attribute(dn, attribute, value=None, objectClass=None):
+def ldap_update_attribute(dn, attribute, value=None, new_parent=None, objectClass=None):
     """
         Set/Update a given attribute.
     """
@@ -346,7 +346,7 @@ def ldap_update_attribute(dn, attribute, value=None, objectClass=None):
         raise Exception(dn)
 
     if (attribute == 'distinguishedName'):
-        connection.rename_s(dn, value)
+        connection.rename_s(dn, value, new_parent)
     
     # if objectClass and objectClass not in current_entry['objectClass']:
     #     # It's add a new class to the object,  its not an attribute update
