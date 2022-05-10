@@ -39,6 +39,12 @@ ul {
     padding: 0;
 }
 
+.move-here-element{
+    padding: 0 10px 0 10px;
+    margin: 0;
+    text-decoration: none;
+}
+
 /* scrollbars  
 NOTE:Custom scrollbars are not supported in Firefox or in Edge, prior version 79.*/
 ::-webkit-scrollbar-thumb {
