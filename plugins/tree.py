@@ -254,7 +254,16 @@ def init(app):
                     flash(f"Can't delete OU: '{obj['name']}' because is not empty", "error")
         return deleted_list
 
-    def move_batch(translatedList: list, moveTo: str):  
+    def move_batch(translatedList: list, moveTo: str):
+        """moves the elements from the list to the selected OU
+
+        Args:
+            translatedList (list): _description_
+            moveTo (str): _description_
+
+        Returns:
+            a list with the names of the moved elements
+        """
         moved_list = []
         for obj in translatedList:
             moved_list.append(obj['name'])
