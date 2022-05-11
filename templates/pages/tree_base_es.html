@@ -36,8 +36,6 @@
         <a href="{{ url_for('ou_delete', ou_name=base) }}" class="upper-element-link">
             <input type="button" value="Delete {{name}}" class="button upper-element" style="margin-top: 3px;"
                 id="ou-delete-btn" disabled></a>
-        <input type="button" value="To Root" id="move-to-root-btn" class="button button upper-element"
-            style="display:none ;">
         {% endif %}
         <!--<a href="{{ url_for('core_index') }}" class="button">Create container</a>-->
         {% endif %}
@@ -70,16 +68,12 @@
                     <a href="{{ entry['__target'] }}">{{ entry[key] }}</a>
 
                     {% if entry['__type'] == "Organization Unit" %}
-                        <input type="radio" 
-                            name="moveHere"
-                            class="move-here-element"
-                            value="{{ entry['__target'] }}"
-                            style="display: none;" 
-                            data-reference-name="{{ entry[key] }}"
-                            onclick="radioClicked()">
-                        <span class="move-here-element move-here-span" style="display: none; padding: 0;" >here</span>
+                    <input type="radio" name="moveHere" class="move-here-element" value="{{ entry['__target'] }}"
+                        style="display: none;" data-reference-name="{{ entry[key] }}" onclick="radioClicked()">
+                    <label for="moveHere" class="move-here-element move-here-span"
+                        style="display: none; padding: 0;">here</label>
                     {% endif %}
-                    </td>
+                </td>
                 {% elif key == "__type" and key in entry %}
                 <td>{{ entry[key] }}</td>
                 {% elif key in entry %}
@@ -95,16 +89,28 @@
 
             {{ render_button(batch_delete.delete, disabled=true, id="delete-selection-btn",class="button
             col",style="margin-top: 20px") }}
-            
+
             {{ render_button(batch_paste.paste,
-                 id="paste-selection-btn",
-                 onclick="pasteClicked()",
-                 class="button col",
-                 style="margin-top: 20px; display:none;")}}
+            id="paste-selection-btn",
+            onclick="pasteClicked()",
+            class="button col",
+            style="margin-top: 20px; display:none;")}}
 
             <input type="button" id="move-selection-btn" class="button col" style="margin-top: 20px" disabled=true
                 onclick="onMoveBtnClicked();" value="Move Selection">
-
+            <!-- {% if root != base %}
+            {{ render_button(batch_moveToRoot.toRoot,
+                            id="move-to-root-btn",
+                            class="button col",
+                            style="margin-top: 20px; display:none")}}
+            {% endif %} -->
+            
+            {%if parent != none %}
+            {{ render_button(batch_moveOneLevelUp.up_aLevel,
+                            id="move-up-a-level-btn",
+                            class="button col",
+                            style="margin-top: 20px; display:none")}}
+            {%endif%}
             <input type="button" id="cancel-move-btn" class="button col" style="margin-top: 20px; display:none;"
                 onclick="cancelMove()" value="Cancel">
 

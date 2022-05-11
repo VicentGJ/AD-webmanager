@@ -67,6 +67,8 @@ function enableBatchButtons() {
     const batchDeleteBtn = document.getElementById("delete-selection-btn")
     const batchMoveBtn = document.getElementById("move-selection-btn")
     const pasteBtn = document.getElementById("paste-selection-btn")
+    const batchMoveUPbtn = document.getElementById("move-up-a-level-btn")
+    // const batchMoveToRoot = document.getElementById("move-to-root-btn")
 
     if (checkBoxes.length == 0) {
         ouDelete.disabled = false
@@ -74,6 +76,8 @@ function enableBatchButtons() {
         batchDeleteBtn.style.display = "none"
         batchMoveBtn.style.display = "none"
         pasteBtn.style.display = "none"
+        batchMoveUPbtn.style.display = "none"
+        // batchMoveToRoot.style.display = "none"
     }
     /*TODO: validate that there have to be at least 2 elements 
     and one of them has to be an OU for the move btn to show*/
@@ -87,6 +91,9 @@ function onMoveBtnClicked() {
     const batchMoveBtn = document.getElementById("move-selection-btn")
     const pasteBtn = document.getElementById("paste-selection-btn")
     const cancelPasteBtn = document.getElementById("cancel-move-btn")
+    const batchMoveUPbtn = document.getElementById("move-up-a-level-btn")
+    // const batchMoveToRoot = document.getElementById("move-to-root-btn")
+
     upperBtns.map(btn => {
         btn.id != "move-to-root-btn"
             ? btn.style.display = "none"
@@ -116,6 +123,8 @@ function onMoveBtnClicked() {
     pasteBtn.style.display = "inline"
     pasteBtn.disabled = true
     cancelPasteBtn.style.display = "inline"
+    batchMoveUPbtn.style.display = "inline"
+    // batchMoveToRoot.style.display = "inline"
 
 }
 function cancelMove() {
@@ -127,6 +136,8 @@ function cancelMove() {
     const batchMoveBtn = document.getElementById("move-selection-btn")
     const pasteBtn = document.getElementById("paste-selection-btn")
     const cancelPasteBtn = document.getElementById("cancel-move-btn")
+    const batchMoveUPbtn = document.getElementById("move-up-a-level-btn")
+
     upperBtns.map(btn => {
         btn.id == "move-to-root-btn"
             ? btn.style.display = "none"
@@ -152,6 +163,8 @@ function cancelMove() {
     batchMoveBtn.style.display = "inline"
     pasteBtn.style.display = "none"
     cancelPasteBtn.style.display = "none"
+    batchMoveUPbtn.style.display = "none"
+
 }
 
 function radioClicked(){
