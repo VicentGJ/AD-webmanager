@@ -298,6 +298,7 @@ def init(app):
         Returns:
             a list with the names of the moved elements
         """
+        print(moveTo)
         moved_list = []
         for obj in translatedList:
             moved_list.append(obj['name'])
