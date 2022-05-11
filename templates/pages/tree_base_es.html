@@ -91,10 +91,10 @@
             col",style="margin-top: 20px") }}
 
             {{ render_button(batch_paste.paste,
-            id="paste-selection-btn",
-            onclick="pasteClicked()",
-            class="button col",
-            style="margin-top: 20px; display:none;")}}
+                            id="paste-selection-btn",
+                            onclick="pasteClicked()",
+                            class="button col",
+                            style="margin-top: 20px; display:none;")}}
 
             <input type="button" id="move-selection-btn" class="button col" style="margin-top: 20px" disabled=true
                 onclick="onMoveBtnClicked();" value="Move Selection">
@@ -109,6 +109,7 @@
             {{ render_button(batch_moveOneLevelUp.up_aLevel,
                             id="move-up-a-level-btn",
                             class="button col",
+                            onclick="pasteClicked()",
                             style="margin-top: 20px; display:none")}}
             {%endif%}
             <input type="button" id="cancel-move-btn" class="button col" style="margin-top: 20px; display:none;"
