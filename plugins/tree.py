@@ -81,9 +81,9 @@ def init(app):
 
             form = FilterTreeView(request.form)
             batch_delete = BatchDelete()
-            batch_paste = BatchPaste()
-            batch_moveToRoot = BatchMoveToRoot()
-            batch_moveOneLevelUp = BatchMoveOneLevelUp()
+            paste = BatchPaste()
+            moveToRoot = BatchMoveToRoot()
+            moveOneLevelUp = BatchMoveOneLevelUp()
 
             if form.search.data and form.validate():
                 filter_str = form.filter_str.data
@@ -107,7 +107,7 @@ def init(app):
                     flash(e,"error")
                 return redirect(url_for('tree_base', base=base))
             ##batch move (1 in)
-            elif batch_paste.paste.data:
+            elif paste.paste.data:
                 checkedData = request.form.getlist("checkedItems")
                 moveTo = request.form.get("moveHere")
                 moveTo = parse.unquote(moveTo.split("tree/")[1].split(",")[0])
@@ -120,20 +120,20 @@ def init(app):
                     flash(e['info'], "error")
                 return redirect(url_for('tree_base', base=base))
             ##batch move (to root)
-            # elif batch_moveToRoot.toRoot.data:
-            #     checkedData = request.form.getlist("checkedItems")
-            #     moveTo = "" #root ??
-            #     print(checkedData)
-            #     toMove = translation(checkedData)
-            #     try:
-            #         moved_list = move_batch(toMove,moveTo)
-            #         flash_amount(moved_list, deleted=False)
-            #     except ldap.LDAPError as e:
-            #         e = dict(e.args[0])
-            #         flash(e['info'], "error")
-            #     return redirect(url_for('tree_base'))
+            elif moveToRoot.toRoot.data:
+                checkedData = request.form.getlist("checkedItems")
+                moveTo = g.ldap['search_dn']
+                print(checkedData)
+                toMove = translation(checkedData)
+                try:
+                    moved_list = move_batch(toMove,moveTo)
+                    flash_amount(moved_list, deleted=False)
+                except ldap.LDAPError as e:
+                    e = dict(e.args[0])
+                    flash(e['info'], "error")
+                return redirect(url_for('tree_base'))
             ##batch move (1 out)
-            elif batch_moveOneLevelUp.up_aLevel.data:
+            elif moveOneLevelUp.up_aLevel.data:
                 checkedData = request.form.getlist("checkedItems")
                 moveTo = parse.unquote(parent.split(",")[0])
                 toMove = translation(checkedData)
@@ -149,7 +149,7 @@ def init(app):
         name = namefrom_dn(base)
         objclass = get_objclass(base)
         return render_template("pages/tree_base_es.html", form=form, parent=parent, batch_delete=batch_delete,
-                                batch_paste=batch_paste,batch_moveOneLevelUp=batch_moveOneLevelUp,batch_moveToRoot=batch_moveToRoot,
+                                paste=paste,moveOneLevelUp=moveOneLevelUp,moveToRoot=moveToRoot,
                                 admin=admin, base=base.upper(), entries=entries,entry_fields=entry_fields, 
                                root=g.ldap['search_dn'].upper(), name=name, objclass=objclass)
 
