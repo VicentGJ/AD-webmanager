@@ -137,7 +137,7 @@ def init(app):
             ##batch move (1 out)
             elif moveOneLevelUp.up_aLevel.data:
                 checkedData = request.form.getlist("checkedItems")
-                moveTo = parse.unquote(parent.split(",")[0])
+                moveTo = parse.unquote(parent)
                 toMove = translation(checkedData)
                 try:
                     moved_list = move_batch(toMove,moveTo)
