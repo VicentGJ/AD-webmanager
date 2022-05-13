@@ -110,7 +110,9 @@ def init(app):
             elif paste.paste.data:
                 checkedData = request.form.getlist("checkedItems")
                 moveTo = request.form.get("moveHere")
-                moveTo = parse.unquote(moveTo.split("tree/")[1].split(",")[0])
+                print(parse.unquote(moveTo))
+                moveTo = parse.unquote(moveTo.split("tree/")[1])
+                print(moveTo)
                 toMove = translation(checkedData)
                 try:
                     moved_list = move_batch(toMove,moveTo)
