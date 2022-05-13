@@ -89,24 +89,27 @@
 
             {{ render_button(batch_delete.delete, disabled=true, id="delete-selection-btn",class="button
             col",style="margin-top: 20px") }}
-
-            {{ render_button(batch_paste.paste,
+            
+            <input type="button" id="move-selection-btn" class="button col" style="margin-top: 20px" disabled=true
+                onclick="onMoveBtnClicked();" value="Move Selection">
+            
+            {{ render_button(paste.paste,
                             id="paste-selection-btn",
                             onclick="pasteClicked()",
                             class="button col",
+                            onclick="pasteClicked()",
                             style="margin-top: 20px; display:none;")}}
 
-            <input type="button" id="move-selection-btn" class="button col" style="margin-top: 20px" disabled=true
-                onclick="onMoveBtnClicked();" value="Move Selection">
-            <!-- {% if root != base %}
-            {{ render_button(batch_moveToRoot.toRoot,
+            {% if root != base and parent.upper() != root%}
+            {{ render_button(moveToRoot.toRoot,
                             id="move-to-root-btn",
                             class="button col",
+                            onclick="pasteClicked()",
                             style="margin-top: 20px; display:none")}}
-            {% endif %} -->
+            {% endif %}
             
             {%if parent != none %}
-            {{ render_button(batch_moveOneLevelUp.up_aLevel,
+            {{ render_button(moveOneLevelUp.up_aLevel,
                             id="move-up-a-level-btn",
                             class="button col",
                             onclick="pasteClicked()",

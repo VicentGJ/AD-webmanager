@@ -92,14 +92,10 @@ function onMoveBtnClicked() {
     const pasteBtn = document.getElementById("paste-selection-btn")
     const cancelPasteBtn = document.getElementById("cancel-move-btn")
     const batchMoveUPbtn = document.getElementById("move-up-a-level-btn")
-    // const batchMoveToRoot = document.getElementById("move-to-root-btn")
+    const batchMoveToRoot = document.getElementById("move-to-root-btn")
 
-    upperBtns.map(btn => {
-        btn.id != "move-to-root-btn"
-            ? btn.style.display = "none"
-            : btn.style.display = "inline"
-
-    })
+    upperBtns.map(btn => btn.style.display = "none")
+    
     checkBoxes.map(box => {
         box.checked
             ? box.style.opacity = 0.5
@@ -124,7 +120,7 @@ function onMoveBtnClicked() {
     pasteBtn.disabled = true
     cancelPasteBtn.style.display = "inline"
     batchMoveUPbtn.style.display = "inline"
-    // batchMoveToRoot.style.display = "inline"
+    batchMoveToRoot.style.display = "inline"
 
 }
 function cancelMove() {
@@ -137,13 +133,10 @@ function cancelMove() {
     const pasteBtn = document.getElementById("paste-selection-btn")
     const cancelPasteBtn = document.getElementById("cancel-move-btn")
     const batchMoveUPbtn = document.getElementById("move-up-a-level-btn")
+    const batchMoveToRoot = document.getElementById("move-to-root-btn")
 
-    upperBtns.map(btn => {
-        btn.id == "move-to-root-btn"
-            ? btn.style.display = "none"
-            : btn.style.display = "inline"
-
-    })
+    upperBtns.map(btn => btn.style.display = "inline")
+    
     checkBoxes.map(box => {
         box.style.opacity = 1
         // box.checked = false //keep selection checked
@@ -164,7 +157,7 @@ function cancelMove() {
     pasteBtn.style.display = "none"
     cancelPasteBtn.style.display = "none"
     batchMoveUPbtn.style.display = "none"
-
+     batchMoveToRoot.style.display = "none"
 }
 
 function radioClicked(){
