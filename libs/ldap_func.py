@@ -252,6 +252,20 @@ def ldap_obj_has_children (base):
         return True
     return False
 
+def ldap_get_all_users ():
+    connection = g.ldap['connection']
+    base = g.ldap['search_dn']
+    scope = ldap.SCOPE_SUBTREE
+    attrlist = ['sAMAccountName'] #set to none if need to get all
+    users = connection.search_s(base=base,scope=scope,filterstr=None,attrlist=attrlist)
+    user_list = []
+    for user in users:
+        if user[0] != None and 'sAMAccountName' in user[1].keys():
+            user_list.append(user[1]['sAMAccountName'][0].decode('utf-8'))
+    
+    print(user_list)
+    return user_list
+
 def ldap_get_members(name=None):
     """
         Return the list of all groups the entry is a memberOf.
