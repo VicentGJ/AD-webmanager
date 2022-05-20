@@ -77,9 +77,10 @@
 #right textarea,
 .main-mail,
 .other-mail,
+#manager-field,
 input[type="password"],
 input[type="text"] {
-    width: 200px;
+    width: 90%;
     padding: 4px;
     border: 1px solid #999;
     font-size: 15px;
