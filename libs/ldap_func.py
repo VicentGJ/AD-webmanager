@@ -16,6 +16,7 @@
 # You can find the license on Debian systems in the file
 # /usr/share/common-licenses/GPL-2
 
+from collections import UserList
 from flask import request, Response, g, session, abort
 from functools import wraps
 import ldap
@@ -263,8 +264,7 @@ def ldap_get_all_users ():
         if user[0] != None and 'sAMAccountName' in user[1].keys():
             user_list.append(user[1]['sAMAccountName'][0].decode('utf-8'))
     
-    print(user_list)
-    return user_list
+    return user_list.sort()
 
 def ldap_get_members(name=None):
     """
