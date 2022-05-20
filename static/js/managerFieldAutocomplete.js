@@ -96,6 +96,7 @@ function autocomplete(inp, arr) {
 }
 
 /*An array containing all the country names in the world:*/
+const managerFieldDiv = document.getElementById("manager-field-div");
 const managerField = document.getElementById("manager-field");
-const userlist = managerField.dataset.userlist.replaceAll("[","").replaceAll("]","").replaceAll("'","").replaceAll(" ","").split(",");
+const userlist = managerFieldDiv.dataset.userlist.replaceAll("[","").replaceAll("]","").replaceAll("'","").replaceAll(" ","").split(",");
 autocomplete(managerField, userlist);
