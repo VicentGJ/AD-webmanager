@@ -18,7 +18,7 @@
 
 import base64
 from datetime import datetime
-
+from time import time
 import ldap
 from flask import abort, flash, g, redirect, render_template, request
 from flask_wtf import FlaskForm
@@ -212,25 +212,17 @@ def init(app):
             if Settings.USER_ATTRIBUTES:
                 for item in Settings.USER_ATTRIBUTES:
                     if item[0] in user:
-                        if len(item) == 3 and item[2] == 'time':
-                            datetime_field = (user[item[0]][6:8] + '/' + user[item[0]][4:6] + '/' + user[item[0]][0:4] 
-                                            + ' ' + user[item[0]][8:10] + ':' + user[item[0]][10:12] + ':' 
-                                            + user[item[0]][12:14] )
-                            datetime_field = datetime.strptime(datetime_field, '%d/%m/%Y %H:%M:%S')
-                            user[item[0]] = datetime_field.astimezone(timezone(Settings.TIMEZONE))
-                        if item[0] == 'jpegPhoto':
-                            imgbase64 = base64.b64encode(user[item[0]]).decode()
-                            user[item[0]] = 'data:image/jpeg;base64,' + imgbase64
-                        identity_fields.append((item[0], item[1])) 
+                        imgbase64 = base64.b64encode(user[item[0]]).decode()
+                        user[item[0]] = 'data:image/jpeg;base64,' + imgbase64
+                        identity_fields.append((item[0], item[1]))
 
             group_fields = [('sAMAccountName', "Name"),
                             ('description', u"Description")]
 
-            user = ldap_get_user(username=username)
             group_details = []
-            for group in ldap_get_membership(username):
+            group_membership = ldap_get_membership(username)
+            for group in group_membership:
                 group_details.append(ldap_get_group(group, 'distinguishedName'))
-            # group_details = [ldap_get_group(group, 'distinguishedName') for group in ldap_get_membership(username)]
 
             group_details = list(filter(None, group_details))
 
@@ -243,8 +235,10 @@ def init(app):
 
             available_groups = ldap_get_entries(ldap_filter="(objectclass=group)", scope="subtree")
             group_choices = [("_","Select a Group")]
+
             for group_entry in available_groups:
-                if not ldap_in_group(group_entry['sAMAccountName'], username):
+                if not group_entry['distinguishedName'] in group_membership:
+                #if not ldap_in_group(group_entry['sAMAccountName'], username):
                     group_choices += [(group_entry['distinguishedName'], group_entry['sAMAccountName'])]
 
             form = UserAddGroup(request.form)
