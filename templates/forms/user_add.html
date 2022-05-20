@@ -5,7 +5,7 @@
 {% if request.query_string %}
 <form method="post" action="?{{ request.query_string }}" class="form">
     {% else %}
-    <form method="post" action="?" class="form">
+    <form method="post" action="?" class="form" autocomplete="off">
         {% endif %}
         {{ form.csrf_token }}
         <ul>
@@ -21,6 +21,9 @@
 
             {{ render_field(form.password) }}
             {{ render_field(form.password_confirm) }}
+            <div class="autocomplete" id="manager-field-div" data-userlist="{{user_list}}">
+                {{ render_field(form.manager, id="manager-field")}}
+            </div>
             {{ render_field(form.uac_flags) }}
         </ul>
 
@@ -31,4 +34,5 @@
     </form>
 
     <script src="../../static/js/otherMailbox_field.js"></script>
+    <script src="../../static/js/managerFieldAutocomplete.js"></script>
     {% endblock %}
