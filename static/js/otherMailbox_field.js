@@ -5,7 +5,7 @@ $(document).ready(function () {
 
     $("#add-alias-btn").click(function(){
         $("#add-alias").append(`<div class="div-identifier input-group">
-                                    <input class="other-mail" type="email" name="alias_mail" placeholder="new alias">
+                                    <input class="other-mail" type="email" name="alias_mail">
                                     <input type="button" value="-" class="button remove-alias">
                                 </div>`)
     })
