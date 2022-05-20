@@ -195,7 +195,7 @@ def ldap_get_entry(ldap_filter):
     return None
 
 
-def ldap_get_entries(ldap_filter, base=None, scope=None, ignore_erros=False):
+def ldap_get_entries(ldap_filter, base=None, scope=None, attrlist=None, ignore_erros=False):
     """
         Return the attributes for an entry or None if it doesn't exist and
         False on errors.
@@ -217,7 +217,7 @@ def ldap_get_entries(ldap_filter, base=None, scope=None, ignore_erros=False):
     connection = g.ldap['connection']
 
     # Grab the LDAP entry
-    result = connection.search_s(base, scope, ldap_filter, None)
+    result = connection.search_s(base, scope, ldap_filter, attrlist)
     # Check that we at least have something
     if not result or not result[0] or not result[0][0]:
         return []
@@ -241,30 +241,32 @@ def ldap_get_entries(ldap_filter, base=None, scope=None, ignore_erros=False):
             attributes['__primaryGroup'] = group['distinguishedName']
 
         # Cache or refresh the entry
-        g.ldap_cache[attributes['objectGUID']] = attributes
+        if attrlist:
+            g.ldap_cache[attributes[attrlist[0]]] = attributes
+        else:
+            g.ldap_cache[attributes['objectGUID']] = attributes
         entries.append(attributes)
     return entries
 
 def ldap_obj_has_children (base):
     connection = g.ldap['connection']
-    scope = ldap.SCOPE_ONELEVEL
+    scope = 'onelevel'
     result = connection.search_s(base, scope, filterstr=None, attrlist=['dn'])
     if len(result):
         return True
     return False
 
 def ldap_get_all_users ():
-    connection = g.ldap['connection']
     base = g.ldap['search_dn']
-    scope = ldap.SCOPE_SUBTREE
-    attrlist = ['sAMAccountName'] #set to none if need to get all
-    users = connection.search_s(base=base,scope=scope,filterstr=None,attrlist=attrlist)
+    scope = 'subtree'
+    attrlist = ['sAMAccountName'] #set to None if need to get all
+    filter = 'objectClass=organizationalPerson' 
+    users = ldap_get_entries(filter,base,scope,attrlist)
     user_list = []
     for user in users:
-        if user[0] != None and 'sAMAccountName' in user[1].keys():
-            user_list.append(user[1]['sAMAccountName'][0].decode('utf-8'))
+        user_list.append(user['sAMAccountName'])
     
-    return user_list.sort()
+    return sorted(user_list, key=str.casefold)
 
 def ldap_get_members(name=None):
     """
