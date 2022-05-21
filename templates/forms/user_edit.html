@@ -22,15 +22,16 @@
                 {% if othermails[0] != '0'%}
                 {% for mail in othermails %}
                 <div class="div-identifier input-group">
-                    <input class="other-mail" type="email" name="alias_mail" value="{{ mail }}"
-                        placeholder="new alias">
+                    <input class="other-mail" type="email" name="alias_mail" value="{{ mail }}">
                     <input type="button" value="-" class="remove-alias button">
                 </div>
                 {% endfor %}
                 {% endif %}
 
             </li>
-
+            <div class="autocomplete" id="manager-field-div" data-userlist="{{user_list}}">
+                {{ render_field(form.manager, id="manager-field")}}
+            </div>
             {{ render_field(form.uac_flags, class="form-control") }}
         </ul>
 
@@ -41,4 +42,5 @@
     </form>
 
     <script src="../../static/js/otherMailbox_field.js"></script>
+    <script src="../../static/js/managerFieldAutocomplete.js"></script>
     {% endblock %}
