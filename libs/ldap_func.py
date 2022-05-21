@@ -249,9 +249,10 @@ def ldap_get_entries(ldap_filter, base=None, scope=None, attrlist=None, ignore_e
     return entries
 
 def ldap_obj_has_children (base):
-    connection = g.ldap['connection']
     scope = 'onelevel'
-    result = connection.search_s(base, scope, filterstr=None, attrlist=['dn'])
+    filter="objectClass=organizationalUnit"
+    attrlist=['dn']
+    result = ldap_get_entries(filter,base,scope,attrlist)
     if len(result):
         return True
     return False
