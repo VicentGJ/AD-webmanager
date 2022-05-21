@@ -436,7 +436,7 @@ def init(app):
             form.last_name.data = user.get('sn')
             form.user_name.data = user.get('sAMAccountName')
             form.mail.data = user.get('mail')
-            if 'manager' in user.keys():
+            if 'manager' in user.keys():#FIXME: users sharing same mail
                 managerDN = user.get('manager')
                 managerCN = managerDN.split("=")[1].split("@")[0]
                 print(managerDN)
