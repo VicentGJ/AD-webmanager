@@ -92,7 +92,9 @@ input[type="text"] {
     white-space: nowrap;
     word-wrap: normal;
 }
-
+#search-field{
+    width: 250px;
+}
 /******************************************************************************
     Header search
 */
