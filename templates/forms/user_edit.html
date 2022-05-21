@@ -5,7 +5,7 @@
 {% if request.query_string %}
 <form method="post" action="?{{ request.query_string }}" class="form">
     {% else %}
-    <form method="post" action="?" class="form">
+    <form method="post" action="?" class="form" autocomplete="off">
         {% endif %}
         {{ form.csrf_token }}
         <ul>
