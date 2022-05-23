@@ -151,7 +151,6 @@ input[type="submit"]:disabled{
   background-size: contain;
   border: 1px solid rgba(0, 0, 0, 0.25);
   appearance: none;
-  color-adjust: exact;
   border-radius: 3px;
 }
 
@@ -184,7 +183,6 @@ input[type="submit"]:disabled{
   background-size: contain;
   border: 1px solid rgba(0, 0, 0, 0.25);
   appearance: none;
-  color-adjust: exact;
   border-radius: 3px;
 }
 
@@ -203,7 +201,7 @@ input[type="submit"]:disabled{
   align-items: stretch;
   margin-bottom: 3px;
 }
-.remove-alias{
+.remove-field{
     width: fit-content;
     padding-left: 5px;
     padding-right: 5px;
@@ -211,7 +209,10 @@ input[type="submit"]:disabled{
     border-radius: 0 3px 3px 0;
     font-weight: bolder;
 }
-#add-alias-btn{
+#add-alias-btn,
+#add-home-phone-btn,
+#add-mobile-phone-btn,
+#add-office-phone-btn{
     font-weight: bolder;
     font-size: larger;
     padding: 0 5px 0 5px;

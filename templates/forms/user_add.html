@@ -17,7 +17,25 @@
                 <input type="button" value="+" id="add-alias-btn" class="button">
                 <span>{{ form.alias.label }}</span>
             </div>
-            <li id="add-alias"></li>
+            <li id="add-alias"></li> 
+
+            <div class="input-group">
+                <input type="button" value="+" id="add-home-phone-btn" class="button">
+                <span>{{ form.phones_home.label }}</span>
+            </div>
+            <li id="add-home-phone"></li>   
+            
+            <div class="input-group">
+                <input type="button" value="+" id="add-mobile-phone-btn" class="button">
+                <span>{{ form.phones_mobile.label }}</span>
+            </div>
+            <li id="add-mobile-phone"></li>   
+            
+            <div class="input-group">
+                <input type="button" value="+" id="add-office-phone-btn" class="button">
+                <span>{{ form.phones_office.label }}</span>
+            </div>
+            <li id="add-office-phone"></li>            
 
             {{ render_field(form.password) }}
             {{ render_field(form.password_confirm) }}
@@ -33,6 +51,6 @@
         <input class="right" type="submit" value="{{ action }}" />
     </form>
 
-    <script src="../../static/js/otherMailbox_field.js"></script>
+    <script src="../../static/js/add_new_field.js"></script>
     <script src="../../static/js/managerFieldAutocomplete.js"></script>
     {% endblock %}
