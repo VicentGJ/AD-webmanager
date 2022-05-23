@@ -52,7 +52,7 @@ LDAP_AD_MULTIVALUE_ATTRIBUTES = ['member', 'memberOf', 'objectClass', 'repsTo',
                                  'servicePrincipalName', 'sshPublicKey', 'managedObjects',
                                  'proxyAddresses', 'otherMailbox', 'dsCorePropagationData', 
                                  'msSFU30SearchAttributes', 'msSFU30ResultAttributes', 'msSFU30KeyAttributes',
-                                 'ipsecNFAReference', 'dNSProperty']
+                                 'ipsecNFAReference', 'dNSProperty', 'otherHomePhone','otherMobile','otherTelephone']
 LDAP_AD_SID_ATTRIBUTES = ['objectSid']
 LDAP_AD_UINT_ATTRIBUTES = ['userAccountControl', 'groupType']
 LDAP_AD_Object_ATTRIBUTES = ['jpegPhoto', 'ipsecData', 'dnsRecord']
@@ -231,6 +231,10 @@ def ldap_get_entries(ldap_filter, base=None, scope=None, attrlist=None, ignore_e
             continue
         attributes = {}
         for key, value in entry[1].items():
+            if key == 'directReports':
+                print(entry[0])
+                print(entry[1]['objectClass'])
+                print(entry[1])
             attributes[key] = _ldap_decode_attribute(key, value)
 
         # Expand some attributes

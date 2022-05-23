@@ -22,12 +22,54 @@
                 {% if othermails[0] != '0'%}
                 {% for mail in othermails %}
                 <div class="div-identifier input-group">
-                    <input class="other-mail" type="email" name="alias_mail" value="{{ mail }}">
-                    <input type="button" value="-" class="remove-alias button">
+                    <input class="other-mail" type="email" name="otherMailbox" value="{{ mail }}">
+                    <input type="button" value="-" class="remove-field button">
                 </div>
                 {% endfor %}
                 {% endif %}
+            </li>
 
+            <div class="input-group">
+                <input type="button" value="+" id="add-home-phone-btn" class="button">
+                <span>{{ form.phones_home.label }}</span>
+            </div>
+            <li id="add-home-phone">
+                {% if phones_home[0] != '0'%}
+                {% for phone in phones_home %}
+                <div class="div-identifier input-group">
+                    <input class="phone-field" type="text" name="otherHomePhone" value="{{ phone }}">
+                    <input type="button" value="-" class="remove-field button">
+                </div>
+                {% endfor %}
+                {% endif %}
+            </li>
+            <div class="input-group">
+                <input type="button" value="+" id="add-mobile-phone-btn" class="button">
+                <span>{{ form.phones_mobile.label }}</span>
+            </div>
+            <li id="add-mobile-phone">
+                {% if phones_mobile[0] != '0'%}
+                {% for phone in phones_mobile %}
+                <div class="div-identifier input-group">
+                    <input class="phone-field" type="text" name="otherMobile" value="{{ phone }}">
+                    <input type="button" value="-" class="remove-field button">
+                </div>
+                {% endfor %}
+                {% endif %}
+            </li>
+            <div class="input-group">
+                <input type="button" value="+" id="add-office-phone-btn" class="button">
+                <span>{{ form.phones_office.label }}</span>
+            </div>
+            <li id="add-office-phone">
+                {% if phones_office[0] != '0'%}
+                {% for phone in phones_home %}
+                <div class="div-identifier input-group">
+                    <input class="phone-field" type="text" name="otherTelephone" value="{{ phone }}">
+                    <input type="button" value="-" class="remove-field button">
+                </div>
+                {% endfor %}
+                {% endif %}
             </li>
             <div class="autocomplete" id="manager-field-div" data-userlist="{{user_list}}">
                 {{ render_field(form.manager, id="manager-field")}}
@@ -41,6 +83,6 @@
         <input class="right" type="submit" value="{{ action }}" />
     </form>
 
-    <script src="../../static/js/otherMailbox_field.js"></script>
+    <script src="../../static/js/add_new_field.js"></script>
     <script src="../../static/js/managerFieldAutocomplete.js"></script>
     {% endblock %}
