@@ -244,7 +244,6 @@ def init(app):
             siccip_data = None
             if 'pager' in user:
                 siccip_data = get_parsed_pager_attribute(user['pager'])
-                print(siccip_data)
 
             available_groups = ldap_get_entries(ldap_filter="(objectclass=group)", scope="subtree")
             group_choices = [("_","Select a Group")]
@@ -423,7 +422,6 @@ def init(app):
                             ldap_update_attribute(user['distinguishedName'], attribute, alias_list)
                         elif attribute == 'manager':
                             manager = ldap_get_user(value)
-                            print(manager)
                             ldap_update_attribute(user['distinguishedName'],attribute,manager['distinguishedName'])
                         else:
                             ldap_update_attribute(user['distinguishedName'], attribute, value)
@@ -442,13 +440,9 @@ def init(app):
             form.last_name.data = user.get('sn')
             form.user_name.data = user.get('sAMAccountName')
             form.mail.data = user.get('mail')
-            if 'manager' in user.keys():#FIXME: users sharing same mail
+            if 'manager' in user.keys():
                 managerDN = user.get('manager')
-                managerCN = managerDN.split("=")[1].split("@")[0]
-                print(managerDN)
-                print(managerCN)
-                manager = ldap_get_user(managerCN)
-                print(manager)
+                manager = ldap_get_user(managerDN, key="distinguishedName")
                 form.manager.data = manager['sAMAccountName']
             if user.get('otherMailbox') is not None:
                 othermails = user.get('otherMailbox')
@@ -493,7 +487,6 @@ def init(app):
                                                  form.dansguardian_filter.data)
                 if pager != new_pager:
                     ldap_update_attribute(user['distinguishedName'], "pager", new_pager)
-                    print(new_pager)
 
                 flash(u"Profile updated successfully.", "success")
                 return redirect(url_for('user_overview',
