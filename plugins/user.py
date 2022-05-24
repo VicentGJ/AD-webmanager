@@ -191,12 +191,10 @@ def init(app):
             if 'telephoneNumber' in user:
                 identity_fields.append(('telephoneNumber', "Telephone"))
 
-            if Settings.USER_ATTRIBUTES:
-                for item in Settings.USER_ATTRIBUTES:
-                    if item[0] in user:
-                        imgbase64 = base64.b64encode(user[item[0]]).decode()
-                        user[item[0]] = 'data:image/jpeg;base64,' + imgbase64
-                        identity_fields.append((item[0], item[1]))
+            if 'jpegPhoto' in user:
+                imgbase64 = base64.b64encode(user['jpegPhoto']).decode()
+                user['jpegPhoto'] = 'data:image/jpeg;base64,' + imgbase64
+                identity_fields.append(('Profile Photo', 'jpegPhoto'))
 
             group_fields = [('sAMAccountName', "Name"),
                             ('description', u"Description")]
