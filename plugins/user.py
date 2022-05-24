@@ -16,6 +16,7 @@
 # You can find the license on Debian systems in the file
 # /usr/share/common-licenses/GPL-2
 
+from __future__ import print_function
 import base64
 from datetime import datetime
 from time import time
@@ -60,6 +61,7 @@ class UserProfileEdit(FlaskForm):
     phones_office = StringField('Office Phones')
     employee_id = StringField('Employee ID')
     role = StringField('Role')
+    mac_address = StringField('MAC Address')
     uac_flags = SelectMultipleField('Flags', coerce=int)
 
 
@@ -126,6 +128,7 @@ def init(app):
                          ('otherTelephone', form.phones_office),
                          ('employeeID', form.employee_id),
                          ('title', form.role),
+                         ('macAddress', form.mac_address),
                          (None, form.password),
                          (None, form.password_confirm),
                          ('userAccountControl', form.uac_flags),
@@ -142,7 +145,7 @@ def init(app):
             try:
                 # Default attributes
                 upn = "%s@%s" % (form.user_name.data, g.ldap['domain'])
-                attributes = {'objectClass': [b'top', b'person', b'organizationalPerson', b'user', b'inetOrgPerson'],
+                attributes = {'objectClass': [b'top', b'ieee802Device', b'person', b'organizationalPerson', b'user', b'inetOrgPerson'],
                               'UserPrincipalName': [upn.encode('utf-8')],
                               'accountExpires': [b"0"],
                               'lockoutTime': [b"0"],
@@ -156,12 +159,12 @@ def init(app):
                                 current_uac += key
                         attributes[attribute] = [str(current_uac).encode('utf-8')]
                     elif attribute == 'otherMailbox' or attribute == 'otherHomePhone' or \
-                         attribute == 'otherMobile' or attribute == 'otherTelephone':
+                            attribute == 'otherMobile' or attribute == 'otherTelephone' or \
+                            attribute == 'macAddress':
                         list_to_encode = list(filter(None, request.form.getlist(attribute)))
                         attributes[attribute] = get_encoded_list(list_to_encode)
-                    elif attribute == 'manager':
+                    elif attribute == 'manager' and field.data:
                         manager = ldap_get_user(field.data)
-                        print(manager['distinguishedName'])
                         attributes[attribute] = manager['distinguishedName'].encode('utf-8')
                     elif attribute and field.data:
                         if isinstance(field, BooleanField):
@@ -180,6 +183,11 @@ def init(app):
                 password_validation = password_is_valid(form.password.data)
                 if not password_validation:
                     ldap_create_entry("cn=%s,%s" % (form.user_name.data, base), attributes)
+                   
+                    print('\CREATED USER:\n')
+                    print(ldap_get_user(username=form.user_name.data))
+                    print('\n')
+                   
                     ldap_change_password(None, form.password.data, form.user_name.data)
                     flash(u"User created successfully.", "success")
                     return redirect(url_for('user_overview', username=form.user_name.data))
@@ -385,6 +393,7 @@ def init(app):
                          ('otherTelephone', form.phones_office),
                          ('employeeID', form.employee_id),#TODO:
                          ('title', form.role),#TODO:
+                         ('macAddress', form.mac_address),#TODO:
                          ('manager', form.manager),
                          ('userAccountControl', form.uac_flags)]
 
@@ -424,17 +433,18 @@ def init(app):
                             displayName = given_name + ' ' + last_name
                             ldap_update_attribute(user['distinguishedName'], 'displayName', displayName)
                         elif attribute == 'otherMailbox' or attribute == 'otherHomePhone' or \
-                             attribute == 'otherMobile' or attribute == 'otherTelephone':
+                                attribute == 'otherMobile' or attribute == 'otherTelephone' or \
+                                attribute == 'macAddress':
                             given_list = list(filter(None, request.form.getlist(attribute)))
                             if not len(given_list):
                                 given_list.append('0')
                             ldap_update_attribute(user['distinguishedName'], attribute, given_list)
-                        elif attribute == 'manager':
+                        elif attribute == 'manager' and value:
                             manager = ldap_get_user(value)
                             ldap_update_attribute(user['distinguishedName'],attribute,manager['distinguishedName'])
                         else:
                             ldap_update_attribute(user['distinguishedName'], attribute, value)
-
+                print(ldap_get_user(username=user['sAMAccountName']))
                 flash(u"Profile updated successfully.", "success")
                 return redirect(url_for('user_overview', username=form.user_name.data))
 
@@ -469,12 +479,16 @@ def init(app):
                 phones_office = user.get('otherTelephone')
             else:
                 phones_office = []
+            if 'macAddress' in user.keys():
+                mac_address = user.get('macAddress')
+            else:
+                mac_address = []
             form.uac_flags.data = [key for key, flag in
                                    LDAP_AD_USERACCOUNTCONTROL_VALUES.items()
                                    if (flag[1] and
                                        user['userAccountControl'] & key)]
         return render_template("forms/user_edit.html", form=form, title=title,user_list=user_list,
-                               action="Save changes",username=username, othermails=othermails,
+                               action="Save changes",username=username, othermails=othermails, mac_address=mac_address,
                                phones_home=phones_home,phones_mobile=phones_mobile,phones_office=phones_office,
                                parent=url_for('user_overview',
                                               username=username))

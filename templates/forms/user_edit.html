@@ -12,6 +12,7 @@
             {{ render_field(form.first_name) }}
             {{ render_field(form.last_name) }}
             {{ render_field(form.user_name) }}
+            {{ render_field(form.address, cols="20", wrap="hard") }}
             {{ render_field(form.mail, class="main-mail") }}
             <div class="input-group">
                 <input type="button" value="+" id="add-alias-btn" class="button">
@@ -71,12 +72,25 @@
                 {% endfor %}
                 {% endif %}
             </li>
+            <div class="input-group">
+                <input type="button" value="+" id="add-mac-address-btn" class="button">
+                <span>{{ form.mac_address.label }}</span>
+            </div>
+            <li id="add-mac-address">
+                {% if mac_address[0] != '0'%}
+                {% for mac in mac_address %}
+                <div class="div-identifier input-group">
+                    <input class="mac-field" type="text" name="mac_address" value="{{ mac }}">
+                    <input type="button" value="-" class="remove-field button">
+                </div>
+                {% endfor %}
+                {% endif %}
+            </li>
             <div class="autocomplete" id="manager-field-div" data-userlist="{{user_list}}">
                 {{ render_field(form.manager, id="manager-field")}}
             </div>
             {{ render_field(form.uac_flags, class="form-control") }}
         </ul>
-
         {% if parent %}
         <a class="link-button" href="{{ parent }}">Cancel</a>
         {% endif %}

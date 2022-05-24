@@ -27,5 +27,11 @@ $(document).ready(function () {
                                     <input type="button" value="-" class="button remove-field">
                                 </div>`)
     })
+    $("#add-mac-address-btn").click(function(){
+        $("#add-mac-address").append(`<div class="div-identifier input-group">
+                                    <input class="mac-field" type="text" name="macAddress">
+                                    <input type="button" value="-" class="button remove-field">
+                                </div>`)
+    })
 });
 

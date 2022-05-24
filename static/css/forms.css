@@ -211,6 +211,7 @@ input[type="submit"]:disabled{
 }
 #add-alias-btn,
 #add-home-phone-btn,
+#add-mac-address-btn,
 #add-mobile-phone-btn,
 #add-office-phone-btn{
     font-weight: bolder;
