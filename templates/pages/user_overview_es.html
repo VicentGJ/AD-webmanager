@@ -105,19 +105,6 @@
 </div>
 <br><br>
 
-{% if g.siccip %}
-<hr>
-<div class="right">
-    {% if admin %}
-    {% if siccip_data %}
-    <p style="text-align: right;"><a href="{{ url_for('user_edit_siccip', username=user['sAMAccountName']) }}"
-            class="button">Edit SICC-IP Conf</a></p>
-    {% else %}
-    <p style="text-align: right;"><a href="{{ url_for('user_edit_siccip', username=user['sAMAccountName']) }}"
-            class="button">Create SICC-IP Conf</a></p>
-    {% endif %}
-    {% endif %}
-</div>
 <h2>Configuración SICC-IP</h2>
 {% if siccip_data %}
 <table style='width:auto;'>

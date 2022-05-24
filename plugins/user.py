@@ -208,11 +208,6 @@ def init(app):
 
             groups = sorted(group_details, key=lambda entry: entry['sAMAccountName'] )
 
-            siccip_data = None
-            if 'pager' in user:
-                siccip_data = get_parsed_pager_attribute(user['pager'])
-                print(siccip_data)
-
             available_groups = ldap_get_entries(ldap_filter="(objectclass=group)", scope="subtree")
             group_choices = [("_","Select a Group")]
 
@@ -255,7 +250,7 @@ def init(app):
         name = namefrom_dn(parent)
         return render_template("pages/user_overview_es.html", g=g, title=title, form=form,
                                user=user, identity_fields=identity_fields,
-                               group_fields=group_fields, admin=admin, groups=groups, siccip_data=siccip_data,
+                               group_fields=group_fields, admin=admin, groups=groups,
                                parent=parent, uac_values=LDAP_AD_USERACCOUNTCONTROL_VALUES, name=name)
 
     @app.route('/user/<username>/+changepw', methods=['GET', 'POST'])
