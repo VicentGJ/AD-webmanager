@@ -504,23 +504,19 @@ def _ldap_connect(username, password):
     for server in servers:
         connection = ldap.initialize("ldaps://%s:636" % server)
         try:
-            if username in Settings.auth_admins and (str(request.remote_addr) in Settings.auth_admins[username] or '10.71.' in str(request.remote_addr)) or username not in Settings.auth_admins:
-                connection.simple_bind_s("%s@%s" % (username, g.ldap['domain']),
-                                        password)
+            connection.simple_bind_s("%s@%s" % (username, g.ldap['domain']),
+                                    password)
 
-                g.ldap['connection'] = connection
-                g.ldap['server'] = server
-                g.ldap['username'] = username
+            g.ldap['connection'] = connection
+            g.ldap['server'] = server
+            g.ldap['username'] = username
 
-                # Get domain SID
-                # Can't go through ldap_get_entry as it requires domain_sid be set.
-                result = connection.search_s(g.ldap['dn'], ldap.SCOPE_BASE)
-                g.ldap['domain_sid'] = _ldap_decode_attribute("objectSid", result[0][1]['objectSid'])
+            # Get domain SID
+            # Can't go through ldap_get_entry as it requires domain_sid be set.
+            result = connection.search_s(g.ldap['dn'], ldap.SCOPE_BASE)
+            g.ldap['domain_sid'] = _ldap_decode_attribute("objectSid", result[0][1]['objectSid'])
 
-                return True
-            else:
-                abort(401)  
- 
+            return True
         except ldap.INVALID_CREDENTIALS:
             return False
         #except:
