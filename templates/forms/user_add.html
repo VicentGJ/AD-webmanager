@@ -12,13 +12,14 @@
             {{ render_field(form.first_name) }}
             {{ render_field(form.last_name) }}
             {{ render_field(form.user_name) }}
+            {{ render_field(form.address, cols="20", wrap="hard") }}
             {{ render_field(form.mail, class="main-mail") }}
             <div class="input-group">
                 <input type="button" value="+" id="add-alias-btn" class="button">
                 <span>{{ form.alias.label }}</span>
             </div>
             <li id="add-alias"></li> 
-
+            
             <div class="input-group">
                 <input type="button" value="+" id="add-home-phone-btn" class="button">
                 <span>{{ form.phones_home.label }}</span>
@@ -36,21 +37,27 @@
                 <span>{{ form.phones_office.label }}</span>
             </div>
             <li id="add-office-phone"></li>            
-
-            {{ render_field(form.password) }}
-            {{ render_field(form.password_confirm) }}
+            {{ render_field(form.employee_id) }}
+            {{ render_field(form.role) }}
+            <div class="input-group">
+                <input type="button" value="+" id="add-mac-address-btn" class="button">
+                <span>{{ form.mac_address.label }}</span>
+            </div>
+            <li id="add-mac-address"></li>
             <div class="autocomplete" id="manager-field-div" data-userlist="{{user_list}}">
                 {{ render_field(form.manager, id="manager-field")}}
             </div>
+            {{ render_field(form.password) }}
+            {{ render_field(form.password_confirm) }}
             {{ render_field(form.uac_flags) }}
         </ul>
-
+        
         {% if parent %}
         <a class="link-button" href="{{ parent }}">Cancel</a>
         {% endif %}
         <input class="right" type="submit" value="{{ action }}" />
     </form>
-
+    
     <script src="../../static/js/add_new_field.js"></script>
     <script src="../../static/js/managerFieldAutocomplete.js"></script>
     {% endblock %}
