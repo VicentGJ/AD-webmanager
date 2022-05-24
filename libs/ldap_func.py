@@ -48,7 +48,7 @@ LDAP_AD_USERACCOUNTCONTROL_VALUES = {2: (u"Deactivated", True),
 
 LDAP_AD_BOOL_ATTRIBUTES = ['showInAdvancedViewOnly']
 LDAP_AD_GUID_ATTRIBUTES = ['objectGUID']
-LDAP_AD_MULTIVALUE_ATTRIBUTES = ['member', 'memberOf', 'objectClass', 'repsTo',
+LDAP_AD_MULTIVALUE_ATTRIBUTES = ['member', 'memberOf', 'objectClass', 'repsTo','macAddress',
                                  'servicePrincipalName', 'sshPublicKey', 'managedObjects',
                                  'proxyAddresses', 'otherMailbox', 'dsCorePropagationData', 
                                  'msSFU30SearchAttributes', 'msSFU30ResultAttributes', 'msSFU30KeyAttributes',
@@ -231,10 +231,6 @@ def ldap_get_entries(ldap_filter, base=None, scope=None, attrlist=None, ignore_e
             continue
         attributes = {}
         for key, value in entry[1].items():
-            if key == 'directReports':
-                print(entry[0])
-                print(entry[1]['objectClass'])
-                print(entry[1])
             attributes[key] = _ldap_decode_attribute(key, value)
 
         # Expand some attributes
