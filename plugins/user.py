@@ -23,7 +23,7 @@ from time import time
 import ldap
 from flask import abort, flash, g, redirect, render_template, request
 from flask_wtf import FlaskForm
-from libs.common import flash_password_errors, get_decoded_list, get_encoded_list, get_parsed_pager_attribute
+from libs.common import flash_password_errors, get_attr, get_decoded_list, get_encoded_list, get_parsed_pager_attribute
 from libs.common import iri_for as url_for
 from libs.common import namefrom_dn, password_is_valid
 from libs.ldap_func import (LDAP_AD_USERACCOUNTCONTROL_VALUES, ldap_auth,
@@ -183,11 +183,6 @@ def init(app):
                 password_validation = password_is_valid(form.password.data)
                 if not password_validation:
                     ldap_create_entry("cn=%s,%s" % (form.user_name.data, base), attributes)
-                   
-                    print('\CREATED USER:\n')
-                    print(ldap_get_user(username=form.user_name.data))
-                    print('\n')
-                   
                     ldap_change_password(None, form.password.data, form.user_name.data)
                     flash(u"User created successfully.", "success")
                     return redirect(url_for('user_overview', username=form.user_name.data))
@@ -379,7 +374,6 @@ def init(app):
             return redirect(url_for('tree_base'))
 
         user = ldap_get_user(username=username)
-        print(user)
         user_list = ldap_get_all_users()
         form = UserProfileEdit(request.form)
         field_mapping = [('givenName', form.first_name),
@@ -387,13 +381,13 @@ def init(app):
                          ('sAMAccountName', form.user_name),
                          ('mail', form.mail),
                          ('otherMailbox', form.alias),
-                         ('streetAddress', form.address),#TODO:
+                         ('streetAddress', form.address),
                          ('otherHomePhone', form.phones_home),
                          ('otherMobile', form.phones_mobile),
                          ('otherTelephone', form.phones_office),
-                         ('employeeID', form.employee_id),#TODO:
-                         ('title', form.role),#TODO:
-                         ('macAddress', form.mac_address),#TODO:
+                         ('employeeID', form.employee_id),
+                         ('title', form.role),
+                         ('macAddress', form.mac_address),
                          ('manager', form.manager),
                          ('userAccountControl', form.uac_flags)]
 
@@ -444,7 +438,6 @@ def init(app):
                             ldap_update_attribute(user['distinguishedName'],attribute,manager['distinguishedName'])
                         else:
                             ldap_update_attribute(user['distinguishedName'], attribute, value)
-                print(ldap_get_user(username=user['sAMAccountName']))
                 flash(u"Profile updated successfully.", "success")
                 return redirect(url_for('user_overview', username=form.user_name.data))
 
@@ -455,6 +448,7 @@ def init(app):
             flash(u"Data validation failed.", "error")
 
         elif not form.is_submitted():
+            get_attr(user)
             form.first_name.data = user.get('givenName')
             form.last_name.data = user.get('sn')
             form.user_name.data = user.get('sAMAccountName')
@@ -463,33 +457,18 @@ def init(app):
                 managerDN = user.get('manager')
                 manager = ldap_get_user(managerDN, key="distinguishedName")
                 form.manager.data = manager['sAMAccountName']
-            if 'otherMailbox' in user.keys():
-                othermails = user.get('otherMailbox')
-            else:
-                othermails = []
-            if 'otherHomePhone' in user.keys():
-                phones_home = user.get('otherHomePhone')
-            else:
-                phones_home = []
-            if 'otherMobile' in user.keys():
-                phones_mobile = user.get('otherMobile')
-            else:
-                phones_mobile = []
-            if 'otherTelephone' in user.keys():
-                phones_office = user.get('otherTelephone')
-            else:
-                phones_office = []
-            if 'macAddress' in user.keys():
-                mac_address = user.get('macAddress')
-            else:
-                mac_address = []
+            attr_compilation = get_attr(user)
             form.uac_flags.data = [key for key, flag in
                                    LDAP_AD_USERACCOUNTCONTROL_VALUES.items()
                                    if (flag[1] and
                                        user['userAccountControl'] & key)]
         return render_template("forms/user_edit.html", form=form, title=title,user_list=user_list,
-                               action="Save changes",username=username, othermails=othermails, mac_address=mac_address,
-                               phones_home=phones_home,phones_mobile=phones_mobile,phones_office=phones_office,
+                               action="Save changes",username=username, 
+                               othermails=attr_compilation['otherMailbox'],
+                               mac_address=attr_compilation['macAddress'],
+                               phones_home=attr_compilation['otherHomePhone'],
+                               phones_mobile=attr_compilation['otherMobile'],
+                               phones_office=attr_compilation['otherTelephone'],
                                parent=url_for('user_overview',
                                               username=username))
 
