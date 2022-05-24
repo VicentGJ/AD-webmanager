@@ -278,16 +278,19 @@ def init(app):
         for obj in translatedList:
             #since now there is a dn key there is no need to check what type is the current element to user the
             #ldap_get_ou(), ldap_get_user(), ldap_get_group() just to get their dn
-            if obj['type'] != "Organization Unit":
-                ldap_delete_entry(obj['dn'])
-                deleted_list.append(obj['name'])
-            else:
-                canDelete = not ldap_obj_has_children(obj['dn'])
-                if canDelete:
+            if obj['type'] != 'Container':
+                if obj['type'] != "Organization Unit":
                     ldap_delete_entry(obj['dn'])
                     deleted_list.append(obj['name'])
                 else:
-                    flash(f"Can't delete OU: '{obj['name']}' because is not empty", "error")
+                    canDelete = not ldap_obj_has_children(obj['dn'])
+                    if canDelete:
+                        ldap_delete_entry(obj['dn'])
+                        deleted_list.append(obj['name'])
+                    else:
+                        flash(f"Can't delete OU: '{obj['name']}' because is not empty", "error")
+            else:
+                flash(f"Can't delete {obj['name']} Container", "error")
         return deleted_list
 
     def move_batch(translatedList: list, moveTo: str):
