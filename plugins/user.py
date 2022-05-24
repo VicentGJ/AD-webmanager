@@ -1,21 +1,3 @@
-# -*- coding: utf-8 -*-
-
-# Copyright (C) 2012-2015 Stéphane Graber
-# Author: Stéphane Graber <stgraber@ubuntu.com>
-
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You can find the license on Debian systems in the file
-# /usr/share/common-licenses/GPL-2
-
 import base64
 from datetime import datetime
 from time import time
@@ -533,38 +515,3 @@ def init(app):
                                action="Save changes",
                                parent=url_for('user_overview',
                                               username=username))
-
-
-    # @app.route('/user/<username>/+edit-groups', methods=['GET', 'POST'])
-    # @ldap_auth(Settings.ADMIN_GROUP)
-    # def user_edit_groups(username):
-    #     title = "Editar pertenencia a Grupos"
-    #
-    #     if not ldap_user_exists(username=username):
-    #         abort(404)
-    #
-    #     user = ldap_get_user(username=username)
-    #
-    #     form = UserGroupEdit(request.form)
-    #     form.visible_fields = [form.ssh_keys]
-    #
-    #     if form.validate_on_submit():
-    #         try:
-    #             ldap_update_attribute(user['distinguishedName'],
-    #                                   'sshPublicKey', new_entries,
-    #                                   'ldapPublicKey')
-    #             flash(u"Pertenencia a grupos modificada con éxito.", "success")
-    #             return redirect(url_for('user_overview', username=username))
-    #         except ldap.LDAPError as e:
-    #             e = dict(e.args[0])
-    #             flash(e['info'], "error")
-    #     elif form.errors:
-    #         flash(u"Falló la validación de los datos.", "error")
-    #
-    #     if not form.is_submitted():
-    #         if 'sshPublicKey' in user:
-    #             form.ssh_keys.data = "\n".join(user['sshPublicKey'])
-
-    #    return render_template("forms/basicform.html", form=form, title=title,
-    #                           action="Salvar los cambios",
-    #                           parent=url_for('user_overview', username=username))
