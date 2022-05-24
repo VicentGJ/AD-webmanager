@@ -166,3 +166,13 @@ def get_decoded_list(given_list : list):
     else:
         decoded_list = ['0']
     return decoded_list
+
+def get_attr(user):
+    atts = ['otherMailbox','otherHomePhone','otherMobile','otherTelephone','macAddress']
+    att_compilation={}
+    for att in atts:
+        if att in user.keys():
+            att_compilation[att] = user.get(att)
+        else:
+            att_compilation[att] = []
+    return att_compilation
