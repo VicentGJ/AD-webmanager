@@ -219,3 +219,9 @@ input[type="submit"]:disabled{
     padding: 0 5px 0 5px;
     margin-right: 3px;
 }
+
+.address-field{
+    width: 90%;
+    border: 1px solid #999;
+    background: #FFF;
+}

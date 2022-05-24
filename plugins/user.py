@@ -457,6 +457,12 @@ def init(app):
                 managerDN = user.get('manager')
                 manager = ldap_get_user(managerDN, key="distinguishedName")
                 form.manager.data = manager['sAMAccountName']
+            if 'streetAddress' in user.keys():
+                form.address.data = user.get('streetAddress')
+            if 'employeeID' in user.keys():
+                form.employee_id.data = user.get('employeeID')
+            if 'title' in user.keys():
+                form.role.data = user.get('title')
             attr_compilation = get_attr(user)
             form.uac_flags.data = [key for key, flag in
                                    LDAP_AD_USERACCOUNTCONTROL_VALUES.items()
