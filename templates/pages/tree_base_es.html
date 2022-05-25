@@ -12,7 +12,7 @@
                 <form method="post" action="?" class="form">
                     {{ form.csrf_token }}
                     {{ form.filter_select(class="button upper-element") }}
-                    {{ form.filter_str(class="upper-element") }}
+                    {{ form.filter_str(class="upper-element", id="search-field") }}
                     {{ form.search(class="button upper-element") }}
                     <!-- <input type="submit" value="Search"> -->
             </div>

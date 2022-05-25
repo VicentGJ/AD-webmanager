@@ -16,6 +16,7 @@
 # You can find the license on Debian systems in the file
 # /usr/share/common-licenses/GPL-2
 
+from collections import UserList
 from flask import request, Response, g, session, abort
 from functools import wraps
 import ldap
@@ -47,11 +48,11 @@ LDAP_AD_USERACCOUNTCONTROL_VALUES = {2: (u"Deactivated", True),
 
 LDAP_AD_BOOL_ATTRIBUTES = ['showInAdvancedViewOnly']
 LDAP_AD_GUID_ATTRIBUTES = ['objectGUID']
-LDAP_AD_MULTIVALUE_ATTRIBUTES = ['member', 'memberOf', 'objectClass', 'repsTo',
+LDAP_AD_MULTIVALUE_ATTRIBUTES = ['member', 'memberOf', 'objectClass', 'repsTo','macAddress',
                                  'servicePrincipalName', 'sshPublicKey', 'managedObjects',
                                  'proxyAddresses', 'otherMailbox', 'dsCorePropagationData', 
                                  'msSFU30SearchAttributes', 'msSFU30ResultAttributes', 'msSFU30KeyAttributes',
-                                 'ipsecNFAReference', 'dNSProperty']
+                                 'ipsecNFAReference', 'dNSProperty', 'otherHomePhone','otherMobile','otherTelephone']
 LDAP_AD_SID_ATTRIBUTES = ['objectSid']
 LDAP_AD_UINT_ATTRIBUTES = ['userAccountControl', 'groupType']
 LDAP_AD_Object_ATTRIBUTES = ['jpegPhoto', 'ipsecData', 'dnsRecord']
@@ -194,7 +195,7 @@ def ldap_get_entry(ldap_filter):
     return None
 
 
-def ldap_get_entries(ldap_filter, base=None, scope=None, ignore_erros=False):
+def ldap_get_entries(ldap_filter, base=None, scope=None, attrlist=None, ignore_erros=False):
     """
         Return the attributes for an entry or None if it doesn't exist and
         False on errors.
@@ -216,7 +217,7 @@ def ldap_get_entries(ldap_filter, base=None, scope=None, ignore_erros=False):
     connection = g.ldap['connection']
 
     # Grab the LDAP entry
-    result = connection.search_s(base, scope, ldap_filter, None)
+    result = connection.search_s(base, scope, ldap_filter, attrlist)
     # Check that we at least have something
     if not result or not result[0] or not result[0][0]:
         return []
@@ -240,17 +241,33 @@ def ldap_get_entries(ldap_filter, base=None, scope=None, ignore_erros=False):
             attributes['__primaryGroup'] = group['distinguishedName']
 
         # Cache or refresh the entry
-        g.ldap_cache[attributes['objectGUID']] = attributes
+        if attrlist:
+            g.ldap_cache[attributes[attrlist[0]]] = attributes
+        else:
+            g.ldap_cache[attributes['objectGUID']] = attributes
         entries.append(attributes)
     return entries
 
 def ldap_obj_has_children (base):
-    connection = g.ldap['connection']
-    scope = ldap.SCOPE_ONELEVEL
-    result = connection.search_s(base, scope, filterstr=None, attrlist=['dn'])
+    scope = 'onelevel'
+    filter=None
+    attrlist=['distinguishedName']
+    result = ldap_get_entries(filter,base,scope,attrlist)
     if len(result):
         return True
     return False
+
+def ldap_get_all_users ():
+    base = g.ldap['search_dn']
+    scope = 'subtree'
+    attrlist = ['sAMAccountName'] #set to None if need to get all
+    filter = 'objectClass=organizationalPerson' 
+    users = ldap_get_entries(filter,base,scope,attrlist)
+    user_list = []
+    for user in users:
+        user_list.append(user['sAMAccountName'])
+    
+    return sorted(user_list, key=str.casefold)
 
 def ldap_get_members(name=None):
     """

@@ -148,3 +148,31 @@ def flash_password_errors(password_validation):
                 flash("Password must have at least a lowercase letter","error")
             if error_key == 'symbol_error':
                 flash("Password must have at least a symbol","error")
+
+def get_encoded_list(given_list : list):
+    encoded_list = []
+    if len(given_list):
+        for i in given_list:
+            encoded_list.append(i.encode('utf-8'))
+    else:
+        encoded_list = [b'0']
+    return encoded_list
+
+def get_decoded_list(given_list : list):
+    decoded_list = []
+    if len(given_list):
+        for i in given_list:
+            decoded_list.append(i.decode('utf-8'))
+    else:
+        decoded_list = ['0']
+    return decoded_list
+
+def get_attr(user):
+    atts = ['otherMailbox','otherHomePhone','otherMobile','otherTelephone','macAddress']
+    att_compilation={}
+    for att in atts:
+        if att in user.keys():
+            att_compilation[att] = user.get(att)
+        else:
+            att_compilation[att] = []
+    return att_compilation
