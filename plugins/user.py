@@ -1,22 +1,3 @@
-# -*- coding: utf-8 -*-
-
-# Copyright (C) 2012-2015 Stéphane Graber
-# Author: Stéphane Graber <stgraber@ubuntu.com>
-
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You can find the license on Debian systems in the file
-# /usr/share/common-licenses/GPL-2
-
-from __future__ import print_function
 import base64
 from datetime import datetime
 from time import time
@@ -224,12 +205,10 @@ def init(app):
             if 'telephoneNumber' in user:
                 identity_fields.append(('telephoneNumber', "Telephone"))
 
-            if Settings.USER_ATTRIBUTES:
-                for item in Settings.USER_ATTRIBUTES:
-                    if item[0] in user:
-                        imgbase64 = base64.b64encode(user[item[0]]).decode()
-                        user[item[0]] = 'data:image/jpeg;base64,' + imgbase64
-                        identity_fields.append((item[0], item[1]))
+            if 'jpegPhoto' in user:
+                imgbase64 = base64.b64encode(user['jpegPhoto']).decode()
+                user['jpegPhoto'] = 'data:image/jpeg;base64,' + imgbase64
+                identity_fields.append(('Profile Photo', 'jpegPhoto'))
 
             group_fields = [('sAMAccountName', "Name"),
                             ('description', u"Description")]
@@ -242,10 +221,6 @@ def init(app):
             group_details = list(filter(None, group_details))
 
             groups = sorted(group_details, key=lambda entry: entry['sAMAccountName'] )
-
-            siccip_data = None
-            if 'pager' in user:
-                siccip_data = get_parsed_pager_attribute(user['pager'])
 
             available_groups = ldap_get_entries(ldap_filter="(objectclass=group)", scope="subtree")
             group_choices = [("_","Select a Group")]
@@ -289,7 +264,7 @@ def init(app):
         name = namefrom_dn(parent)
         return render_template("pages/user_overview_es.html", g=g, title=title, form=form,
                                user=user, identity_fields=identity_fields,
-                               group_fields=group_fields, admin=admin, groups=groups, siccip_data=siccip_data,
+                               group_fields=group_fields, admin=admin, groups=groups,
                                parent=parent, uac_values=LDAP_AD_USERACCOUNTCONTROL_VALUES, name=name)
 
     @app.route('/user/<username>/+changepw', methods=['GET', 'POST'])
@@ -572,39 +547,3 @@ def init(app):
                                action="Save changes",
                                parent=url_for('user_overview',
                                               username=username))
-
-
-    # @app.route('/user/<username>/+edit-groups', methods=['GET', 'POST'])
-    # @ldap_auth(Settings.ADMIN_GROUP)
-    # def user_edit_groups(username):
-    #     title = "Editar pertenencia a Grupos"
-    #
-    #     if not ldap_user_exists(username=username):
-    #         abort(404)
-    #
-    #     user = ldap_get_user(username=username)
-    #
-    #     form = UserGroupEdit(request.form)
-    #     form.visible_fields = [form.ssh_keys]
-    #
-    #     if form.validate_on_submit():
-    #         try:
-    #             ldap_update_attribute(user['distinguishedName'],
-    #                                   'sshPublicKey', new_entries,
-    #                                   'ldapPublicKey')
-    #             flash(u"Pertenencia a grupos modificada con éxito.", "success")
-    #             return redirect(url_for('user_overview', username=username))
-    #         except ldap.LDAPError as e:
-    #             e = dict(e.args[0])
-    #             flash(e['info'], "error")
-    #     elif form.errors:
-    #         flash(u"Falló la validación de los datos.", "error")
-    #
-    #     if not form.is_submitted():
-    #         if 'sshPublicKey' in user:
-    #             form.ssh_keys.data = "\n".join(user['sshPublicKey'])
-
-    #    return render_template("forms/basicform.html", form=form, title=title,
-    #                           action="Salvar los cambios",
-    #                           parent=url_for('user_overview', username=username))
-

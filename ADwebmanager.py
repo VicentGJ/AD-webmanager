@@ -127,13 +127,7 @@ def pre_request():
               'search_dn': app.config['SEARCH_DN']}
 
     # The various caches
-
     g.ldap_cache = {}
-
-    #   SICC-IP integrations
-    g.siccip = app.config['SICCIP_AWARE']
-    # Extra fields form
-    g.extra_fields = app.config['EXTRA_FIELDS']
 
 
 if __name__ == '__main__':
