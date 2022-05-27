@@ -40,7 +40,7 @@ input[type="checkbox"] {
 textarea,
 input[type="password"],
 input[type="text"] {
-    width: 350px !important;
+    width: 350px;
     padding: 4px;
     border: 1px solid #999;
     font-size: 15px;
@@ -51,6 +51,9 @@ input[type="text"] {
     overflow-wrap:break-word;
     white-space: nowrap;
     word-wrap: normal;
+}
+textarea{
+    width: 350px !important
 }
 .other-mail{
     margin-bottom: 3px;
