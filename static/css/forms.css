@@ -52,8 +52,10 @@ input[type="text"] {
     white-space: nowrap;
     word-wrap: normal;
 }
+input[type="textarea"],
 textarea{
-    width: 350px !important
+    width: 90% !important;
+    background: #FFF;
 }
 .other-mail{
     margin-bottom: 3px;
