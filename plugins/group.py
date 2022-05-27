@@ -44,7 +44,7 @@ class GroupAddMembers(FlaskForm):
 
 class GroupEdit(FlaskForm):
     name = StringField('Name', [DataRequired()])
-    description = StringField(u'Description')
+    description = TextAreaField(u'Description')
     mail = StringField(u'Mail')
     group_type = RadioField('Type',
                             choices=[(2147483648, 'Security Group'),
