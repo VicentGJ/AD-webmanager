@@ -69,11 +69,6 @@ class UserAdd(UserProfileEdit):
                                       EqualTo('password',
                                               message=u'Passwords must match')])
 
-class UserAddExtraFields(UserAdd):
-    manual = BooleanField(label="User Manual", validators=[DataRequired()], render_kw={'checked': True})
-    person_type = SelectField(label="Type of person", choices=[('Worker', "Worker"), ('Student', "Student")])
-    dni = StringField(label='Identity Card', validators=[DataRequired(), Length(min=11,max=11)])
-
 
 class PasswordChange(FlaskForm):
     password = PasswordField(u'New Password', [DataRequired()])
@@ -93,10 +88,7 @@ def init(app):
     def user_add(base):
         title = "Add User"
         user_list = ldap_get_all_users()
-        if g.extra_fields:
-            form = UserAddExtraFields(request.form)
-        else:
-            form = UserAdd(request.form)
+        form = UserAdd(request.form)
         field_mapping = [('givenName', form.first_name),
                          ('sn', form.last_name),
                          ('sAMAccountName', form.user_name),
@@ -114,12 +106,7 @@ def init(app):
                          (None, form.password_confirm),
                          ('userAccountControl', form.uac_flags),
                          ]
-        if g.extra_fields:
-            extra_field_mapping = [('cUJAEPersonExternal', form.manual),
-                                   ('cUJAEPersonType', form.person_type),
-                                   ('cUJAEPersonDNI', form.dni)]
-            field_mapping += extra_field_mapping
-
+        
         form.visible_fields = [field[1] for field in field_mapping]
         form.uac_flags.choices = [(key, value[0]) for key, value in LDAP_AD_USERACCOUNTCONTROL_VALUES.items()]
         if form.validate_on_submit():
@@ -134,7 +121,7 @@ def init(app):
 
                 for attribute, field in field_mapping:
                     if attribute == 'userAccountControl':
-                        current_uac = 512
+                        current_uac = 512 #FIXME: OJO
                         for key, flag in (LDAP_AD_USERACCOUNTCONTROL_VALUES.items()):
                             if flag[1] and key in field.data:
                                 current_uac += key
@@ -166,6 +153,7 @@ def init(app):
                     ldap_create_entry("cn=%s,%s" % (form.user_name.data, base), attributes)
                     ldap_change_password(None, form.password.data, form.user_name.data)
                     flash(u"User created successfully.", "success")
+                    created_user = ldap_get_user(username=form.user_name.data)
                     return redirect(url_for('user_overview', username=form.user_name.data))
                 else:
                     flash_password_errors(password_validation)
@@ -189,6 +177,7 @@ def init(app):
             return redirect(url_for('tree_base'))
 
         user = ldap_get_user(username=username)
+        print(user)
         admin = ldap_in_group(Settings.ADMIN_GROUP)
         logged_user = g.ldap['username']
         if logged_user == user['sAMAccountName'] or admin:
@@ -349,6 +338,10 @@ def init(app):
             return redirect(url_for('tree_base'))
 
         user = ldap_get_user(username=username)
+        
+        print("USER TO EDIT")
+        print(user)
+        
         user_list = ldap_get_all_users()
         form = UserProfileEdit(request.form)
         field_mapping = [('givenName', form.first_name),
@@ -414,6 +407,10 @@ def init(app):
                         else:
                             ldap_update_attribute(user['distinguishedName'], attribute, value)
                 flash(u"Profile updated successfully.", "success")
+                
+                print("EDITED USER")
+                print(user)
+                
                 return redirect(url_for('user_overview', username=form.user_name.data))
 
             except ldap.LDAPError as e:

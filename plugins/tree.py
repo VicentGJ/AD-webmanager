@@ -71,7 +71,7 @@ def init(app):
                 filter_str = form.filter_str.data
                 filter_select = form.filter_select.data
                 scope = "subtree"
-                entries = get_entries(filter_str, filter_select, base, scope)     
+                entries = get_entries(filter_str, filter_select, base, scope)    
             else:
                 filter_str = None
                 scope = "onelevel"
@@ -155,6 +155,8 @@ def init(app):
             other_entries = sorted(other_entries, key=lambda entry: entry['name'])
         else:
             other_entries = []
+        print(users)
+        print(other_entries)
         for entry in users:
             if 'description' not in entry:
                 if 'sAMAccountName' in entry:
@@ -167,12 +169,12 @@ def init(app):
             entry['name'] = entry['displayName']
             entry['__type'] = "User"
             entry['__target'] = url_for('user_overview', username=entry['sAMAccountName'])
-
             if 'user' in entry['objectClass']:
                 if entry['userAccountControl'] == 2:
                     entry['active'] = "Deactivated"
                 else:
                     entry['active'] = "Active"
+                    #print(entry)
             else:
                 entry['active'] = "No available"
 
@@ -208,6 +210,14 @@ def init(app):
                 else:
                     entry['__type'] = entry['objectClass'][1]
                 entries.append(entry)
+                if 'user' in entry['objectClass']:
+                    if entry['userAccountControl'] == 2:
+                        entry['active'] = "Deactivated"
+                    else:
+                        entry['active'] = "Active"
+                        #print(entry)
+                else:
+                    entry['active'] = "No available"
                 for blacklist in Settings.TREE_BLACKLIST:
                     if entry['distinguishedName'].startswith(blacklist):
                         entries.remove(entry)
