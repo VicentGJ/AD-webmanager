@@ -141,21 +141,17 @@ def init(app):
         """
         Get all entries that will be displayed in the tree
         """
-        entries = []
+        result = []
 
-        users = ldap_get_entries("objectClass=top", base, scope, ignore_erros=True)
-        users = filter(lambda entry: 'displayName' in entry, users)
-        users = filter(lambda entry: 'sAMAccountName' in entry, users)
+        entries = ldap_get_entries("objectClass=top", base, scope, ignore_erros=True)
+        users = filter(lambda entry: 'sAMAccountName' in entry, entries)
         users = filter(lambda entry: filter_select in entry, users)
         users = filter(lambda entry: filter_str in entry[filter_select], users)
-        users = sorted(users, key=lambda entry: entry['displayName'])
+        users = sorted(users, key=lambda entry: entry['sAMAccountName'])
         if filter_str == "top":
-            other_entries = ldap_get_entries("objectClass=top", base, scope, ignore_erros=True)
-            other_entries = filter(lambda entry: 'displayName' not in entry, other_entries)
-            other_entries = sorted(other_entries, key=lambda entry: entry['name'])
-        else:
-            other_entries = []
+            other_entries = filter(lambda entry: 'user' not in entry['objectClass'], entries)
         print(users)
+        print("!!!!!!!!!!!")
         print(other_entries)
         for entry in users:
             if 'description' not in entry:
@@ -166,7 +162,7 @@ def init(app):
 
             entry['__target'] = url_for('tree_base', base=entry['distinguishedName'])
 
-            entry['name'] = entry['displayName']
+            entry['name'] = entry['sAMAccountName']
             entry['__type'] = "User"
             entry['__target'] = url_for('user_overview', username=entry['sAMAccountName'])
             if 'user' in entry['objectClass']:
@@ -174,13 +170,12 @@ def init(app):
                     entry['active'] = "Deactivated"
                 else:
                     entry['active'] = "Active"
-                    #print(entry)
             else:
                 entry['active'] = "No available"
 
             if 'showInAdvancedViewOnly' in entry and entry['showInAdvancedViewOnly']:
                 continue
-            entries.append(entry)
+            result.append(entry)
 
         for entry in other_entries:
             if entry not in users:
@@ -209,20 +204,12 @@ def init(app):
                     entry['__target'] = url_for('user_overview', username=entry['sAMAccountName'])
                 else:
                     entry['__type'] = entry['objectClass'][1]
-                entries.append(entry)
-                if 'user' in entry['objectClass']:
-                    if entry['userAccountControl'] == 2:
-                        entry['active'] = "Deactivated"
-                    else:
-                        entry['active'] = "Active"
-                        #print(entry)
-                else:
-                    entry['active'] = "No available"
+                result.append(entry)
                 for blacklist in Settings.TREE_BLACKLIST:
                     if entry['distinguishedName'].startswith(blacklist):
-                        entries.remove(entry)
+                        result.remove(entry)
                         translation
-        return entries
+        return result
 
     def translation(checkedData:list):
         '''
