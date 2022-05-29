@@ -150,6 +150,7 @@ def init(app):
         users = sorted(users, key=lambda entry: entry['sAMAccountName'])
         if filter_str == "top":
             other_entries = filter(lambda entry: 'user' not in entry['objectClass'], entries)
+            other_entries = sorted(other_entries, key=lambda entry: entry['name'])
         print(users)
         print("!!!!!!!!!!!")
         print(other_entries)
@@ -179,7 +180,7 @@ def init(app):
                 for blacklist in Settings.TREE_BLACKLIST:
                     if entry['distinguishedName'].startswith(blacklist):
                         result.remove(entry)
-                        
+
         for entry in users:
             if 'description' not in entry:
                 if 'sAMAccountName' in entry:
