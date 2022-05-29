@@ -4,7 +4,7 @@ from time import time
 import ldap
 from flask import abort, flash, g, redirect, render_template, request
 from flask_wtf import FlaskForm
-from libs.common import flash_password_errors, get_attr, get_decoded_list, get_encoded_list, get_parsed_pager_attribute
+from libs.common import flash_password_errors, get_attr, get_decoded_list, get_encoded_list, get_parsed_pager_attribute, get_valid_macs
 from libs.common import iri_for as url_for
 from libs.common import namefrom_dn, password_is_valid
 from libs.ldap_func import (LDAP_AD_USERACCOUNTCONTROL_VALUES, ldap_auth,
@@ -18,7 +18,7 @@ from settings import Settings
 from wtforms import (BooleanField, DecimalField, EmailField, IntegerField,
                      PasswordField, SelectField, SelectMultipleField,
                      StringField, TextAreaField)
-from wtforms.validators import DataRequired, EqualTo, Length, Optional
+from wtforms.validators import DataRequired, EqualTo, Length, Optional,MacAddress
 
 
 class UserSSHEdit(FlaskForm):
@@ -121,16 +121,19 @@ def init(app):
 
                 for attribute, field in field_mapping:
                     if attribute == 'userAccountControl':
-                        current_uac = 512 #FIXME: OJO
+                        current_uac = 512
                         for key, flag in (LDAP_AD_USERACCOUNTCONTROL_VALUES.items()):
                             if flag[1] and key in field.data:
                                 current_uac += key
                         attributes[attribute] = [str(current_uac).encode('utf-8')]
                     elif attribute == 'otherMailbox' or attribute == 'otherHomePhone' or \
-                            attribute == 'otherMobile' or attribute == 'otherTelephone' or \
-                            attribute == 'macAddress':
+                            attribute == 'otherMobile' or attribute == 'otherTelephone':
                         list_to_encode = list(filter(None, request.form.getlist(attribute)))
                         attributes[attribute] = get_encoded_list(list_to_encode)
+                    elif attribute == 'macAddress':
+                        list_to_encode = list(filter(None, request.form.getlist(attribute)))
+                        valid_macs = get_valid_macs(list_to_encode)
+                        attributes[attribute] = get_encoded_list(valid_macs)
                     elif attribute == 'manager' and field.data:
                         manager = ldap_get_user(field.data)
                         attributes[attribute] = manager['distinguishedName'].encode('utf-8')
@@ -177,7 +180,6 @@ def init(app):
             return redirect(url_for('tree_base'))
 
         user = ldap_get_user(username=username)
-        print(user)
         admin = ldap_in_group(Settings.ADMIN_GROUP)
         logged_user = g.ldap['username']
         if logged_user == user['sAMAccountName'] or admin:
@@ -338,10 +340,6 @@ def init(app):
             return redirect(url_for('tree_base'))
 
         user = ldap_get_user(username=username)
-        
-        print("USER TO EDIT")
-        print(user)
-        
         user_list = ldap_get_all_users()
         form = UserProfileEdit(request.form)
         field_mapping = [('givenName', form.first_name),
@@ -395,22 +393,23 @@ def init(app):
                             displayName = given_name + ' ' + last_name
                             ldap_update_attribute(user['distinguishedName'], 'displayName', displayName)
                         elif attribute == 'otherMailbox' or attribute == 'otherHomePhone' or \
-                                attribute == 'otherMobile' or attribute == 'otherTelephone' or \
-                                attribute == 'macAddress':
+                                attribute == 'otherMobile' or attribute == 'otherTelephone':
                             given_list = list(filter(None, request.form.getlist(attribute)))
                             if not len(given_list):
                                 given_list.append('0')
                             ldap_update_attribute(user['distinguishedName'], attribute, given_list)
+                        elif attribute == 'macAddress':
+                            given_list = list(filter(None, request.form.getlist(attribute)))
+                            valid_macs = []
+                            if len(given_list):
+                                valid_macs = get_valid_macs(given_list)
+                                ldap_update_attribute(user['distinguishedName'], attribute, valid_macs)
                         elif attribute == 'manager' and value:
                             manager = ldap_get_user(value)
                             ldap_update_attribute(user['distinguishedName'],attribute,manager['distinguishedName'])
                         else:
                             ldap_update_attribute(user['distinguishedName'], attribute, value)
                 flash(u"Profile updated successfully.", "success")
-                
-                print("EDITED USER")
-                print(user)
-                
                 return redirect(url_for('user_overview', username=form.user_name.data))
 
             except ldap.LDAPError as e:
