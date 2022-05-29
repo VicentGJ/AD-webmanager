@@ -151,35 +151,33 @@ def init(app):
         if filter_str == "top":
             other_entries = filter(lambda entry: 'user' not in entry['objectClass'], entries)
             other_entries = sorted(other_entries, key=lambda entry: entry['name'])
-        print(users)
-        print("!!!!!!!!!!!")
-        print(other_entries)
-        for entry in other_entries:
-            if entry not in users:
-                if 'description' not in entry:
-                    if 'sAMAccountName' in entry:
-                        entry['__description'] = entry['sAMAccountName']
-                else:
-                    entry['__description'] = entry['description']
+        
+            for entry in other_entries:
+                if entry not in users:
+                    if 'description' not in entry:
+                        if 'sAMAccountName' in entry:
+                            entry['__description'] = entry['sAMAccountName']
+                    else:
+                        entry['__description'] = entry['description']
 
-                entry['__target'] = url_for('tree_base', base=entry['distinguishedName'])
+                    entry['__target'] = url_for('tree_base', base=entry['distinguishedName'])
 
-                if 'group' in entry['objectClass']:
-                    entry['__type'] = "Group"
-                    entry['__target'] = url_for('group_overview',
-                                                groupname=entry['sAMAccountName'])
-                elif 'organizationalUnit' in entry['objectClass']:
-                    entry['__type'] = "Organization Unit"
-                elif 'container' in entry['objectClass']:
-                    entry['__type'] = "Container"
-                elif 'builtinDomain' in entry['objectClass']:
-                    entry['__type'] = "Built-in"
-                else:
-                    entry['__type'] = entry['objectClass'][1]
-                result.append(entry)
-                for blacklist in Settings.TREE_BLACKLIST:
-                    if entry['distinguishedName'].startswith(blacklist):
-                        result.remove(entry)
+                    if 'group' in entry['objectClass']:
+                        entry['__type'] = "Group"
+                        entry['__target'] = url_for('group_overview',
+                                                    groupname=entry['sAMAccountName'])
+                    elif 'organizationalUnit' in entry['objectClass']:
+                        entry['__type'] = "Organization Unit"
+                    elif 'container' in entry['objectClass']:
+                        entry['__type'] = "Container"
+                    elif 'builtinDomain' in entry['objectClass']:
+                        entry['__type'] = "Built-in"
+                    else:
+                        entry['__type'] = entry['objectClass'][1]
+                    result.append(entry)
+                    for blacklist in Settings.TREE_BLACKLIST:
+                        if entry['distinguishedName'].startswith(blacklist):
+                            result.remove(entry)
 
         for entry in users:
             if 'description' not in entry:
