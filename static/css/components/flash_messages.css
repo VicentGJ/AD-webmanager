@@ -11,6 +11,7 @@
     font-weight: bold;
     text-shadow: 0 -1px 0 rgba(77, 77, 77, 0.5);
     color: #FFF;
+    overflow-wrap: break-word;
 }
 #flash-messages li:first-child {
     margin-top: 10px;
