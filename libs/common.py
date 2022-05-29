@@ -176,3 +176,12 @@ def get_attr(user):
         elif att:
             att_compilation[att] = ['0']
     return att_compilation
+
+def get_valid_macs(macs : list):
+    fixed = []
+    for mac in macs:
+        if re.match("[0-9a-f]{2}([-:]?)[0-9a-f]{2}(\\1[0-9a-f]{2}){4}$", mac.lower()):
+            fixed.append(mac.replace(":", "-").upper())
+        else:
+            flash(f"Invalid MAC address: {mac}", "error")
+    return fixed
