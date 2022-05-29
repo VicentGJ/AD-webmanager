@@ -153,6 +153,33 @@ def init(app):
         print(users)
         print("!!!!!!!!!!!")
         print(other_entries)
+        for entry in other_entries:
+            if entry not in users:
+                if 'description' not in entry:
+                    if 'sAMAccountName' in entry:
+                        entry['__description'] = entry['sAMAccountName']
+                else:
+                    entry['__description'] = entry['description']
+
+                entry['__target'] = url_for('tree_base', base=entry['distinguishedName'])
+
+                if 'group' in entry['objectClass']:
+                    entry['__type'] = "Group"
+                    entry['__target'] = url_for('group_overview',
+                                                groupname=entry['sAMAccountName'])
+                elif 'organizationalUnit' in entry['objectClass']:
+                    entry['__type'] = "Organization Unit"
+                elif 'container' in entry['objectClass']:
+                    entry['__type'] = "Container"
+                elif 'builtinDomain' in entry['objectClass']:
+                    entry['__type'] = "Built-in"
+                else:
+                    entry['__type'] = entry['objectClass'][1]
+                result.append(entry)
+                for blacklist in Settings.TREE_BLACKLIST:
+                    if entry['distinguishedName'].startswith(blacklist):
+                        result.remove(entry)
+                        
         for entry in users:
             if 'description' not in entry:
                 if 'sAMAccountName' in entry:
@@ -176,39 +203,6 @@ def init(app):
             if 'showInAdvancedViewOnly' in entry and entry['showInAdvancedViewOnly']:
                 continue
             result.append(entry)
-
-        for entry in other_entries:
-            if entry not in users:
-                if 'description' not in entry:
-                    if 'sAMAccountName' in entry:
-                        entry['__description'] = entry['sAMAccountName']
-                else:
-                    entry['__description'] = entry['description']
-
-                entry['__target'] = url_for('tree_base', base=entry['distinguishedName'])
-
-                if 'group' in entry['objectClass']:
-                    entry['__type'] = "Group"
-                    entry['__target'] = url_for('group_overview',
-                                                groupname=entry['sAMAccountName'])
-                elif 'organizationalUnit' in entry['objectClass']:
-                    entry['__type'] = "Organization Unit"
-                elif 'container' in entry['objectClass']:
-                    entry['__type'] = "Container"
-                elif 'builtinDomain' in entry['objectClass']:
-                    entry['__type'] = "Built-in"
-                # Hacky solution for when there is Person objects that do not have displayName and can be misclassified
-                # TODO: Probably a good indication that is time to refactor this mess
-                elif 'person' in entry['objectClass']:
-                    entry['__type'] = "User"
-                    entry['__target'] = url_for('user_overview', username=entry['sAMAccountName'])
-                else:
-                    entry['__type'] = entry['objectClass'][1]
-                result.append(entry)
-                for blacklist in Settings.TREE_BLACKLIST:
-                    if entry['distinguishedName'].startswith(blacklist):
-                        result.remove(entry)
-                        translation
         return result
 
     def translation(checkedData:list):
