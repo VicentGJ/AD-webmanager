@@ -95,7 +95,7 @@ function autocomplete(inp, arr) {
     });
 }
 
-/*An array containing all the country names in the world:*/
+/*An array containing all the names:*/
 const managerFieldDiv = document.getElementById("manager-field-div");
 const managerField = document.getElementById("manager-field");
 const userlist = managerFieldDiv.dataset.userlist.replaceAll("[","").replaceAll("]","").replaceAll("'","").replaceAll(" ","").split(",");
