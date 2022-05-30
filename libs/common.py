@@ -173,7 +173,7 @@ def get_attr(user):
     for att in atts:
         if att in user.keys():
             att_compilation[att] = user.get(att)
-        elif att:
+        else:
             att_compilation[att] = ['0']
     return att_compilation
 
