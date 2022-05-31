@@ -145,6 +145,7 @@ def init(app):
 
         entries = ldap_get_entries("objectClass=top", base, scope, ignore_erros=True)
         users = filter(lambda entry: 'sAMAccountName' in entry, entries)
+        users = filter(lambda entry: 'user' in entry, users)
         users = filter(lambda entry: filter_select in entry, users)
         users = filter(lambda entry: filter_str in entry[filter_select], users)
         users = sorted(users, key=lambda entry: entry['sAMAccountName'])
@@ -192,9 +193,6 @@ def init(app):
             if 'user' in entry['objectClass']:
                 entry['__type'] = "User"
                 entry['__target'] = url_for('user_overview', username=entry['sAMAccountName'])
-            elif 'group' in entry['objectClass']:
-                entry['__type'] = "Group"
-                entry['__target'] = url_for('group_overview', groupname=entry['sAMAccountName'])
             if 'user' in entry['objectClass']:
                 if entry['userAccountControl'] == 2:
                     entry['active'] = "Deactivated"
