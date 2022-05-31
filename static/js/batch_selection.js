@@ -157,7 +157,7 @@ function cancelMove() {
     pasteBtn.style.display = "none"
     cancelPasteBtn.style.display = "none"
     batchMoveUPbtn.style.display = "none"
-     batchMoveToRoot.style.display = "none"
+    batchMoveToRoot.style.display = "none"
 }
 
 function radioClicked(){

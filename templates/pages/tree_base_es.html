@@ -67,7 +67,7 @@
 
                     <a href="{{ entry['__target'] }}">{{ entry[key] }}</a>
 
-                    {% if entry['__type'] == "Organization Unit" %}
+                    {% if entry['__type'] == "Organization Unit" or entry['__type']== "Container" %}
                     <input type="radio" name="moveHere" class="move-here-element" value="{{ entry['__target'] }}"
                         style="display: none;" data-reference-name="{{ entry[key] }}" onclick="radioClicked()">
                     <label for="moveHere" class="move-here-element move-here-span"
