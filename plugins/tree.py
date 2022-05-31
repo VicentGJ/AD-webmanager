@@ -189,14 +189,17 @@ def init(app):
             entry['__target'] = url_for('tree_base', base=entry['distinguishedName'])
 
             entry['name'] = entry['sAMAccountName']
-            entry['__type'] = "User"
+            if 'user' in entry['objectClass']:
+                entry['__type'] = "User"
+            elif 'group' in entry['objectClass']:
+                entry['__type'] = "Group"
             entry['__target'] = url_for('user_overview', username=entry['sAMAccountName'])
             if 'user' in entry['objectClass']:
                 if entry['userAccountControl'] == 2:
                     entry['active'] = "Deactivated"
                 else:
                     entry['active'] = "Active"
-            else:
+            elif 'group' not in entry['objectClass']:
                 entry['active'] = "No available"
 
             if 'showInAdvancedViewOnly' in entry and entry['showInAdvancedViewOnly']:
