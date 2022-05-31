@@ -191,9 +191,10 @@ def init(app):
             entry['name'] = entry['sAMAccountName']
             if 'user' in entry['objectClass']:
                 entry['__type'] = "User"
+                entry['__target'] = url_for('user_overview', username=entry['sAMAccountName'])
             elif 'group' in entry['objectClass']:
                 entry['__type'] = "Group"
-            entry['__target'] = url_for('user_overview', username=entry['sAMAccountName'])
+                entry['__target'] = url_for('group_overview', groupname=entry['sAMAccountName'])
             if 'user' in entry['objectClass']:
                 if entry['userAccountControl'] == 2:
                     entry['active'] = "Deactivated"
