@@ -145,7 +145,7 @@ def init(app):
 
         entries = ldap_get_entries("objectClass=top", base, scope, ignore_erros=True)
         users = filter(lambda entry: 'sAMAccountName' in entry, entries)
-        users = filter(lambda entry: 'user' in entry, users)
+        users = filter(lambda entry: 'user' in entry['objectClass'], users)
         users = filter(lambda entry: filter_select in entry, users)
         users = filter(lambda entry: filter_str in entry[filter_select], users)
         users = sorted(users, key=lambda entry: entry['sAMAccountName'])
