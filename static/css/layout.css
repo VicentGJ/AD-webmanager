@@ -256,11 +256,11 @@ input[type="text"] {
     margin-top: 5px;
     width: 82.8%;
     padding: 12px 10px;
-    color: #000000;
+    color: white;
     font-size: 15px;
     float: right;
 
-    background-color: #fffdfd7c;
+    background-color: #161616b7;
     -moz-border-radius: 3px;
     -webkit-border-radius: 3px;
     border-radius: 3px;
@@ -269,5 +269,5 @@ input[type="text"] {
     float: right;
 }
 .footer-link{
-    color: rgb(45, 45, 224);
+    color: rgb(29, 146, 255);
 }
