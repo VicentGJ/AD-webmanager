@@ -77,6 +77,12 @@ NOTE:Custom scrollbars are not supported in Firefox or in Edge, prior version 79
     white-space: nowrap;
 }
 
+th{
+    background-color: white;
+    position: sticky;
+    top: 0;
+}
+
 #tree-table {
     min-height: auto;
     max-height: 30em;
