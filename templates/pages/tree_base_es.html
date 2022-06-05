@@ -43,77 +43,80 @@
     </div>
     <h2>Register</h2>
     <form action="?" method="post">
-        <table>
-            <tr>
-                {% for key, title in entry_fields %}
-                {% if key == "name"%}
-                <th> <input type="checkbox" id="select-all" class="form-check-input" onclick=selectAll()> {{ title }}
-                </th>
-                {% else %}
-                <th>{{ title }}</th>
-                {% endif %}
-
-                {% endfor %}
-            </tr>
-            {% for entry in entries %}
-            <tr>
-                {% for key, title in entry_fields %}
-                {% if key == "name" and key in entry %}
-                <td style='padding-right:10px;white-space:nowrap;'>
-                    <input type="checkbox" name="checkedItems" class="item-to-check form-check-input"
-                        onclick="boxClicked();" data-reference-name="{{ entry[key] }}"
-                        data-reference-type="{{ entry['__type'] }}"
-                        value="{name:'{{ entry[key] }}', type:'{{ entry['__type'] }}', target:'{{ entry['__target'] }}'}">
-
-                    <a href="{{ entry['__target'] }}">{{ entry[key] }}</a>
-
-                    {% if entry['__type'] == "Organization Unit" or entry['__type']== "Container" %}
-                    <input type="radio" name="moveHere" class="move-here-element" value="{{ entry['__target'] }}"
-                        style="display: none;" data-reference-name="{{ entry[key] }}" onclick="radioClicked()">
-                    <label for="moveHere" class="move-here-element move-here-span"
-                        style="display: none; padding: 0;">here</label>
+        <div id="tree-table">
+            <table>
+                <tr>
+                    {% for key, title in entry_fields %}
+                    {% if key == "name"%}
+                    <th> <input type="checkbox" id="select-all" class="form-check-input" onclick=selectAll()> {{ title
+                        }}
+                    </th>
+                    {% else %}
+                    <th>{{ title }}</th>
                     {% endif %}
-                </td>
-                {% elif key == "__type" and key in entry %}
-                <td>{{ entry[key] }}</td>
-                {% elif key in entry %}
-                <td>{{ entry[key]|truncate(40) }}</td>
-                {% else %}
-                <td>&nbsp;</td>
-                {% endif %}
+
+                    {% endfor %}
+                </tr>
+                {% for entry in entries %}
+                <tr>
+                    {% for key, title in entry_fields %}
+                    {% if key == "name" and key in entry %}
+                    <td class="table-name-column">
+                        <input type="checkbox" name="checkedItems" class="item-to-check form-check-input"
+                            onclick="boxClicked();" data-reference-name="{{ entry[key] }}"
+                            data-reference-type="{{ entry['__type'] }}"
+                            value="{name:'{{ entry[key] }}', type:'{{ entry['__type'] }}', target:'{{ entry['__target'] }}'}">
+
+                        <a href="{{ entry['__target'] }}">{{ entry[key] }}</a>
+
+                        {% if entry['__type'] == "Organization Unit" or entry['__type']== "Container" %}
+                        <input type="radio" name="moveHere" class="move-here-element" value="{{ entry['__target'] }}"
+                            style="display: none;" data-reference-name="{{ entry[key] }}" onclick="radioClicked()">
+                        <label for="moveHere" class="move-here-element move-here-span"
+                            style="display: none; padding: 0;">here</label>
+                        {% endif %}
+                    </td>
+                    {% elif key == "__type" and key in entry %}
+                    <td>{{ entry[key] }}</td>
+                    {% elif key in entry %}
+                    <td>{{ entry[key]|truncate(40) }}</td>
+                    {% else %}
+                    <td></td>
+                    {% endif %}
+                    {% endfor %}
+                </tr>
                 {% endfor %}
-            </tr>
-            {% endfor %}
-        </table>
+            </table>
+        </div>
         <div class="row">
 
             {{ render_button(batch_delete.delete, disabled=true, id="delete-selection-btn",class="button
             col",style="margin-top: 20px") }}
-            
+
             <input type="button" id="move-selection-btn" class="button col" style="margin-top: 20px" disabled=true
                 onclick="onMoveBtnClicked();" value="Move Selection">
-            
+
             {{ render_button(paste.paste,
-                            id="paste-selection-btn",
-                            onclick="pasteClicked()",
-                            class="button col",
-                            onclick="pasteClicked()",
-                            style="margin-top: 20px; display:none;")}}
+            id="paste-selection-btn",
+            onclick="pasteClicked()",
+            class="button col",
+            onclick="pasteClicked()",
+            style="margin-top: 20px; display:none;")}}
 
             {% if root != base and parent.upper() != root%}
             {{ render_button(moveToRoot.toRoot,
-                            id="move-to-root-btn",
-                            class="button col",
-                            onclick="pasteClicked()",
-                            style="margin-top: 20px; display:none")}}
+            id="move-to-root-btn",
+            class="button col",
+            onclick="pasteClicked()",
+            style="margin-top: 20px; display:none")}}
             {% endif %}
-            
+
             {%if parent != none %}
             {{ render_button(moveOneLevelUp.up_aLevel,
-                            id="move-up-a-level-btn",
-                            class="button col",
-                            onclick="pasteClicked()",
-                            style="margin-top: 20px; display:none")}}
+            id="move-up-a-level-btn",
+            class="button col",
+            onclick="pasteClicked()",
+            style="margin-top: 20px; display:none")}}
             {%endif%}
             <input type="button" id="cancel-move-btn" class="button col" style="margin-top: 20px; display:none;"
                 onclick="cancelMove()" value="Cancel">

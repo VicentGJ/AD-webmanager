@@ -71,3 +71,14 @@ NOTE:Custom scrollbars are not supported in Firefox or in Edge, prior version 79
     background: #bcbcbc; 
     background-clip: content-box;
 }
+
+.table-name-column {
+    padding-right: 10px;
+    white-space: nowrap;
+}
+
+#tree-table {
+    min-height: auto;
+    max-height: 30em;
+    overflow: auto;
+}
