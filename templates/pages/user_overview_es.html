@@ -23,6 +23,11 @@
     <h2>Profile</h2>
 
     <table style='width:auto;'>
+        {% if 'jpegPhoto' in user %}
+        <td>
+            <img src={{ user[ 'jpegPhoto' ] }} alt="photo" width="96" height="96">
+        </td>
+        {% endif %}
         {% for key, title in identity_fields %}
         {% if key in user %}
         <tr>
@@ -31,10 +36,6 @@
             <td> {% for alias in user[key] %}
                 {{ alias }},
                 {% endfor %}
-            </td>
-            {% elif key == "jpegPhoto" %}
-            <td>
-                <img src={{ user[key] }} alt="photo" width="90" height="90">
             </td>
             {% else %}
             <td>{{ user[key] }}</td>
