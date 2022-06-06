@@ -235,3 +235,31 @@ input[type="submit"]:disabled{
     height: 40em;
     overflow-y: scroll;
 }
+
+/* user pfp upload forms */
+#imageUpload
+{
+    display: none;
+}
+
+#profileImage
+{
+    cursor: pointer;
+}
+
+#profile-container {
+    width: 150px;
+    height: 150px;
+    overflow: hidden;
+    -webkit-border-radius: 50%;
+    -moz-border-radius: 50%;
+    -ms-border-radius: 50%;
+    -o-border-radius: 50%;
+    border-radius: 50%;
+    margin: 10px 0 10px 0
+}
+
+#profile-container img {
+    width: 150px;
+    height: 150px;
+}

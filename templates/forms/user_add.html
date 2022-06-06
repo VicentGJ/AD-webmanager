@@ -12,7 +12,11 @@
         <div class="user-form">
 
             <ul>
-                {{ render_field(form.profile_pic) }}
+                <label for="profile-container">Profile Picture</label>
+                <div id="profile-container">
+                    <image id="profileImage" src="../../static/img/pictogram_no_users.png" />
+                </div>
+                <input id="imageUpload" type="file" name="profile_photo" placeholder="Photo" required="" capture>
                 {{ render_field(form.first_name) }}
                 {{ render_field(form.last_name) }}
                 {{ render_field(form.user_name) }}
@@ -62,6 +66,8 @@
         <input class="right" type="submit" value="{{ action }}" />
     </form>
 
-    <script src="../../static/js/add_new_field.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <script src="../../static/js/managerFieldAutocomplete.js"></script>
+    <script src="../../static/js/add_new_field.js"></script>
+    <script src="../../static/js/upload_pfp.js"></script>
     {% endblock %}
