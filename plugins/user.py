@@ -18,8 +18,9 @@ from settings import Settings
 from wtforms import (BooleanField, DecimalField, EmailField, IntegerField,
                      PasswordField, SelectField, SelectMultipleField,
                      StringField, TextAreaField)
-from wtforms.validators import DataRequired, EqualTo, Length, Optional,MacAddress
-
+from wtforms.validators import DataRequired, EqualTo, Length, Optional
+from flask_wtf.file import FileField, FileAllowed
+from flask_uploads import UploadSet, IMAGES
 
 class UserSSHEdit(FlaskForm):
     ssh_keys = TextAreaField('SSH keys')
@@ -28,8 +29,10 @@ class UserSSHEdit(FlaskForm):
 class UserAddGroup(FlaskForm):
     available_groups = SelectField('Groups')
 
+#images = UploadSet('images', IMAGES)
 
 class UserProfileEdit(FlaskForm):
+    profile_pic = FileField('Profile Picture', [FileAllowed(['jpeg'],'Images only!')])
     first_name = StringField('Name', [DataRequired(), Length(max=64)])
     last_name = StringField('Last Name', [Length(max=64)])
     user_name = StringField('Username', [DataRequired(), Length(max=20)])
@@ -92,6 +95,7 @@ def init(app):
         field_mapping = [('givenName', form.first_name),
                          ('sn', form.last_name),
                          ('sAMAccountName', form.user_name),
+                         ('jpegPhoto', form.profile_pic),
                          ('mail', form.mail),
                          ('otherMailbox', form.alias),
                          ('manager', form.manager),
@@ -137,6 +141,9 @@ def init(app):
                     elif attribute == 'manager' and field.data:
                         manager = ldap_get_user(field.data)
                         attributes[attribute] = manager['distinguishedName'].encode('utf-8')
+                    elif attribute == 'jpegPhoto' and request.files is not None:
+                        data = request.files
+                        print(data)
                     elif attribute and field.data:
                         if isinstance(field, BooleanField):
                             if field.data:
