@@ -230,3 +230,8 @@ input[type="submit"]:disabled{
     border: 1px solid #999;
     background: #FFF;
 }
+
+.user-form{
+    height: 40em;
+    overflow-y: scroll;
+}
