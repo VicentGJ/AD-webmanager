@@ -15,7 +15,7 @@
                 <div id="profile-container">
                     <image id="profileImage" src="../../static/img/pictogram_no_users.png" />
                 </div>
-                <input id="imageUpload" type="file" name="profile_photo" placeholder="Photo" capture>
+                <input id="imageUpload" type="file" name="profile_photo" placeholder="Photo" accept="image/jpeg" capture>
                 {{ render_field(form.first_name) }}
                 {{ render_field(form.last_name) }}
                 {{ render_field(form.user_name) }}
