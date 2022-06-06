@@ -78,7 +78,7 @@ NOTE:Custom scrollbars are not supported in Firefox or in Edge, prior version 79
 }
 
 th{
-    background-color: white;
+    background-color: #f8f9fd;
     position: sticky;
     top: 0;
 }
