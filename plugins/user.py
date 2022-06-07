@@ -376,6 +376,7 @@ def init(app):
                          ('title', form.role),
                          ('macAddress', form.mac_address),
                          ('manager', form.manager),
+                         ('jpegPhoto', form.profile_pic),
                          ('userAccountControl', form.uac_flags)]
 
         form.uac_flags.choices = [(key, value[0]) for key, value in LDAP_AD_USERACCOUNTCONTROL_VALUES.items()]
@@ -428,6 +429,18 @@ def init(app):
                         elif attribute == 'manager' and value:
                             manager = ldap_get_user(value)
                             ldap_update_attribute(user['distinguishedName'],attribute,manager['distinguishedName'])
+                        elif attribute == 'jpegPhoto':
+                            data = request.files
+                            print(data)
+                            data_dict = data.to_dict(flat=False)
+                            file = data_dict['profile_photo'][0]
+                            if(file.filename):
+                                image = Image.open(file)
+                                if(image.format == 'GIF'):
+                                    raise GifNotAllowed('No gifs allowed in user profile picture')
+                                jpeg_binary = BytesIO()
+                                image.save(jpeg_binary,format='JPEG')
+                                ldap_update_attribute(user['distinguishedName'], attribute, jpeg_binary.getvalue())
                         else:
                             ldap_update_attribute(user['distinguishedName'], attribute, value)
                 flash(u"Profile updated successfully.", "success")
@@ -436,6 +449,8 @@ def init(app):
             except ldap.LDAPError as e:
                 e = dict(e.args[0])
                 flash(e['info'], "error")
+            except GifNotAllowed as e:
+                flash(e,'error')
         elif form.errors:
             flash(u"Data validation failed.", "error")
 
