@@ -19,8 +19,7 @@
                         <image id="profileImage" src="../../static/img/pictogram_no_users.png" />
                         {% endif %}
                     </div>
-                    <input id="imageUpload" type="file" name="profile_photo" placeholder="Photo" accept="image/*" capture>
-                    <input type="button" class="button" value="Remove Picture" id="remove-pfp" onclick="removepfp()">
+                    <input id="imageUpload" type="file" name="profile_photo" accept="image/*" capture>
                 </li>
                 {{ render_field(form.first_name) }}
                 {{ render_field(form.last_name) }}
