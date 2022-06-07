@@ -10,15 +10,18 @@
         {{ form.csrf_token }}
         <div class="user-form">
             <ul>
-                <label for="profile-container">Profile Picture</label>
-                <div id="profile-container">
-                    {% if profile_pic[0] != '0' %}
-                    <image id="profileImage" src={{profile_pic[0]}} />
-                    {% else %}
-                    <image id="profileImage" src="../../static/img/pictogram_no_users.png" />
-                    {% endif %}
-                </div>
-                <input id="imageUpload" type="file" name="profile_photo" placeholder="Photo" accept="image/*" capture>
+                <li>
+                    <label for="profile-container">Profile Picture</label> 
+                    <div id="profile-container">
+                        {% if profile_pic[0] != '0' %}
+                        <image id="profileImage" src={{profile_pic[0]}} />
+                        {% else %}
+                        <image id="profileImage" src="../../static/img/pictogram_no_users.png" />
+                        {% endif %}
+                    </div>
+                    <input id="imageUpload" type="file" name="profile_photo" placeholder="Photo" accept="image/*" capture>
+                    <input type="button" class="button" value="Remove Picture" id="remove-pfp" onclick="removepfp()">
+                </li>
                 {{ render_field(form.first_name) }}
                 {{ render_field(form.last_name) }}
                 {{ render_field(form.user_name) }}

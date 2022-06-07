@@ -11,11 +11,14 @@
         {{ form.csrf_token }}
         <div class="user-form">
             <ul>
+                <li>
                 <label for="profile-container">Profile Picture</label>
                 <div id="profile-container">
                     <image id="profileImage" src="../../static/img/pictogram_no_users.png" />
                 </div>
                 <input id="imageUpload" type="file" name="profile_photo" placeholder="Photo" accept="image/*" capture>
+                <input type="button" class="button" value="Remove Picture" id="remove-pfp" onclick="removepfp()" disabled>
+            </li>
                 {{ render_field(form.first_name) }}
                 {{ render_field(form.last_name) }}
                 {{ render_field(form.user_name) }}
