@@ -1,4 +1,7 @@
 import base64
+from io import BytesIO
+from PIL import Image
+from PIL import GifImagePlugin
 from datetime import datetime
 from time import time
 import ldap
@@ -19,8 +22,7 @@ from wtforms import (BooleanField, DecimalField, EmailField, IntegerField,
                      PasswordField, SelectField, SelectMultipleField,
                      StringField, TextAreaField)
 from wtforms.validators import DataRequired, EqualTo, Length, Optional
-from flask_wtf.file import FileField, FileAllowed
-from flask_uploads import UploadSet, IMAGES
+from flask_wtf.file import FileField
 
 class UserSSHEdit(FlaskForm):
     ssh_keys = TextAreaField('SSH keys')
@@ -29,10 +31,9 @@ class UserSSHEdit(FlaskForm):
 class UserAddGroup(FlaskForm):
     available_groups = SelectField('Groups')
 
-#images = UploadSet('images', IMAGES)
 
 class UserProfileEdit(FlaskForm):
-    profile_pic = FileField('Profile Picture', [FileAllowed(['jpeg'],'Images only!')])
+    profile_pic = FileField('Profile Picture')
     first_name = StringField('Name', [DataRequired(), Length(max=64)])
     last_name = StringField('Last Name', [Length(max=64)])
     user_name = StringField('Username', [DataRequired(), Length(max=20)])
@@ -84,6 +85,9 @@ class PasswordChange(FlaskForm):
 class PasswordChangeUser(PasswordChange):
     oldpassword = PasswordField(u'Current password', [DataRequired()])
 
+
+class GifNotAllowed(Exception):
+    pass
 
 def init(app):
     @app.route('/users/+add/<base>', methods=['GET', 'POST'])
@@ -143,7 +147,15 @@ def init(app):
                         attributes[attribute] = manager['distinguishedName'].encode('utf-8')
                     elif attribute == 'jpegPhoto' and request.files is not None:
                         data = request.files
-                        print(data)
+                        data_dict = data.to_dict(flat=False)
+                        file = data_dict['profile_photo'][0]
+                        if(file.filename):
+                                image = Image.open(file)
+                                if(image.format == 'GIF'):
+                                    raise GifNotAllowed('No gifs allowed in user profile picture')
+                                jpeg_binary = BytesIO()
+                                image.save(jpeg_binary,format='JPEG')
+                                attributes[attribute] = jpeg_binary.getvalue()
                     elif attribute and field.data:
                         if isinstance(field, BooleanField):
                             if field.data:
@@ -170,6 +182,8 @@ def init(app):
             except ldap.LDAPError as e:
                 e = dict(e.args[0])
                 flash(e['info'], "error")
+            except GifNotAllowed as e:
+                flash(e,'error')
         elif form.errors:
             flash("Some fields failed validation.", "error")
         
