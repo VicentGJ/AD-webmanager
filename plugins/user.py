@@ -455,7 +455,6 @@ def init(app):
             flash(u"Data validation failed.", "error")
 
         elif not form.is_submitted():
-            get_attr(user)
             form.first_name.data = user.get('givenName')
             form.last_name.data = user.get('sn')
             form.user_name.data = user.get('sAMAccountName')
@@ -482,6 +481,7 @@ def init(app):
                                phones_home=attr_compilation['otherHomePhone'],
                                phones_mobile=attr_compilation['otherMobile'],
                                phones_office=attr_compilation['otherTelephone'],
+                               profile_pic=attr_compilation['jpegPhoto'],
                                parent=url_for('user_overview',
                                               username=username))
 
