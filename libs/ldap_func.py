@@ -396,7 +396,10 @@ def ldap_update_attribute(dn, attribute, value=None, new_parent=None, objectClas
             mod_attrs.append((ldap.MOD_REPLACE, attribute, value.encode('utf-8')))
     elif value:
         # add a new attribute
-        mod_attrs.append((ldap.MOD_ADD, attribute, [value.encode('utf-8')]))
+        if attribute == 'jpegPhoto':
+            mod_attrs.append((ldap.MOD_ADD, attribute, [value]))
+        else:
+            mod_attrs.append((ldap.MOD_ADD, attribute, [value.encode('utf-8')]))
 
     if len(mod_attrs) != 0:
         connection.modify_s(dn, mod_attrs)
