@@ -5,6 +5,7 @@ import ldap
 from flask import abort, flash, g, redirect, render_template, request
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField
+from requests import RequestException
 from libs.common import (flash_password_errors, get_attr, get_encoded_list,
                          get_parsed_pager_attribute, get_valid_macs)
 from libs.common import iri_for as url_for
@@ -364,6 +365,7 @@ def init(app):
         user_list = ldap_get_all_users()
         form = UserProfileEdit(request.form)
         field_mapping = [('givenName', form.first_name),
+                         ('jpegPhoto', form.profile_pic),
                          ('sn', form.last_name),
                          ('sAMAccountName', form.user_name),
                          ('mail', form.mail),
@@ -376,7 +378,6 @@ def init(app):
                          ('title', form.role),
                          ('macAddress', form.mac_address),
                          ('manager', form.manager),
-                         ('jpegPhoto', form.profile_pic),
                          ('userAccountControl', form.uac_flags)]
 
         form.uac_flags.choices = [(key, value[0]) for key, value in LDAP_AD_USERACCOUNTCONTROL_VALUES.items()]
@@ -385,7 +386,10 @@ def init(app):
         if form.validate_on_submit():
             try:
                 for attribute, field in field_mapping:
-                    value = field.data
+                    if attribute !=  'jpegPhoto':
+                        value = field.data
+                    else:
+                        value = request.files
                     given_name = user.get('givenName')
                     last_name = user.get('lastName')
                     if value != user.get(attribute):
@@ -429,8 +433,7 @@ def init(app):
                             manager = ldap_get_user(value)
                             ldap_update_attribute(user['distinguishedName'],attribute,manager['distinguishedName'])
                         elif attribute == 'jpegPhoto':
-                            data = request.files
-                            data_dict = data.to_dict(flat=False)
+                            data_dict = value.to_dict(flat=False)
                             file = data_dict['profile_photo'][0]
                             if(file.filename):
                                 image = Image.open(file)
