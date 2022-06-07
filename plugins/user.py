@@ -148,7 +148,6 @@ def init(app):
                     elif attribute == 'jpegPhoto' and request.files is not None:
                         data = request.files
                         data_dict = data.to_dict(flat=False)
-                        print(data_dict)
                         file = data_dict['profile_photo'][0]
                         if(file.filename):
                                 image = Image.open(file)
@@ -202,7 +201,6 @@ def init(app):
             return redirect(url_for('tree_base'))
 
         user = ldap_get_user(username=username)
-        print(user.keys())
         admin = ldap_in_group(Settings.ADMIN_GROUP)
         logged_user = g.ldap['username']
         if logged_user == user['sAMAccountName'] or admin:
@@ -419,9 +417,8 @@ def init(app):
                         elif attribute == 'otherMailbox' or attribute == 'otherHomePhone' or \
                                 attribute == 'otherMobile' or attribute == 'otherTelephone':
                             given_list = list(filter(None, request.form.getlist(attribute)))
-                            if not len(given_list):
-                                given_list.append('0')
-                            ldap_update_attribute(user['distinguishedName'], attribute, given_list)
+                            if len(given_list):
+                                ldap_update_attribute(user['distinguishedName'], attribute, given_list)
                         elif attribute == 'macAddress':
                             given_list = list(filter(None, request.form.getlist(attribute)))
                             valid_macs = []
