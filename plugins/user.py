@@ -1,28 +1,28 @@
 import base64
 from io import BytesIO
-from PIL import Image
-from PIL import GifImagePlugin
-from datetime import datetime
-from time import time
+
 import ldap
 from flask import abort, flash, g, redirect, render_template, request
 from flask_wtf import FlaskForm
-from libs.common import flash_password_errors, get_attr, get_decoded_list, get_encoded_list, get_parsed_pager_attribute, get_valid_macs
+from flask_wtf.file import FileField
+from libs.common import (flash_password_errors, get_attr, get_encoded_list,
+                         get_parsed_pager_attribute, get_valid_macs)
 from libs.common import iri_for as url_for
 from libs.common import namefrom_dn, password_is_valid
 from libs.ldap_func import (LDAP_AD_USERACCOUNTCONTROL_VALUES, ldap_auth,
                             ldap_change_password, ldap_create_entry,
-                            ldap_delete_entry, ldap_get_all_users, ldap_get_entries,
-                            ldap_get_entry_simple, ldap_get_group,
-                            ldap_get_membership, ldap_get_user, ldap_in_group,
-                            ldap_update_attribute, ldap_user_exists)
-from pytz import timezone
+                            ldap_delete_entry, ldap_get_all_users,
+                            ldap_get_entries, ldap_get_entry_simple,
+                            ldap_get_group, ldap_get_membership, ldap_get_user,
+                            ldap_in_group, ldap_update_attribute,
+                            ldap_user_exists)
+from PIL import Image
 from settings import Settings
 from wtforms import (BooleanField, DecimalField, EmailField, IntegerField,
                      PasswordField, SelectField, SelectMultipleField,
                      StringField, TextAreaField)
 from wtforms.validators import DataRequired, EqualTo, Length, Optional
-from flask_wtf.file import FileField
+
 
 class UserSSHEdit(FlaskForm):
     ssh_keys = TextAreaField('SSH keys')
@@ -148,6 +148,7 @@ def init(app):
                     elif attribute == 'jpegPhoto' and request.files is not None:
                         data = request.files
                         data_dict = data.to_dict(flat=False)
+                        print(data_dict)
                         file = data_dict['profile_photo'][0]
                         if(file.filename):
                                 image = Image.open(file)
@@ -201,6 +202,7 @@ def init(app):
             return redirect(url_for('tree_base'))
 
         user = ldap_get_user(username=username)
+        print(user.keys())
         admin = ldap_in_group(Settings.ADMIN_GROUP)
         logged_user = g.ldap['username']
         if logged_user == user['sAMAccountName'] or admin:
@@ -431,7 +433,6 @@ def init(app):
                             ldap_update_attribute(user['distinguishedName'],attribute,manager['distinguishedName'])
                         elif attribute == 'jpegPhoto':
                             data = request.files
-                            print(data)
                             data_dict = data.to_dict(flat=False)
                             file = data_dict['profile_photo'][0]
                             if(file.filename):
