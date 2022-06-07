@@ -220,9 +220,9 @@ def init(app):
         for x in checkedData:
             dicts = {}
             key1 = x.split("name:'")[1].split("'")[0] #name of the object
-            key2 = x.split("type:'")[1].split("'")[0] #User, Group, Organization Unit
+            key2 = x.split("type:'")[1].split("'")[0] #User, Group, Organization Unit, Container
             key3 = x.split("target:'")[1].replace("'}", "")
-            key4 = key3.split("/")[2] #username
+            key4 = parse.unquote(key3.split("/")[2]) #username
             if key2 == "User":
                 user = ldap_get_user(username=key4)
                 key5 = user['distinguishedName']
