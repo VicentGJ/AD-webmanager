@@ -16,6 +16,7 @@
 # You can find the license on Debian systems in the file
 # /usr/share/common-licenses/GPL-2
 
+import base64
 import re
 from flask import url_for, flash
 from werkzeug.urls import uri_to_iri
@@ -168,11 +169,15 @@ def get_decoded_list(given_list : list):
     return decoded_list
 
 def get_attr(user):
-    atts = ['otherMailbox','otherHomePhone','otherMobile','otherTelephone','macAddress']
+    atts = ['otherMailbox','otherHomePhone','otherMobile','otherTelephone','macAddress','jpegPhoto']
     att_compilation={}
     for att in atts:
         if att in user.keys():
-            att_compilation[att] = user.get(att)
+            if att == 'jpegPhoto':
+                imgbase64 = base64.b64encode(user.get(att)).decode()
+                att_compilation[att] = ['data:image/jpeg;base64,' + imgbase64]
+            else:
+                att_compilation[att] = user.get(att)
         else:
             att_compilation[att] = ['0']
     return att_compilation
