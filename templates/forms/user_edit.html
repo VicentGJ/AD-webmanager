@@ -3,14 +3,18 @@
 {% block content %}
 {% from "macros.html" import render_field %}
 {% if request.query_string %}
-<form method="post" action="?{{ request.query_string }}" class="form">
+<form method="post" action="?{{ request.query_string }}" class="form" enctype="multipart/form-data">
     {% else %}
-    <form method="post" action="?" class="form" autocomplete="off">
+    <form method="post" action="?" class="form" autocomplete="off" enctype="multipart/form-data">
         {% endif %}
         {{ form.csrf_token }}
         <div class="user-form">
-
             <ul>
+                <label for="profile-container">Profile Picture</label>
+                <div id="profile-container">
+                    <image id="profileImage" src="../../static/img/pictogram_no_users.png" />
+                </div>
+                <input id="imageUpload" type="file" name="profile_photo" placeholder="Photo" accept="image/*" capture>
                 {{ render_field(form.first_name) }}
                 {{ render_field(form.last_name) }}
                 {{ render_field(form.user_name) }}
@@ -102,6 +106,8 @@
         <input class="right" type="submit" value="{{ action }}" />
     </form>
 
-    <script src="../../static/js/add_new_field.js"></script>
     <script src="../../static/js/managerFieldAutocomplete.js"></script>
+    <script src="../../static/js/add_new_field.js"></script>
+    <script src="../../static/js/upload_pfp.js"></script>
+
     {% endblock %}
