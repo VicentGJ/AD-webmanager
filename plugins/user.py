@@ -399,7 +399,7 @@ def init(app):
                                                   "%s@%s" % (value, g.ldap['domain']))
                             # Finish by renaming the whole record
                             # TODO: refactor this to use rename_s instead of update
-                            # ldap_update_attribute(user['distinguishedName'], "cn", value)
+                            ldap_update_attribute(user['distinguishedName'], "distinguishedName", value)
                             user = ldap_get_user(value)
                         elif attribute == 'userAccountControl':
                             current_uac = 512
