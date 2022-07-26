@@ -5,7 +5,6 @@ import ldap
 from flask import abort, flash, g, redirect, render_template, request
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField
-from requests import RequestException
 from libs.common import (flash_password_errors, get_attr, get_encoded_list,
                          get_parsed_pager_attribute, get_valid_macs)
 from libs.common import iri_for as url_for
@@ -400,7 +399,7 @@ def init(app):
                                                   "%s@%s" % (value, g.ldap['domain']))
                             # Finish by renaming the whole record
                             # TODO: refactor this to use rename_s instead of update
-                            # ldap_update_attribute(user['distinguishedName'], "cn", value)
+                            ldap_update_attribute(user['distinguishedName'], "distinguishedName", value)
                             user = ldap_get_user(value)
                         elif attribute == 'userAccountControl':
                             current_uac = 512
