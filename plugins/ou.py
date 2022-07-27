@@ -72,7 +72,6 @@ def init(app):
         try:
             ou = ldap_get_ou(ou_name=res['dn'])
             ldap_delete_entry(ou["distinguishedName"])
-            res['message'] = "OU removed successfully"
             res['ok'] = True
             return jsonify(res)
         except ldap.LDAPError as e:
@@ -117,7 +116,7 @@ def init(app):
                     'ok':False
                 }
                 return jsonify(res)
-                
+
         res["description"] = ou['description']
         if "description" in args:
             res['description'] = args['description']
