@@ -420,8 +420,8 @@ def init(app):
                         elif attribute == 'otherMailbox' or attribute == 'otherHomePhone' or \
                                 attribute == 'otherMobile' or attribute == 'otherTelephone':
                             given_list = list(filter(None, request.form.getlist(attribute)))
-                            if len(given_list):
-                                ldap_update_attribute(user['distinguishedName'], attribute, given_list)
+                            # if len(given_list):
+                            ldap_update_attribute(user['distinguishedName'], attribute, given_list)
                         elif attribute == 'macAddress':
                             given_list = list(filter(None, request.form.getlist(attribute)))
                             valid_macs = []
