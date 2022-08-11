@@ -155,8 +155,6 @@ def get_encoded_list(given_list : list):
     if len(given_list):
         for i in given_list:
             encoded_list.append(i.encode('utf-8'))
-    else:
-        encoded_list = [b'0']
     return encoded_list
 
 def get_decoded_list(given_list : list):
@@ -164,8 +162,6 @@ def get_decoded_list(given_list : list):
     if len(given_list):
         for i in given_list:
             decoded_list.append(i.decode('utf-8'))
-    else:
-        decoded_list = ['0']
     return decoded_list
 
 def get_attr(user):
