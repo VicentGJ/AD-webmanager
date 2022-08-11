@@ -1,39 +1,40 @@
+from urllib import parse
 import ldap
 from flask import jsonify, request
 from libs.common import namefrom_dn
 from libs.ldap_func import (ldap_auth, ldap_create_entry, ldap_delete_entry,
                             ldap_get_ou, ldap_ou_exists, ldap_update_attribute)
 from settings import Settings
-
-
+from flask_cors import cross_origin, CORS
 def init(app):
-
+    cors = CORS(app)
     @app.route("/api/v1/ou/+add/", methods=["GET", "POST"])
     @ldap_auth(Settings.ADMIN_GROUP)
     def ou_add():
+        response = {}
         args = request.args
         base_found = False
         name_found = False
-        res = {}
+
         mapping = []
         if "base" in args:
             base_found = True
-            res['base'] = args['base']
+            response['base'] = args['base']
         if 'name' in args:
             name_found = True
-            res['name'] = args['name']
-            mapping.append(('name',res["name"]))
+            response['name'] = args['name']
+            mapping.append(('name',response["name"]))
 
         if not name_found or not base_found:
-            res = {
+            response = {
                 "ok": False,
                 "error": {"message": "Error: name or base wasn't provided"},
             }
-            return jsonify(res)
+            return jsonify(response)
         
         if "description" in args:
-            res['description'] = args['description']
-            mapping.append(('description',res["description"]))
+            response['description'] = args['description']
+            mapping.append(('description',response["description"]))
 
         try:
             attributes = {
@@ -41,90 +42,89 @@ def init(app):
             }
             for attribute, data in mapping:
                 attributes[attribute] = data.encode("utf-8")
-            ldap_create_entry("ou=%s,%s" % (res["name"], res["base"]), attributes)
-            res['ok'] = True
+            ldap_create_entry("ou=%s,%s" % (response["name"], response["base"]), attributes)
+            response['ok'] = True
         except ldap.LDAPError as e:
             e = dict(e.args[0])
-            res=e
+            response=e
 
-        return jsonify(res)
+        return jsonify(response)
 
-    @app.route("/api/v1/ou/+delete", methods=["GET", "POST"])
+    @app.route("/api/v1/ou/+delete/", methods=['GET', 'POST'])
     @ldap_auth(Settings.ADMIN_GROUP)
     def ou_delete():
-        res = {}
+        response = {}
         if 'dn' in request.args:
-            res['dn'] = request.args['dn']
-            res['name'] = namefrom_dn(res['dn'])
+            response['dn'] = request.args['dn']
+            response['name'] = namefrom_dn(response['dn'])
         else:
-            res = {
+            response = {
                 "ok": False,
                 "error": {"message": "Error: dn wasn't provided"},
             }
-            return jsonify(res)
-        if not ldap_ou_exists(ou_name=res['dn']):
-            res = {
+            return jsonify(response)
+        if not ldap_ou_exists(ou_name=response['dn']):
+            response = {
                 "ok": False,
                 "error": {"message": "OU doesn't exists"}
             }
-            return jsonify(res)
+            return jsonify(response)
 
         try:
-            ou = ldap_get_ou(ou_name=res['dn'])
+            ou = ldap_get_ou(ou_name=response['dn'])
             ldap_delete_entry(ou["distinguishedName"])
-            res['ok'] = True
-            return jsonify(res)
+            response['ok'] = True
+            return jsonify(response)
         except ldap.LDAPError as e:
             error = e.message["info"].split(":", 2)[-1].strip()
             error = str(error[0].upper() + error[1:])
-            res = {
+            response = {
                 'error':{
                     'message':error
                 }
             }
-            return jsonify(res)
+            return jsonify(response)
 
-    @app.route("/api/v1/ou/+edit", methods=["GET", "POST"])
+    @app.route("/api/v1/ou/+edit/", methods=["GET", "POST"])
     @ldap_auth(Settings.ADMIN_GROUP)
     def ou_edit():
-        res = {}
+        response = {}
         args = request.args
         if 'dn' in args:
-            res['dn'] = args['dn']
-            res['name'] = namefrom_dn(res['dn'])
+            response['dn'] = args['dn']
+            response['name'] = namefrom_dn(response['dn'])
         else:
-            res = {
+            response = {
                 "ok": False,
                 "error": {"message": "Error: dn wasn't provided"},
             }
-            return jsonify(res)
-        if not ldap_ou_exists(ou_name=res['dn']):
-            res = {
+            return jsonify(response)
+        if not ldap_ou_exists(ou_name=response['dn']):
+            response = {
                 "ok": False,
                 "error": {"message": "OU doesn't exists"}
             }
-            return jsonify(res)
+            return jsonify(response)
         
-        ou = ldap_get_ou(res["dn"])
+        ou = ldap_get_ou(response["dn"])
         if 'name' in args:
-            res['name'] = args['name']
-            if not res["name"]:
-                res = {
+            response['name'] = args['name']
+            if not response["name"]:
+                response = {
                     'error':{
                         'message': "OU name cant be blank"
                     },
                     'ok':False
                 }
-                return jsonify(res)
+                return jsonify(response)
 
-        res["description"] = ou['description']
+        response["description"] = ou['description']
         if "description" in args:
-            res['description'] = args['description']
-
+            response['description'] = args['description']
 
         mapping = [
-            ("distinguishedName", res['name']),
-            ("description", res['description']),
+            ("distinguishedName", response['name']),
+            ("description", response['description']),
         ]
 
         try:
@@ -144,8 +144,8 @@ def init(app):
                             ou["distinguishedName"], attribute, data
                         )
 
-            res['ok'] = True
-            return jsonify(res)
+            response['ok'] = True
+            return jsonify(response)
 
         except ldap.LDAPError as e:
             e = dict(e.args[0])
