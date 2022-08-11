@@ -18,9 +18,9 @@ class OU_form(FlaskForm):
 def init(app):
     cors = CORS(app)
     #API routes
-    @app.route("/api/v1/ou/+add/", methods=["GET", "POST"])
+    @app.route("/api/v1/ou/+add", methods=["GET", "POST"])
     @ldap_auth(Settings.ADMIN_GROUP)
-    def api_ou_add():
+    def _ou_add():
         response = {}
         args = request.args
         base_found = False
@@ -60,9 +60,9 @@ def init(app):
 
         return jsonify(response)
 
-    @app.route("/api/v1/ou/+delete/", methods=['GET', 'POST'])
+    @app.route("/api/v1/ou/+delete", methods=['GET', 'POST'])
     @ldap_auth(Settings.ADMIN_GROUP)
-    def api_ou_delete():
+    def _ou_delete():
         response = {}
         if 'dn' in request.args:
             response['dn'] = request.args['dn']
@@ -95,9 +95,9 @@ def init(app):
             }
             return jsonify(response)
 
-    @app.route("/api/v1/ou/+edit/", methods=["GET", "POST"])
+    @app.route("/api/v1/ou/+edit", methods=["GET", "POST"])
     @ldap_auth(Settings.ADMIN_GROUP)
-    def api_ou_edit():
+    def _ou_edit():
     
         response = {}
         args = request.args
