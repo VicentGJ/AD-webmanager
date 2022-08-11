@@ -1,15 +1,21 @@
+from cgitb import reset
 from fnmatch import translate
 from time import process_time_ns
-from urllib import parse
+from urllib import parse, response
+from warnings import filters
+
 import ldap
-from flask import Flask, abort, flash, g, redirect, render_template, request
+from flask import (Flask, abort, flash, g, jsonify, redirect, render_template,
+                   request)
+from flask_cors import CORS
 from flask_wtf import FlaskForm
 from libs.common import get_objclass
 from libs.common import iri_for as url_for
 from libs.common import namefrom_dn
 from libs.ldap_func import (ldap_auth, ldap_delete_entry, ldap_get_entries,
                             ldap_get_group, ldap_get_ou, ldap_get_user,
-                            ldap_in_group, ldap_obj_has_children, ldap_update_attribute, move)
+                            ldap_in_group, ldap_obj_has_children,
+                            ldap_update_attribute, move)
 from settings import Settings
 from wtforms import SelectField, StringField, SubmitField
 
@@ -35,6 +41,52 @@ class BatchMoveOneLevelUp(FlaskForm):
     up_aLevel = SubmitField("Move One Level Up")
 
 def init(app):
+    cors = CORS(app)
+    #API Routes
+    @app.route('/api/v1/entries')
+    @ldap_auth("Domain Users")
+    def _entries():
+        response = {
+            'filters':{
+                'scope':'onelevel',
+                'attribute':'objectClass',
+                'attribute_value':'top',
+                'used_defaults':[]
+            },
+            'data':[]}
+        args = request.args
+        
+        if 'base' in args:
+            response['base'] = args['base']
+        else:
+            response = {
+                "ok": False,
+                "error": {"message": "base wasn't provided"},
+            }
+            return jsonify(response)
+        if 'scope' in args:
+            response['filters']['scope'] = args['scope']
+        else:
+            response['filters']['used_defaults'].append('scope')
+        if 'attribute' in args:
+            response['filters']['attribute'] = args['attribute']
+        else:
+            response['filters']['used_defaults'].append('attribute')
+            
+        if 'attribute_value' in args:
+            response['filters']['attribute_value'] = args['attribute_value']
+        else:
+            response['filters']['used_defaults'].append('attribute_value')
+            
+
+        response['data'] = get_entries(response['filters']['attribute_value'],response['filters']['attribute'],args['base'], response['filters']['scope'])
+        for data in response['data']:
+            print(data.get('cn'))
+        response['ok'] = True
+        return jsonify(response)
+
+
+    #Interface routes
     @app.route('/tree', methods=['GET', 'POST'])
     @app.route('/tree/<base>', methods=['GET', 'POST'])
     @ldap_auth("Domain Users")
@@ -71,12 +123,12 @@ def init(app):
                 filter_str = form.filter_str.data
                 filter_select = form.filter_select.data
                 scope = "subtree"
-                entries = get_entries(filter_str, filter_select, base, scope)    
+                entries = get_entries(filter_str, filter_select, 'dc=gsoftinnovation,dc=com', scope)
+                print('1',entries)    
             else:
                 filter_str = None
                 scope = "onelevel"
                 entries = get_entries("top", "objectClass", base, scope)
-            
            #TODO: batch delete confirmation page
            ##batch delete
             if batch_delete.delete.data:
