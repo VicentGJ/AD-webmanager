@@ -493,7 +493,7 @@ def ldap_group_exists(groupname=None):
 
 def ldap_ou_exists(ou_name=None):
     """
-        Return True if the group exists. False otherwise.
+        Return True if the OU exists. False otherwise.
     """
 
     if ldap_get_ou(ou_name):
