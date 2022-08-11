@@ -137,11 +137,13 @@ def init(app):
                     elif attribute == 'otherMailbox' or attribute == 'otherHomePhone' or \
                             attribute == 'otherMobile' or attribute == 'otherTelephone':
                         list_to_encode = list(filter(None, request.form.getlist(attribute)))
-                        attributes[attribute] = get_encoded_list(list_to_encode)
+                        if len(list_to_encode)>0:
+                            attributes[attribute] = get_encoded_list(list_to_encode)
                     elif attribute == 'macAddress':
                         list_to_encode = list(filter(None, request.form.getlist(attribute)))
-                        valid_macs = get_valid_macs(list_to_encode)
-                        attributes[attribute] = get_encoded_list(valid_macs)
+                        if len(list_to_encode):
+                            valid_macs = get_valid_macs(list_to_encode)
+                            attributes[attribute] = get_encoded_list(valid_macs)
                     elif attribute == 'manager' and field.data:
                         manager = ldap_get_user(field.data)
                         attributes[attribute] = manager['distinguishedName'].encode('utf-8')
@@ -355,7 +357,6 @@ def init(app):
     @ldap_auth(Settings.ADMIN_GROUP)
     def user_edit_profile(username):
         title = "Edit user"
-
         if not ldap_user_exists(username=username):
             flash(f"The user: {username}, doesn't exists (err404)", "error")
             return redirect(url_for('tree_base'))
@@ -368,8 +369,8 @@ def init(app):
                          ('sn', form.last_name),
                          ('sAMAccountName', form.user_name),
                          ('mail', form.mail),
-                         ('otherMailbox', form.alias),
                          ('streetAddress', form.address),
+                         ('otherMailbox', form.alias),
                          ('otherHomePhone', form.phones_home),
                          ('otherMobile', form.phones_mobile),
                          ('otherTelephone', form.phones_office),
@@ -385,13 +386,14 @@ def init(app):
         if form.validate_on_submit():
             try:
                 for attribute, field in field_mapping:
+                    has_attribute = user.get(attribute) != None
                     if attribute !=  'jpegPhoto':
                         value = field.data
                     else:
                         value = request.files
                     given_name = user.get('givenName')
                     last_name = user.get('lastName')
-                    if value != user.get(attribute):
+                    if value != user.get(attribute) or not has_attribute:
                         if attribute == 'sAMAccountName':
                             # Rename the account
                             ldap_update_attribute(user['distinguishedName'], "sAMAccountName", value)
@@ -422,12 +424,15 @@ def init(app):
                             given_list = list(filter(None, request.form.getlist(attribute)))
                             if len(given_list):
                                 ldap_update_attribute(user['distinguishedName'], attribute, given_list)
+                            else:
+                                ldap_update_attribute(user['distinguishedName'], attribute)
                         elif attribute == 'macAddress':
                             given_list = list(filter(None, request.form.getlist(attribute)))
-                            valid_macs = []
-                            if len(given_list):
-                                valid_macs = get_valid_macs(given_list)
+                            valid_macs = get_valid_macs(given_list)
+                            if len(valid_macs):
                                 ldap_update_attribute(user['distinguishedName'], attribute, valid_macs)
+                            else:
+                                ldap_update_attribute(user['distinguishedName'], attribute)
                         elif attribute == 'manager' and value:
                             manager = ldap_get_user(value)
                             ldap_update_attribute(user['distinguishedName'],attribute,manager['distinguishedName'])
