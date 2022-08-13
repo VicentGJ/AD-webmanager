@@ -18,6 +18,7 @@
 # /usr/share/common-licenses/GPL-2
 
 import argparse
+from datetime import date
 import os
 
 app_prefix = "/opt/samba4-manager-master/"
@@ -53,6 +54,11 @@ from settings import Settings
 app = Flask(__name__,
             static_folder="%s/static" % app_prefix,
             template_folder="%s/templates" % app_prefix)
+import logging
+logging.basicConfig(
+    filename=f'./logs/{date.today()}-error.log',
+    level=logging.ERROR, format="[%(asctime)s] %(levelname)s %(module)s: %(message)s"
+    )
 
 app.config.from_object(Settings)
 app.jinja_env.globals['url_for'] = url_for
