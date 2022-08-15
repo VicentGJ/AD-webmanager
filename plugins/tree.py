@@ -41,52 +41,6 @@ class BatchMoveOneLevelUp(FlaskForm):
     up_aLevel = SubmitField("Move One Level Up")
 
 def init(app):
-    cors = CORS(app)
-    #API Routes
-    @app.route('/api/v1/entries')
-    @ldap_auth("Domain Users")
-    def _entries():
-        response = {
-            'filters':{
-                'scope':'onelevel',
-                'attribute':'objectClass',
-                'attribute_value':'top',
-                'used_defaults':[]
-            },
-            'data':[]}
-        args = request.args
-        
-        if 'base' in args:
-            response['base'] = args['base']
-        else:
-            response = {
-                "ok": False,
-                "error": {"message": "base wasn't provided"},
-            }
-            return jsonify(response)
-        if 'scope' in args:
-            response['filters']['scope'] = args['scope']
-        else:
-            response['filters']['used_defaults'].append('scope')
-        if 'attribute' in args:
-            response['filters']['attribute'] = args['attribute']
-        else:
-            response['filters']['used_defaults'].append('attribute')
-            
-        if 'attribute_value' in args:
-            response['filters']['attribute_value'] = args['attribute_value']
-        else:
-            response['filters']['used_defaults'].append('attribute_value')
-            
-
-        response['data'] = get_entries(response['filters']['attribute_value'],response['filters']['attribute'],args['base'], response['filters']['scope'])
-        for data in response['data']:
-            print(data.get('cn'))
-        response['ok'] = True
-        return jsonify(response)
-
-
-    #Interface routes
     @app.route('/tree', methods=['GET', 'POST'])
     @app.route('/tree/<base>', methods=['GET', 'POST'])
     @ldap_auth("Domain Users")
