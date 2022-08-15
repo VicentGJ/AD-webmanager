@@ -56,8 +56,9 @@ app = Flask(__name__,
             template_folder="%s/templates" % app_prefix)
 import logging
 logging.basicConfig(
-    filename=f'./logs/{date.today()}-error.log',
-    level=logging.ERROR, format="[%(asctime)s] %(levelname)s %(module)s: %(message)s"
+    filename=f'./logs/{date.today()}.log',
+    level=logging.INFO, 
+    format="[%(asctime)s] %(levelname)s %(module)s: %(message)s"
     )
 
 app.config.from_object(Settings)
