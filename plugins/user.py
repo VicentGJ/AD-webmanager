@@ -392,7 +392,7 @@ def init(app):
                     else:
                         value = request.files
                     given_name = user.get('givenName')
-                    last_name = user.get('lastName')
+                    last_name = user.get('sn')
                     if value != user.get(attribute) or not has_attribute:
                         if attribute == 'sAMAccountName':
                             # Rename the account
