@@ -54,12 +54,45 @@ from settings import Settings
 app = Flask(__name__,
             static_folder="%s/static" % app_prefix,
             template_folder="%s/templates" % app_prefix)
+# import logging
+# logging.basicConfig(
+#     filename=f'./logs/{date.today()}.log',
+#     level=logging.INFO, 
+#     format="[%(asctime)s] %(levelname)s %(module)s: %(message)s"
+#     )
+########
+# import logging
+# import sys
+
+# file_handler = logging.FileHandler(filename=f'./logs/{date.today()}-v2.log')
+# stdout_handler = logging.StreamHandler(stream=sys.stdout)
+# handlers = [file_handler, stdout_handler]
+
+# logging.basicConfig(
+#     level=logging.DEBUG, 
+#     format='[%(asctime)s] {%(filename)s:%(lineno)d} %(levelname)s - %(message)s - ',
+#     handlers=handlers,
+# )
+########
 import logging
-logging.basicConfig(
-    filename=f'./logs/{date.today()}.log',
-    level=logging.INFO, 
-    format="[%(asctime)s] %(levelname)s %(module)s: %(message)s"
-    )
+import sys
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s | %(levelname)s | %(message)s', 
+                              '%m-%d-%Y %H:%M:%S')
+
+stdout_handler = logging.StreamHandler(sys.stdout)
+stdout_handler.setLevel(logging.DEBUG)
+stdout_handler.setFormatter(formatter)
+
+file_handler = logging.FileHandler(f'./logs/{date.today()}-v3.log')
+file_handler.setLevel(logging.DEBUG)
+file_handler.setFormatter(formatter)
+
+logger.addHandler(file_handler)
+logger.addHandler(stdout_handler)
+
 
 app.config.from_object(Settings)
 app.jinja_env.globals['url_for'] = url_for

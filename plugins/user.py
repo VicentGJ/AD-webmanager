@@ -1,5 +1,6 @@
 import base64
 from io import BytesIO
+import logging
 
 import ldap
 from flask import abort, flash, g, redirect, render_template, request
@@ -191,6 +192,7 @@ def init(app):
                 flash(e,'error')
             except Exception as e:
                 flash(e,'error')
+                logging.exception("Got an exception")
         elif form.errors:
             flash("Some fields failed validation.", "error")
         
