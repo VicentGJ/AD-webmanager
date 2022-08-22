@@ -146,7 +146,10 @@ def init(app):
                             attributes[attribute] = get_encoded_list(valid_macs)
                     elif attribute == 'manager' and field.data:
                         manager = ldap_get_user(field.data)
-                        attributes[attribute] = manager['distinguishedName'].encode('utf-8')
+                        if manager:
+                            attributes[attribute] = manager['distinguishedName'].encode('utf-8')
+                        else:
+                            raise Exception("That manager doesn't exists")
                     elif attribute == 'jpegPhoto' and request.files is not None:
                         data = request.files
                         data_dict = data.to_dict(flat=False)
@@ -185,6 +188,8 @@ def init(app):
                 e = dict(e.args[0])
                 flash(e['info'], "error")
             except GifNotAllowed as e:
+                flash(e,'error')
+            except Exception as e:
                 flash(e,'error')
         elif form.errors:
             flash("Some fields failed validation.", "error")
