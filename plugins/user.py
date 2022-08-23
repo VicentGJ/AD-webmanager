@@ -442,7 +442,10 @@ def init(app):
                                 ldap_update_attribute(user['distinguishedName'], attribute)
                         elif attribute == 'manager' and value:
                             manager = ldap_get_user(value)
-                            ldap_update_attribute(user['distinguishedName'],attribute,manager['distinguishedName'])
+                            if manager:
+                                ldap_update_attribute(user['distinguishedName'],attribute,manager['distinguishedName'])
+                            else:
+                                ldap_update_attribute(user['distinguishedName'], attribute)
                         elif attribute == 'jpegPhoto':
                             data_dict = value.to_dict(flat=False)
                             file = data_dict['profile_photo'][0]
@@ -463,6 +466,8 @@ def init(app):
                 flash(e['info'], "error")
             except GifNotAllowed as e:
                 flash(e,'error')
+            except Exception as e:
+                flash(e, 'error')
         elif form.errors:
             flash(u"Data validation failed.", "error")
 
