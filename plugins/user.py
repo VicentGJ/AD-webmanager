@@ -188,8 +188,10 @@ def init(app):
             except ldap.LDAPError as e:
                 e = dict(e.args[0])
                 flash(e['info'], "error")
+                logging.exception("Got an exception")
             except GifNotAllowed as e:
                 flash(e,'error')
+                logging.exception("Got an exception")
             except Exception as e:
                 flash(e,'error')
                 logging.exception("Got an exception")
@@ -369,10 +371,8 @@ def init(app):
             return redirect(url_for('tree_base'))
 
         user = ldap_get_user(username=username)
-        users = ldap_get_all_users()
-        user_list = []
-        for _user in users:
-            user_list.append(_user['sAMAccountName'])
+        attr_compilation = get_attr(user)
+        user_list = ldap_get_all_users()
         form = UserProfileEdit(request.form)
         field_mapping = [('givenName', form.first_name),
                          ('jpegPhoto', form.profile_pic),
@@ -448,7 +448,7 @@ def init(app):
                             if manager:
                                 ldap_update_attribute(user['distinguishedName'],attribute,manager['distinguishedName'])
                             else:
-                                ldap_update_attribute(user['distinguishedName'], attribute)
+                                raise Exception("That manager doesn't exists")
                         elif attribute == 'jpegPhoto':
                             data_dict = value.to_dict(flat=False)
                             file = data_dict['profile_photo'][0]
@@ -467,10 +467,13 @@ def init(app):
             except ldap.LDAPError as e:
                 e = dict(e.args[0])
                 flash(e['info'], "error")
+                logging.exception("Got an exception")
             except GifNotAllowed as e:
                 flash(e,'error')
+                logging.exception("Got an exception")
             except Exception as e:
                 flash(e, 'error')
+                logging.exception("Got an exception")
         elif form.errors:
             flash(u"Data validation failed.", "error")
 
