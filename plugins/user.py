@@ -369,7 +369,10 @@ def init(app):
             return redirect(url_for('tree_base'))
 
         user = ldap_get_user(username=username)
-        user_list = ldap_get_all_users()
+        users = ldap_get_all_users()
+        user_list = []
+        for _user in users:
+            user_list.append(_user['sAMAccountName'])
         form = UserProfileEdit(request.form)
         field_mapping = [('givenName', form.first_name),
                          ('jpegPhoto', form.profile_pic),
