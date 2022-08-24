@@ -458,7 +458,8 @@ def init(app):
                                 if(image.format == 'GIF'):
                                     raise GifNotAllowed('No gifs allowed in user profile picture')
                                 jpeg_binary = BytesIO()
-                                image.save(jpeg_binary,format='JPEG')
+                                rgb_image = image.convert('RGB')
+                                rgb_image.save(jpeg_binary,format='JPEG')
                                 ldap_update_attribute(user['distinguishedName'], attribute, jpeg_binary.getvalue())
                         else:
                             ldap_update_attribute(user['distinguishedName'], attribute, value)
