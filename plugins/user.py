@@ -160,7 +160,8 @@ def init(app):
                                 if(image.format == 'GIF'):
                                     raise GifNotAllowed('No gifs allowed in user profile picture')
                                 jpeg_binary = BytesIO()
-                                image.save(jpeg_binary,format='JPEG')
+                                rgb_image = image.convert('RGB')
+                                rgb_image.save(jpeg_binary,format='JPEG')
                                 attributes[attribute] = jpeg_binary.getvalue()
                     elif attribute and field.data:
                         if isinstance(field, BooleanField):
