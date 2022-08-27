@@ -80,7 +80,7 @@ import sys
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 formatter = logging.Formatter('%(asctime)s | %(levelname)s | %(message)s', 
-                              '%m-%d-%Y %H:%M:%S')
+                              '%Y-%m-%d %H:%M:%S')
 
 stdout_handler = logging.StreamHandler(sys.stderr)
 stdout_handler.setLevel(logging.DEBUG)
