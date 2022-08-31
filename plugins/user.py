@@ -176,6 +176,7 @@ def init(app):
                                                                                                 'sn'][0].decode('utf-8')
                     attributes['displayName'] = [attributes['displayName'].encode('utf-8')]
                 else:
+                    attributes['sn'] = ''
                     attributes['displayName'] = attributes['givenName']
                 password_validation = password_is_valid(form.password.data)
                 if not password_validation:
