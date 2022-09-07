@@ -77,7 +77,7 @@ def init(app):
                 filter_str = form.filter_str.data
                 filter_select = form.filter_select.data
                 scope = "subtree"
-                entries = get_entries(filter_str, filter_select, 'dc=gsoftinnovation,dc=com', scope)
+                entries = get_entries(filter_str, filter_select, base, scope)
                 print('1',entries)    
             else:
                 filter_str = None
