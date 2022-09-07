@@ -18,7 +18,7 @@ Was used internally at Havana's Technology University in 2017, and since it has
 received numerous updates, additions, and changes.
 We decided to release our version publicly since the original project was not being
 regularly updated. It has grown since to a much more capable application.
-The project is now maintained by [GSI General Software Inc.](https://www.generalsoftwareinc.com/).
+The project is now maintained by [GSI General Software Inc.](https://www.generalsoftwareinc.com/)
 We will keep updating the project for our organization and the community,
 and we are open to all kinds of feedback and contributions.
 
