@@ -36,7 +36,7 @@ class UserAddGroup(FlaskForm):
 class UserProfileEdit(FlaskForm):
     profile_pic = FileField('Profile Picture')
     first_name = StringField('Name', [DataRequired(), Length(max=64)])
-    last_name = StringField('Last Name', [Length(max=64)])
+    last_name = StringField('Last Name', [Length(max=64)], default='')
     user_name = StringField('Username', [DataRequired(), Length(max=20)])
     mail = EmailField(u'Email Address', [Length(max=256)])
     alias = EmailField('Other Email Addresses', [Length(max=256)])
@@ -51,15 +51,15 @@ class UserProfileEdit(FlaskForm):
     uac_flags = SelectMultipleField('Flags', coerce=int)
 
 
-
 class SICCIPEdit(FlaskForm):
     internet_type = SelectField(u'Internet access type', [Optional()],
-                                choices=[('F',u'Acceso Total'),
+                                choices=[('F', u'Acceso Total'),
                                          ('R', u'Restricted access'),
                                          ('L', u'Local navigation only')])
     internet_quota = DecimalField('Quota for Internet in UM')
-    socialnetwork_quota = DecimalField('% of the usable quota for social networks')
-    email_type = SelectField(u'Email account type', choices=[('F',u'No restrictions'),
+    socialnetwork_quota = DecimalField(
+        '% of the usable quota for social networks')
+    email_type = SelectField(u'Email account type', choices=[('F', u'No restrictions'),
                                                              ('R', u'Restricted sending and receiving'),
                                                              ('L', u'Local mail only')])
     email_quota = DecimalField('Mail quota in UM')
@@ -90,12 +90,16 @@ class PasswordChangeUser(PasswordChange):
 class GifNotAllowed(Exception):
     pass
 
+
 def init(app):
     @app.route('/users/+add/<base>', methods=['GET', 'POST'])
     @ldap_auth(Settings.ADMIN_GROUP)
     def user_add(base):
         title = "Add User"
-        user_list = ldap_get_all_users()
+        users = ldap_get_all_users()
+        user_list = []
+        for user in users:
+            user_list.append(user['sAMAccountName'])
         form = UserAdd(request.form)
         field_mapping = [('givenName', form.first_name),
                          ('sn', form.last_name),
@@ -115,9 +119,10 @@ def init(app):
                          (None, form.password_confirm),
                          ('userAccountControl', form.uac_flags),
                          ]
-        
+
         form.visible_fields = [field[1] for field in field_mapping]
-        form.uac_flags.choices = [(key, value[0]) for key, value in LDAP_AD_USERACCOUNTCONTROL_VALUES.items()]
+        form.uac_flags.choices = [
+            (key, value[0]) for key, value in LDAP_AD_USERACCOUNTCONTROL_VALUES.items()]
         if form.validate_on_submit():
             try:
                 # Default attributes
@@ -134,21 +139,28 @@ def init(app):
                         for key, flag in (LDAP_AD_USERACCOUNTCONTROL_VALUES.items()):
                             if flag[1] and key in field.data:
                                 current_uac += key
-                        attributes[attribute] = [str(current_uac).encode('utf-8')]
+                        attributes[attribute] = [
+                            str(current_uac).encode('utf-8')]
                     elif attribute == 'otherMailbox' or attribute == 'otherHomePhone' or \
                             attribute == 'otherMobile' or attribute == 'otherTelephone':
-                        list_to_encode = list(filter(None, request.form.getlist(attribute)))
-                        if len(list_to_encode)>0:
-                            attributes[attribute] = get_encoded_list(list_to_encode)
+                        list_to_encode = list(
+                            filter(None, request.form.getlist(attribute)))
+                        if len(list_to_encode) > 0:
+                            attributes[attribute] = get_encoded_list(
+                                list_to_encode)
                     elif attribute == 'macAddress':
-                        list_to_encode = list(filter(None, request.form.getlist(attribute)))
+                        list_to_encode = list(
+                            filter(None, request.form.getlist(attribute)))
                         if len(list_to_encode):
-                            valid_macs = get_valid_macs(list_to_encode)
-                            attributes[attribute] = get_encoded_list(valid_macs)
+                            valid_macs = get_valid_macs(
+                                list_to_encode)['valid']
+                            attributes[attribute] = get_encoded_list(
+                                valid_macs)
                     elif attribute == 'manager' and field.data:
                         manager = ldap_get_user(field.data)
                         if manager:
-                            attributes[attribute] = manager['distinguishedName'].encode('utf-8')
+                            attributes[attribute] = manager['distinguishedName'].encode(
+                                'utf-8')
                         else:
                             raise Exception("That manager doesn't exists")
                     elif attribute == 'jpegPhoto' and request.files is not None:
@@ -156,13 +168,14 @@ def init(app):
                         data_dict = data.to_dict(flat=False)
                         file = data_dict['profile_photo'][0]
                         if(file.filename):
-                                image = Image.open(file)
-                                if(image.format == 'GIF'):
-                                    raise GifNotAllowed('No gifs allowed in user profile picture')
-                                jpeg_binary = BytesIO()
-                                rgb_image = image.convert('RGB')
-                                rgb_image.save(jpeg_binary,format='JPEG')
-                                attributes[attribute] = jpeg_binary.getvalue()
+                            image = Image.open(file)
+                            if(image.format == 'GIF'):
+                                raise GifNotAllowed(
+                                    'No gifs allowed in user profile picture')
+                            jpeg_binary = BytesIO()
+                            rgb_image = image.convert('RGB')
+                            rgb_image.save(jpeg_binary, format='JPEG')
+                            attributes[attribute] = jpeg_binary.getvalue()
                     elif attribute and field.data:
                         if isinstance(field, BooleanField):
                             if field.data:
@@ -170,18 +183,22 @@ def init(app):
                             else:
                                 attributes[attribute] = 'FALSE'.encode('utf-8')
                         else:
-                            attributes[attribute] = [field.data.encode('utf-8')]
+                            attributes[attribute] = [
+                                field.data.encode('utf-8')]
                 if 'sn' in attributes:
                     attributes['displayName'] = attributes['givenName'][0].decode('utf-8') + " " + attributes[
-                                                                                                'sn'][0].decode('utf-8')
-                    attributes['displayName'] = [attributes['displayName'].encode('utf-8')]
+                        'sn'][0].decode('utf-8')
+                    attributes['displayName'] = [
+                        attributes['displayName'].encode('utf-8')]
                 else:
                     attributes['sn'] = ''
                     attributes['displayName'] = attributes['givenName']
                 password_validation = password_is_valid(form.password.data)
                 if not password_validation:
-                    ldap_create_entry("cn=%s,%s" % (form.user_name.data, base), attributes)
-                    ldap_change_password(None, form.password.data, form.user_name.data)
+                    ldap_create_entry("cn=%s,%s" %
+                                      (form.user_name.data, base), attributes)
+                    ldap_change_password(
+                        None, form.password.data, form.user_name.data)
                     flash(u"User created successfully.", "success")
                     created_user = ldap_get_user(username=form.user_name.data)
                     return redirect(url_for('user_overview', username=form.user_name.data))
@@ -192,14 +209,14 @@ def init(app):
                 flash(e['info'], "error")
                 logging.exception("Got an exception")
             except GifNotAllowed as e:
-                flash(e,'error')
+                flash(e, 'error')
                 logging.exception("Got an exception")
             except Exception as e:
-                flash(e,'error')
+                flash(e, 'error')
                 logging.exception("Got an exception")
         elif form.errors:
             flash("Some fields failed validation.", "error")
-        
+
         return render_template("forms/user_add.html", form=form, title=title,
                                action="Add User", user_list=user_list,
                                parent=url_for('tree_base'))
@@ -241,19 +258,23 @@ def init(app):
             group_details = []
             group_membership = ldap_get_membership(username)
             for group in group_membership:
-                group_details.append(ldap_get_group(group, 'distinguishedName'))
+                group_details.append(ldap_get_group(
+                    group, 'distinguishedName'))
 
             group_details = list(filter(None, group_details))
 
-            groups = sorted(group_details, key=lambda entry: entry['sAMAccountName'] )
+            groups = sorted(
+                group_details, key=lambda entry: entry['sAMAccountName'])
 
-            available_groups = ldap_get_entries(ldap_filter="(objectclass=group)", scope="subtree")
-            group_choices = [("_","Select a Group")]
+            available_groups = ldap_get_entries(
+                ldap_filter="(objectclass=group)", scope="subtree")
+            group_choices = [("_", "Select a Group")]
 
             for group_entry in available_groups:
                 if not group_entry['distinguishedName'] in group_membership:
-                #if not ldap_in_group(group_entry['sAMAccountName'], username):
-                    group_choices += [(group_entry['distinguishedName'], group_entry['sAMAccountName'])]
+                    # if not ldap_in_group(group_entry['sAMAccountName'], username):
+                    group_choices += [(group_entry['distinguishedName'],
+                                       group_entry['sAMAccountName'])]
 
             form = UserAddGroup(request.form)
             form.available_groups.choices = group_choices
@@ -265,25 +286,28 @@ def init(app):
                 try:
                     group_to_add = form.available_groups.data
                     if group_to_add == "_":
-                        flash(u"You must choose a group from the drop-down list.", "error")
+                        flash(
+                            u"You must choose a group from the drop-down list.", "error")
                     else:
-                        group = ldap_get_entry_simple({'objectClass': 'group', 'distinguishedName': group_to_add})
+                        group = ldap_get_entry_simple(
+                            {'objectClass': 'group', 'distinguishedName': group_to_add})
                         if 'member' in group:
                             entries = set(group['member'])
                         else:
                             entries = set()
                         entries.add(user['distinguishedName'])
-                        ldap_update_attribute(group_to_add, "member", list(entries))
+                        ldap_update_attribute(
+                            group_to_add, "member", list(entries))
                         flash(u"User successfully added to group.", "success")
-                    return redirect(url_for('user_overview',username=username))
+                    return redirect(url_for('user_overview', username=username))
                 except ldap.LDAPError as e:
                     e = dict(e.args[0])
                     flash(e['info'], "error")
             elif form.errors:
-                    flash(u"Data validation failed.", "error")
+                flash(u"Data validation failed.", "error")
 
             parent = ",".join(user['distinguishedName'].split(',')[1:])
-        
+
         else:
             abort(401)
         name = namefrom_dn(parent)
@@ -328,7 +352,7 @@ def init(app):
                 e = dict(e.args[0])
                 flash(e['info'], "error")
         elif form.errors:
-                flash(u"Data validation failed.", "error")
+            flash(u"Data validation failed.", "error")
 
         return render_template("forms/basicform.html", form=form, title=title,
                                action=u"Change Password",
@@ -356,7 +380,7 @@ def init(app):
                 e = dict(e.args[0])
                 flash(e['info'], "error")
         elif form.errors:
-                flash(u"Data validation failed.", "error")
+            flash(u"Data validation failed.", "error")
 
         return render_template("pages/user_delete_es.html", title=title,
                                action="Delete User", form=form,
@@ -374,7 +398,10 @@ def init(app):
 
         user = ldap_get_user(username=username)
         attr_compilation = get_attr(user)
-        user_list = ldap_get_all_users()
+        users = ldap_get_all_users()
+        user_list = []
+        for data in users:
+            user_list.append(data['sAMAccountName'])
         form = UserProfileEdit(request.form)
         field_mapping = [('givenName', form.first_name),
                          ('jpegPhoto', form.profile_pic),
@@ -392,14 +419,15 @@ def init(app):
                          ('manager', form.manager),
                          ('userAccountControl', form.uac_flags)]
 
-        form.uac_flags.choices = [(key, value[0]) for key, value in LDAP_AD_USERACCOUNTCONTROL_VALUES.items()]
+        form.uac_flags.choices = [
+            (key, value[0]) for key, value in LDAP_AD_USERACCOUNTCONTROL_VALUES.items()]
 
         form.visible_fields = [field[1] for field in field_mapping]
         if form.validate_on_submit():
             try:
                 for attribute, field in field_mapping:
                     has_attribute = user.get(attribute) != None
-                    if attribute !=  'jpegPhoto':
+                    if attribute != 'jpegPhoto':
                         value = field.data
                     else:
                         value = request.files
@@ -408,47 +436,62 @@ def init(app):
                     if value != user.get(attribute) or not has_attribute:
                         if attribute == 'sAMAccountName':
                             # Rename the account
-                            ldap_update_attribute(user['distinguishedName'], "sAMAccountName", value)
+                            ldap_update_attribute(
+                                user['distinguishedName'], "sAMAccountName", value)
                             ldap_update_attribute(user['distinguishedName'], "userPrincipalName",
                                                   "%s@%s" % (value, g.ldap['domain']))
                             # Finish by renaming the whole record
                             # TODO: refactor this to use rename_s instead of update
-                            ldap_update_attribute(user['distinguishedName'], "distinguishedName", value)
+                            rdn = f'CN={value}'
+                            ldap_update_attribute(
+                                user['distinguishedName'], "distinguishedName", rdn)
                             user = ldap_get_user(value)
                         elif attribute == 'userAccountControl':
                             current_uac = 512
                             for key, flag in (LDAP_AD_USERACCOUNTCONTROL_VALUES.items()):
                                 if flag[1] and key in field.data:
                                     current_uac += key
-                            ldap_update_attribute(user['distinguishedName'], attribute, str(current_uac)) 
+                            ldap_update_attribute(
+                                user['distinguishedName'], attribute, str(current_uac))
                         elif attribute == 'givenName':
                             given_name = value
-                            ldap_update_attribute(user['distinguishedName'], attribute, value)
+                            ldap_update_attribute(
+                                user['distinguishedName'], attribute, value)
                             displayName = given_name + ' ' + last_name
-                            ldap_update_attribute(user['distinguishedName'], 'displayName', displayName)
+                            ldap_update_attribute(
+                                user['distinguishedName'], 'displayName', displayName)
                         elif attribute == 'sn':
                             last_name = value
-                            ldap_update_attribute(user['distinguishedName'], attribute, value)
+                            ldap_update_attribute(
+                                user['distinguishedName'], attribute, value)
                             displayName = given_name + ' ' + last_name
-                            ldap_update_attribute(user['distinguishedName'], 'displayName', displayName)
+                            ldap_update_attribute(
+                                user['distinguishedName'], 'displayName', displayName)
                         elif attribute == 'otherMailbox' or attribute == 'otherHomePhone' or \
                                 attribute == 'otherMobile' or attribute == 'otherTelephone':
-                            given_list = list(filter(None, request.form.getlist(attribute)))
+                            given_list = list(
+                                filter(None, request.form.getlist(attribute)))
                             if len(given_list):
-                                ldap_update_attribute(user['distinguishedName'], attribute, given_list)
+                                ldap_update_attribute(
+                                    user['distinguishedName'], attribute, given_list)
                             else:
-                                ldap_update_attribute(user['distinguishedName'], attribute)
+                                ldap_update_attribute(
+                                    user['distinguishedName'], attribute)
                         elif attribute == 'macAddress':
-                            given_list = list(filter(None, request.form.getlist(attribute)))
-                            valid_macs = get_valid_macs(given_list)
+                            given_list = list(
+                                filter(None, request.form.getlist(attribute)))
+                            valid_macs = get_valid_macs(given_list)['valid']
                             if len(valid_macs):
-                                ldap_update_attribute(user['distinguishedName'], attribute, valid_macs)
+                                ldap_update_attribute(
+                                    user['distinguishedName'], attribute, valid_macs)
                             else:
-                                ldap_update_attribute(user['distinguishedName'], attribute)
+                                ldap_update_attribute(
+                                    user['distinguishedName'], attribute)
                         elif attribute == 'manager' and value:
                             manager = ldap_get_user(value)
                             if manager:
-                                ldap_update_attribute(user['distinguishedName'],attribute,manager['distinguishedName'])
+                                ldap_update_attribute(
+                                    user['distinguishedName'], attribute, manager['distinguishedName'])
                             else:
                                 raise Exception("That manager doesn't exists")
                         elif attribute == 'jpegPhoto':
@@ -457,13 +500,16 @@ def init(app):
                             if(file.filename):
                                 image = Image.open(file)
                                 if(image.format == 'GIF'):
-                                    raise GifNotAllowed('No gifs allowed in user profile picture')
+                                    raise GifNotAllowed(
+                                        'No gifs allowed in user profile picture')
                                 jpeg_binary = BytesIO()
                                 rgb_image = image.convert('RGB')
-                                rgb_image.save(jpeg_binary,format='JPEG')
-                                ldap_update_attribute(user['distinguishedName'], attribute, jpeg_binary.getvalue())
+                                rgb_image.save(jpeg_binary, format='JPEG')
+                                ldap_update_attribute(
+                                    user['distinguishedName'], attribute, jpeg_binary.getvalue())
                         else:
-                            ldap_update_attribute(user['distinguishedName'], attribute, value)
+                            ldap_update_attribute(
+                                user['distinguishedName'], attribute, value)
                 flash(u"Profile updated successfully.", "success")
                 return redirect(url_for('user_overview', username=form.user_name.data))
 
@@ -472,7 +518,7 @@ def init(app):
                 flash(e['info'], "error")
                 logging.exception("Got an exception")
             except GifNotAllowed as e:
-                flash(e,'error')
+                flash(e, 'error')
                 logging.exception("Got an exception")
             except Exception as e:
                 flash(e, 'error')
@@ -500,8 +546,8 @@ def init(app):
                                    LDAP_AD_USERACCOUNTCONTROL_VALUES.items()
                                    if (flag[1] and
                                        user['userAccountControl'] & key)]
-        return render_template("forms/user_edit.html", form=form, title=title,user_list=user_list,
-                               action="Save changes",username=username, 
+        return render_template("forms/user_edit.html", form=form, title=title, user_list=user_list,
+                               action="Save changes", username=username,
                                othermails=attr_compilation['otherMailbox'],
                                mac_address=attr_compilation['macAddress'],
                                phones_home=attr_compilation['otherHomePhone'],
@@ -523,12 +569,12 @@ def init(app):
         user = ldap_get_user(username=username)
         pager = user['pager'][0] if 'pager' in user else None
         form = SICCIPEdit(request.form)
-        field_mapping = [       #('internet_type', form.internet_type),
-                         ('internet_quota', form.internet_quota),
-                         ('socialnetwork_quota', form.socialnetwork_quota),
-                         ('dansguardian_filter', form.dansguardian_filter),
-                         ('email_type', form.email_type),
-                         ('email_quota', form.email_quota)]
+        field_mapping = [  # ('internet_type', form.internet_type),
+            ('internet_quota', form.internet_quota),
+            ('socialnetwork_quota', form.socialnetwork_quota),
+            ('dansguardian_filter', form.dansguardian_filter),
+            ('email_type', form.email_type),
+            ('email_quota', form.email_quota)]
 
         form.visible_fields = [field[1] for field in field_mapping]
 
@@ -536,11 +582,12 @@ def init(app):
             try:
                 internet_type = 'F'
                 new_pager = 'I%s%f_%f|E%s%f|D%d' % (internet_type, form.internet_quota.data,
-                                                 form.socialnetwork_quota.data,
-                                                 form.email_type.data, form.email_quota.data,
-                                                 form.dansguardian_filter.data)
+                                                    form.socialnetwork_quota.data,
+                                                    form.email_type.data, form.email_quota.data,
+                                                    form.dansguardian_filter.data)
                 if pager != new_pager:
-                    ldap_update_attribute(user['distinguishedName'], "pager", new_pager)
+                    ldap_update_attribute(
+                        user['distinguishedName'], "pager", new_pager)
 
                 flash(u"Profile updated successfully.", "success")
                 return redirect(url_for('user_overview',
