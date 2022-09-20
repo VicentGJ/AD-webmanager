@@ -74,7 +74,8 @@ def get_parsed_pager_attribute(pager):
         letter_type = pager_parts[0][1].capitalize()
         internet_type = letter_type if letter_type == 'F' or letter_type == 'R' else 'L'
         internet_quota = float(pager_parts[0][2:pager_parts[0].find('_')])
-        socialnetwork_quota = float(pager_parts[0][pager_parts[0].find('_')+1:])
+        socialnetwork_quota = float(
+            pager_parts[0][pager_parts[0].find('_')+1:])
         letter_type = pager_parts[1][1].capitalize()
         email_type = letter_type if letter_type == 'F' or letter_type == 'R' else 'L'
         email_quota = float(pager_parts[1][2:])
@@ -85,11 +86,14 @@ def get_parsed_pager_attribute(pager):
     except ValueError:
         return None
 
+
 def namefrom_dn(dn):
     return dn.split('=')[1].split(',')[0]
-    
+
+
 def get_objclass(dn):
     return dn.split('=')[0]
+
 
 def password_is_valid(password):
     """
@@ -114,26 +118,28 @@ def password_is_valid(password):
     # searching for digits
     digit_error = re.search(r"\d", password) is None
 
-    # # searching for symbols 
-    # The \W metacharacter is used to find a non-word character. 
-    # A word character is a character from a-z, A-Z, 0-9, including the _    
-    symbol_error = (re.search(r"\W", password) is None) and (password.count('_') == 0)
+    # # searching for symbols
+    # The \W metacharacter is used to find a non-word character.
+    # A word character is a character from a-z, A-Z, 0-9, including the _
+    symbol_error = (re.search(r"\W", password) is None) and (
+        password.count('_') == 0)
 
     # overall result
-    password_ok = not ( length_error or digit_error  or symbol_error )
+    password_ok = not (length_error or digit_error or symbol_error)
     if password_ok:
         return None
     else:
         return {
-            'length_error' : length_error,
-            'digit_error' : digit_error,
-            'symbol_error' : symbol_error,
+            'length_error': length_error,
+            'digit_error': digit_error,
+            'symbol_error': symbol_error,
         }
+
 
 def flash_password_errors(password_validation):
     """
     Flashes all error messages from the password validation
-    
+
     Args:
         password_validation (dict): dict returned from password_is_valid()
     """
@@ -142,31 +148,35 @@ def flash_password_errors(password_validation):
             if error_key == 'length_error':
                 flash("Password must have at least 8 characters", "error")
             if error_key == 'digit_error':
-                flash("Password must have at least a digit","error")
+                flash("Password must have at least a digit", "error")
             if error_key == 'uppercase_error':
-                flash("Password must have at least an upercase letter","error")
+                flash("Password must have at least an upercase letter", "error")
             if error_key == 'lowercase_error':
-                flash("Password must have at least a lowercase letter","error")
+                flash("Password must have at least a lowercase letter", "error")
             if error_key == 'symbol_error':
-                flash("Password must have at least a symbol","error")
+                flash("Password must have at least a symbol", "error")
 
-def get_encoded_list(given_list : list):
+
+def get_encoded_list(given_list: list):
     encoded_list = []
     if len(given_list):
         for i in given_list:
             encoded_list.append(i.encode('utf-8'))
     return encoded_list
 
-def get_decoded_list(given_list : list):
+
+def get_decoded_list(given_list: list):
     decoded_list = []
     if len(given_list):
         for i in given_list:
             decoded_list.append(i.decode('utf-8'))
     return decoded_list
 
+
 def get_attr(user):
-    atts = ['otherMailbox','otherHomePhone','otherMobile','otherTelephone','macAddress','jpegPhoto']
-    att_compilation={}
+    atts = ['otherMailbox', 'otherHomePhone', 'otherMobile',
+            'otherTelephone', 'macAddress', 'jpegPhoto']
+    att_compilation = {}
     for att in atts:
         if att in user.keys():
             if att == 'jpegPhoto':
@@ -178,11 +188,14 @@ def get_attr(user):
             att_compilation[att] = ['0']
     return att_compilation
 
-def get_valid_macs(macs : list):
-    fixed = []
+
+def get_valid_macs(macs: list):
+    valid = []
+    invalid = []
     for mac in macs:
         if re.match("[0-9a-f]{2}([-:]?)[0-9a-f]{2}(\\1[0-9a-f]{2}){4}$", mac.lower()):
-            fixed.append(mac.replace(":", "-").upper())
+            valid.append(mac.replace(":", "-").upper())
         else:
             flash(f"Invalid MAC address: {mac}", "error")
-    return fixed
+            invalid.append(mac.replace(":", "-").upper())
+    return {'valid': valid, 'invalid': invalid}

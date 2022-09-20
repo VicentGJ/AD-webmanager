@@ -12,4 +12,3 @@ ADwebmanager.sock
 config-nginx.conf
 config-uwsgi.ini
 wsgi.py
-*.log

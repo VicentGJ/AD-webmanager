@@ -1,26 +1,8 @@
-#!/usr/bin/python2
-# -*- coding: utf-8 -*-
-
-# Copyright (C) 2012-2015 Stéphane Graber
-# Author: Stéphane Graber <stgraber@ubuntu.com>
-
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You can find the license on Debian systems in the file
-# /usr/share/common-licenses/GPL-2
-
+import logging
 import argparse
 from datetime import date
 import os
-
+from settings import Settings
 app_prefix = "/opt/samba4-manager-master/"
 
 # Check if running from bzr
@@ -54,46 +36,26 @@ from settings import Settings
 app = Flask(__name__,
             static_folder="%s/static" % app_prefix,
             template_folder="%s/templates" % app_prefix)
-# import logging
-# logging.basicConfig(
-#     filename=f'./logs/{date.today()}.log',
-#     level=logging.INFO, 
-#     format="[%(asctime)s] %(levelname)s %(module)s: %(message)s"
-#     )
-########
-# import logging
-# import sys
 
-# file_handler = logging.FileHandler(filename=f'./logs/{date.today()}-v2.log')
-# stdout_handler = logging.StreamHandler(stream=sys.stdout)
-# handlers = [file_handler, stdout_handler]
+if Settings.USE_LOGGING:
+    import logging
+    import sys
 
-# logging.basicConfig(
-#     level=logging.DEBUG, 
-#     format='[%(asctime)s] {%(filename)s:%(lineno)d} %(levelname)s - %(message)s - ',
-#     handlers=handlers,
-# )
-########
-import logging
-import sys
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG)
+    formatter = logging.Formatter('%(asctime)s | %(levelname)s | %(message)s', 
+                                '%Y-%m-%d %H:%M:%S')
 
-logger = logging.getLogger()
-logger.setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(asctime)s | %(levelname)s | %(message)s', 
-                              '%Y-%m-%d %H:%M:%S')
+    stdout_handler = logging.StreamHandler(sys.stderr)
+    stdout_handler.setLevel(logging.DEBUG)
+    stdout_handler.setFormatter(formatter)
 
-stdout_handler = logging.StreamHandler(sys.stderr)
-stdout_handler.setLevel(logging.DEBUG)
-stdout_handler.setFormatter(formatter)
+    file_handler = logging.FileHandler(f'./logs/{date.today()}-v3.log')
+    file_handler.setLevel(logging.DEBUG)
+    file_handler.setFormatter(formatter)
 
-file_handler = logging.FileHandler(f'./logs/{date.today()}-v3.log')
-file_handler.setLevel(logging.DEBUG)
-file_handler.setFormatter(formatter)
-
-logger.addHandler(file_handler)
-logger.addHandler(stdout_handler)
-
-
+    logger.addHandler(file_handler)
+    logger.addHandler(stdout_handler)
 app.config.from_object(Settings)
 app.jinja_env.globals['url_for'] = url_for
 
@@ -168,7 +130,7 @@ def pre_request():
 
     # The various caches
     g.ldap_cache = {}
-
+    g.app_version = "v2022.09.1"
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080)

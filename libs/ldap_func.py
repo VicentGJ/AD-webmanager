@@ -48,11 +48,11 @@ LDAP_AD_USERACCOUNTCONTROL_VALUES = {2: (u"Deactivated", True),
 
 LDAP_AD_BOOL_ATTRIBUTES = ['showInAdvancedViewOnly']
 LDAP_AD_GUID_ATTRIBUTES = ['objectGUID']
-LDAP_AD_MULTIVALUE_ATTRIBUTES = ['member', 'memberOf', 'objectClass', 'repsTo','macAddress',
-                                 'servicePrincipalName', 'sshPublicKey', 'managedObjects',
-                                 'proxyAddresses', 'otherMailbox', 'dsCorePropagationData', 
+LDAP_AD_MULTIVALUE_ATTRIBUTES = ['member', 'memberOf', 'objectClass', 'repsTo', 'macAddress', 'dnsRecord', 'ipsecOwnersReference',
+                                 'servicePrincipalName', 'sshPublicKey', 'managedObjects', 'directReports', 'wellKnownObjects',
+                                 'proxyAddresses', 'otherMailbox', 'dsCorePropagationData',
                                  'msSFU30SearchAttributes', 'msSFU30ResultAttributes', 'msSFU30KeyAttributes',
-                                 'ipsecNFAReference', 'dNSProperty', 'otherHomePhone','otherMobile','otherTelephone']
+                                 'ipsecNFAReference', 'dNSProperty', 'otherHomePhone', 'otherMobile', 'otherTelephone']
 LDAP_AD_SID_ATTRIBUTES = ['objectSid']
 LDAP_AD_UINT_ATTRIBUTES = ['userAccountControl', 'groupType']
 LDAP_AD_Object_ATTRIBUTES = ['jpegPhoto', 'ipsecData', 'dnsRecord']
@@ -136,6 +136,7 @@ def ldap_get_group(groupname, key="sAMAccountName"):
     return ldap_get_entry_simple({'objectClass': 'group',
                                   key: groupname})
 
+
 def ldap_get_ou(ou_name, key="distinguishedName"):
     """
         Return the attributes for the ou or None if it doesn't exist.
@@ -189,7 +190,7 @@ def ldap_get_entry(ldap_filter):
     """
     entries = ldap_get_entries(ldap_filter)
     # Only allow a single entry
-    if isinstance(entries,list) and len(entries) == 1:
+    if isinstance(entries, list) and len(entries) == 1:
         return entries[0]
 
     return None
@@ -237,7 +238,7 @@ def ldap_get_entries(ldap_filter, base=None, scope=None, attrlist=None, ignore_e
         if 'primaryGroupID' in attributes:
             # Retrieve primary group for user
             group = ldap_get_group('%s-%s' %
-                                   (g.ldap['domain_sid'],attributes['primaryGroupID']),'objectSid')
+                                   (g.ldap['domain_sid'], attributes['primaryGroupID']), 'objectSid')
             attributes['__primaryGroup'] = group['distinguishedName']
 
         # Cache or refresh the entry
@@ -248,26 +249,28 @@ def ldap_get_entries(ldap_filter, base=None, scope=None, attrlist=None, ignore_e
         entries.append(attributes)
     return entries
 
-def ldap_obj_has_children (base):
+
+def ldap_obj_has_children(base):
     scope = 'onelevel'
-    filter=None
-    attrlist=['distinguishedName']
-    result = ldap_get_entries(filter,base,scope,attrlist)
+    filter = None
+    attrlist = ['distinguishedName']
+    result = ldap_get_entries(filter, base, scope, attrlist)
     if len(result):
         return True
     return False
 
-def ldap_get_all_users ():
+
+def ldap_get_all_users(filter=None, attrset=None):
     base = g.ldap['search_dn']
     scope = 'subtree'
-    attrlist = ['sAMAccountName'] #set to None if need to get all
-    filter = 'objectClass=organizationalPerson' 
-    users = ldap_get_entries(filter,base,scope,attrlist)
-    user_list = []
-    for user in users:
-        user_list.append(user['sAMAccountName'])
-    
-    return sorted(user_list, key=str.casefold)
+    attrlist = attrset  # set to None if need to get all
+    if not filter:
+        filter = '(objectClass=organizationalPerson)'
+    else:
+        filter = f'(&(objectClass=organizationalPerson)({filter}))'
+    user_list = ldap_get_entries(filter, base, scope, attrlist)
+    return user_list
+
 
 def ldap_get_members(name=None):
     """
@@ -350,7 +353,7 @@ def ldap_update_attribute(dn, attribute, value=None, new_parent=None, objectClas
     """
         Set/Update a given attribute.
     """
-    
+
     if 'connection' not in g.ldap:
         return False
 
@@ -364,7 +367,7 @@ def ldap_update_attribute(dn, attribute, value=None, new_parent=None, objectClas
 
     if (attribute == 'distinguishedName'):
         connection.rename_s(dn, value, new_parent)
-    
+
     # if objectClass and objectClass not in current_entry['objectClass']:
     #     # It's add a new class to the object,  its not an attribute update
     #     new_class_list = current_entry['objectClass'].append(objectClass)
@@ -372,11 +375,11 @@ def ldap_update_attribute(dn, attribute, value=None, new_parent=None, objectClas
     #     new = {'objectClass': new_class_list}
     #     ldif = modlist.modifyModlist(old, new)
     #     connection.modify_s(dn, ldif)
-    
+
     elif isinstance(value, list):
         # Flush all entries and re-add everything
         new_values = []
-        
+
         if len(value) > 0:
             for i in value:
                 a = i.encode('utf-8')
@@ -393,22 +396,25 @@ def ldap_update_attribute(dn, attribute, value=None, new_parent=None, objectClas
         if attribute == 'jpegPhoto':
             mod_attrs.append((ldap.MOD_REPLACE, attribute, value))
         else:
-            mod_attrs.append((ldap.MOD_REPLACE, attribute, value.encode('utf-8')))
+            mod_attrs.append(
+                (ldap.MOD_REPLACE, attribute, value.encode('utf-8')))
     elif value:
         # add a new attribute
         if attribute == 'jpegPhoto':
             mod_attrs.append((ldap.MOD_ADD, attribute, [value]))
         else:
-            mod_attrs.append((ldap.MOD_ADD, attribute, [value.encode('utf-8')]))
+            mod_attrs.append(
+                (ldap.MOD_ADD, attribute, [value.encode('utf-8')]))
 
     if len(mod_attrs) != 0:
         connection.modify_s(dn, mod_attrs)
+
 
 def ldap_update_attribute_old(dn, attribute, value, objectclass=None):
     """
         Set/Update a given attribute.
     """
-    
+
     if 'connection' not in g.ldap:
         return False
 
@@ -454,21 +460,22 @@ def ldap_update_attribute_old(dn, attribute, value, objectclass=None):
 
 
 def ldap_add_users_to_group(dn, attribute, value):
-    
+
     if 'connection' not in g.ldap:
         return False
 
     connection = g.ldap['connection']
     mod_attrs = []
     new_values = []
-    
+
     for i in value:
         a = i.encode('utf-8')
         new_values.append(a)
-                   
+
     mod_attrs.append((ldap.MOD_REPLACE, attribute, new_values))
     if len(mod_attrs) != 0:
         connection.modify_s(dn, mod_attrs)
+
 
 def ldap_user_exists(username=None):
     """
@@ -490,6 +497,7 @@ def ldap_group_exists(groupname=None):
         return True
 
     return False
+
 
 def ldap_ou_exists(ou_name=None):
     """
@@ -528,7 +536,7 @@ def _ldap_connect(username, password):
         connection = ldap.initialize("ldaps://%s:636" % server)
         try:
             connection.simple_bind_s("%s@%s" % (username, g.ldap['domain']),
-                                    password)
+                                     password)
 
             g.ldap['connection'] = connection
             g.ldap['server'] = server
@@ -537,22 +545,22 @@ def _ldap_connect(username, password):
             # Get domain SID
             # Can't go through ldap_get_entry as it requires domain_sid be set.
             result = connection.search_s(g.ldap['dn'], ldap.SCOPE_BASE)
-            g.ldap['domain_sid'] = _ldap_decode_attribute("objectSid", result[0][1]['objectSid'])
+            g.ldap['domain_sid'] = _ldap_decode_attribute(
+                "objectSid", result[0][1]['objectSid'])
 
             return True
         except ldap.INVALID_CREDENTIALS:
             return False
-        #except:
+        # except:
         #   continue
-        
 
     #raise Exception("No server reachable at this point.")
 
 
 def _ldap_sid2str(sid):
     version = struct.unpack('B', sid[0:1])[0]
-    assert version ==1, version
-    lenght = struct.unpack('B', sid[1:2])[0] 
+    assert version == 1, version
+    lenght = struct.unpack('B', sid[1:2])[0]
     authority = struct.unpack(b'>Q', b'\x00\x00' + sid[2:8])[0]
     string = 'S-%d-%d' % (version, authority)
     sid = sid[8:]
@@ -590,7 +598,7 @@ def _ldap_decode_attribute(key, value):
     # Decode boolean values
     if key in LDAP_AD_BOOL_ATTRIBUTES:
         return value == "TRUE"
-    
+
     # Do nothing to binary object files
     if key in LDAP_AD_Object_ATTRIBUTES:
         return value
@@ -623,6 +631,7 @@ def ldap_auth(group=None):
             return view_func(*args, **kwargs)
         return wraps(view_func)(_decorator)
     return _my_decorator
+
 
 def tryFunc():
     """
