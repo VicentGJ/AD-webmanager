@@ -130,7 +130,7 @@ def pre_request():
 
     # The various caches
     g.ldap_cache = {}
-    g.app_version = "v22.09.1"
+    g.app_version = "v2022.09.1"
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080)
