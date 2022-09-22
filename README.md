@@ -48,6 +48,7 @@ class Settings:
     SEARCH_DN = "dc=cujae,dc=edu,dc=cu"
     LDAP_SERVER = "10.8.1.63"
     DEBUG = True
+    USE_LOGGING = True
     # URL_PREFIX = "/domain"
     TREE_BLACKLIST = [
         "CN=ForeignSecurityPrincipals", "OU=sudoers", "CN=Builtin",
