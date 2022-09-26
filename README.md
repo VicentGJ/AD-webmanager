@@ -35,6 +35,7 @@ regarding compatibility with other platforms is welcomed.
  * Set SEARCH\_DN to your Directory LDAP search base
  * Set LDAP\_SERVER to your Domain Controller IP
  * Use DEBUG = True if you want the test server to immediately reload after changes
+ * Set USE_LOGGING = True if you want to log to files and console, false logs to console only
  * ADD to TREE\_BLACKLIST the containers you want to hide in the root directory
  * Set ADMIN\_GROUP to the security group with read/write permission (default should be Domain Admins)
  * Add attribute pairs to SEARCH\_ATTRS and TREE\_ATTRIBUTES to customize the tree view
