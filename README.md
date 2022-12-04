@@ -28,38 +28,49 @@ Note: all code has only been tested and it's supported to run on Linux systems, 
 regarding compatibility with other platforms is welcomed. 
 
 ## Local config
-
- * Create settings.py to configure
- * Put a random string in SECRET\_KEY
- * Set LDAP\_DOMAIN to your Directory domain
- * Set SEARCH\_DN to your Directory LDAP search base
- * Set LDAP\_SERVER to your Domain Controller IP
- * Use DEBUG = True if you want the test server to immediately reload after changes
- * Set USE_LOGGING = True if you want to log to files and console, false logs to console only
+ * Create the .env file in the root directory
+   * Put a random string in SECRET\_KEY**
+   * Set LDAP\_DOMAIN to your Directory domain
+   * Set SEARCH\_DN to your Directory LDAP search base
+   * Set LDAP\_SERVER to your Domain Controller IP
+   * Use DEBUG = True if you want the test server to immediately reload after changes
+   * Set USE_LOGGING = True if you want to log to files and console, false logs to console only
+   * Set ADMIN\_GROUP to the security group with read/write permission (default should be Domain Admins)
+ * Create settings.py to configure**
  * ADD to TREE\_BLACKLIST the containers you want to hide in the root directory
- * Set ADMIN\_GROUP to the security group with read/write permission (default should be Domain Admins)
  * Add attribute pairs to SEARCH\_ATTRS and TREE\_ATTRIBUTES to customize the tree view
 
 ### Settings.py example:
 
 ```python
+from decouple import config
+
 class Settings:
-    SECRET_KEY = "AHDGIWIWBQSBKQYUQXBXKGAsdhahdflkjfgierqhs"
-    LDAP_DOMAIN = "cujae.edu.cu"
-    SEARCH_DN = "dc=cujae,dc=edu,dc=cu"
-    LDAP_SERVER = "10.8.1.63"
-    DEBUG = True
-    USE_LOGGING = True
-    # URL_PREFIX = "/domain"
+    SECRET_KEY = config("SECRET_KEY")
+    LDAP_DOMAIN = config("LDAP_DOMAIN")
+    SEARCH_DN = config("SEARCH_DN")
+    LDAP_DN = config("LDAP_DN", "DC=%s" % ",DC=".join(LDAP_DOMAIN.split(".")))
+    LDAP_SERVER = config("LDAP_SERVER")
+    DEBUG = config("DEBUG")
+    USE_LOGGING = config("USE_LOGGING")
+    SICCIP_AWARE = config("SICCIP_AWARE")
+    EXTRA_FIELDS = config("EXTRA_FIELDS")
+    ADMIN_GROUP = config("ADMIN_GROUP")
+    
     TREE_BLACKLIST = [
         "CN=ForeignSecurityPrincipals", "OU=sudoers", "CN=Builtin",
         "CN=Infrastructure", "CN=LostAndFound", "CN=Managed Service Accounts",
         "CN=NTDS Quotas", "CN=Program Data", "CN=System",
-        "OU=Domain Controllers"
+        "OU=Domain Controllers", "CN=Guest", "CN=krbtgt"
     ]
-    ADMIN_GROUP = "Domain Admins"
     SEARCH_ATTRS = [('sAMAccountName', 'Username'), ('givenName', 'Name')]
-    TREE_ATTRIBUTES = [['mail', "Email"], ['__type', "Type"], ['active', "Status"]]
+    USER_ATTRIBUTES = [
+        ["jpegPhoto", "Photo"],
+    ]
+    TREE_ATTRIBUTES = [
+        ['mail', "Email"], ['__type', "Type"], ['active', "Status"]
+    ]
+#    TIMEZONE = "Your/Timezone"
 ```
 
 You can install the dependencies using pip and the supplied requirements.txt. Especial 
@@ -75,10 +86,23 @@ apt install build-essential python3-dev libldap2-dev libsasl2-dev slapd ldap-uti
 python3 -m venv
 . venv/bin/activate
 pip install -r requirements.txt
+```
+
+
+## For running in local
+```sh
 python3 ADwebmanager.py
 ```
 
+## For running with Docker
+```sh
+docker build -t <image name> .
+#after image succsessfully built
+docker run -d -p 8080:8080 <image name>
+```
+
 You may then connect through [http://localhost:8080](http://localhost:8080)
+
 
 # Contributing
 Contributions are always appreciated!
