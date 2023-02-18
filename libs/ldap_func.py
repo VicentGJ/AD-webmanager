@@ -36,7 +36,6 @@ LDAP_AD_GROUPTYPE_VALUES = {1: ('System', False),
                             16: ('APP_BASIC', False),
                             32: ('APP_QUERY', False)}
 
-#!!! This need editing for open-source release
 LDAP_AD_USERACCOUNTCONTROL_VALUES = {2: (u"Deactivated", True),
                                      64: (u"User can't change password", False),
                                      512: ("Normal Account", False),
