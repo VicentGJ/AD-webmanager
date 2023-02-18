@@ -199,8 +199,10 @@ def init(app):
             if 'user' in entry['objectClass']:
                 entry['__type'] = "User"
                 entry['__target'] = url_for('user_overview', username=entry['sAMAccountName'])
+            if 'computer' in entry['objectClass']:
+                entry['__type'] = "Computer"
             if 'user' in entry['objectClass']:
-                if entry['userAccountControl'] == 2:
+                if entry['userAccountControl'].__and__(2):
                     entry['active'] = "Deactivated"
                 else:
                     entry['active'] = "Active"
