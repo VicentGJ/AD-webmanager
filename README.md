@@ -64,7 +64,7 @@ apt update
 apt install python3-venv python3-pip
 apt install build-essential python3-dev libldap2-dev libsasl2-dev ldap-utils tox lcov valgrind
 python3 -m venv ./venv
-. venv/bin/activate
+source ./venv/bin/activate
 pip install -r requirements.txt
 ```
 
