@@ -6,7 +6,6 @@ manager.cfg
 .vscode/
 Pipfile.lock
 venv/
-settings.py
 ADwebmanager.ini
 ADwebmanager.sock
 config-nginx.conf
