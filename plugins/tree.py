@@ -60,8 +60,7 @@ def init(app):
         if not admin:
             abort(401)
         else:
-            entry_fields = [('name', "Name"),
-                            ('__description', u"Login/Description")]
+            entry_fields = [('name', "Name")]
             
             if Settings.TREE_ATTRIBUTES:
                 for item in Settings.TREE_ATTRIBUTES:
@@ -148,12 +147,19 @@ def init(app):
         Get all entries that will be displayed in the tree
         """
         result = []
-
-        entries = ldap_get_entries("objectClass=top", base, scope, ignore_erros=True)
-        users = filter(lambda entry: 'sAMAccountName' in entry, entries)
-        users = filter(lambda entry: 'user' in entry['objectClass'], users)
-        users = filter(lambda entry: filter_select in entry, users)
-        users = filter(lambda entry: filter_str in entry[filter_select], users)
+        attr_list = [
+            'name', 'showInAdvancedViewOnly', 'objectType', 'objectGUID', 'distinguishedName'
+        ]
+        for attr_pair in Settings.TREE_ATTRIBUTES:
+            attr_list.append(attr_pair[0])
+        entries = ldap_get_entries("objectClass=top", base, scope, ignore_erros=True, attrlist=attr_list)
+        users = filter(lambda entry: 
+                       'sAMAccountName' in entry and 
+                       'user' in entry['objectClass'] and
+                       filter_select in entry and
+                       filter_str in entry[filter_select], 
+                       entries
+        )
         users = sorted(users, key=lambda entry: entry['sAMAccountName'])
         if filter_str == "top":
             other_entries = filter(lambda entry: 'user' not in entry['objectClass'], entries)
@@ -161,57 +167,32 @@ def init(app):
         
             for entry in other_entries:
                 if entry not in users:
-                    if 'description' not in entry:
-                        if 'sAMAccountName' in entry:
-                            entry['__description'] = entry['sAMAccountName']
-                    else:
-                        entry['__description'] = entry['description']
-
                     entry['__target'] = url_for('tree_base', base=entry['distinguishedName'])
-
                     if 'group' in entry['objectClass']:
-                        entry['__type'] = "Group"
                         entry['__target'] = url_for('group_overview',
                                                     groupname=entry['sAMAccountName'])
-                    elif 'organizationalUnit' in entry['objectClass']:
-                        entry['__type'] = "Organization Unit"
-                    elif 'container' in entry['objectClass']:
-                        entry['__type'] = "Container"
-                    elif 'builtinDomain' in entry['objectClass']:
-                        entry['__type'] = "Built-in"
-                    else:
-                        entry['__type'] = entry['objectClass'][1]
+                    entry['objectClass'] = entry['objectClass'][1]
                     result.append(entry)
                     for blacklist in Settings.TREE_BLACKLIST:
                         if entry['distinguishedName'].startswith(blacklist):
                             result.remove(entry)
 
         for entry in users:
-            if 'description' not in entry:
-                if 'sAMAccountName' in entry:
-                   entry['__description'] = entry['sAMAccountName']
-            else:
-                entry['__description'] = entry['description']
-
-            entry['__target'] = url_for('tree_base', base=entry['distinguishedName'])
-
             entry['name'] = entry['sAMAccountName']
             if 'user' in entry['objectClass']:
-                entry['__type'] = "User"
-                entry['__target'] = url_for('user_overview', username=entry['sAMAccountName'])
-            if 'computer' in entry['objectClass']:
-                entry['__type'] = "Computer"
-                entry['__target'] = url_for('computer_overview', username=entry['sAMAccountName'])
-            if 'user' in entry['objectClass']:
                 if entry['userAccountControl'].__and__(2):
-                    entry['active'] = "Deactivated"
+                    entry['userAccountControl'] = "Deactivated"
                 else:
-                    entry['active'] = "Active"
-            elif 'group' not in entry['objectClass']:
-                entry['active'] = "No available"
-
+                    entry['userAccountControl'] = "Active"
+                if 'computer' in entry['objectClass']:
+                    entry['objectClass'] = 'computer'
+                    entry['__target'] = url_for('computer_overview', username=entry['sAMAccountName'])
+                else:
+                    entry['objectClass'] = 'user'
+                    entry['__target'] = url_for('user_overview', username=entry['sAMAccountName'])
             if 'showInAdvancedViewOnly' in entry and entry['showInAdvancedViewOnly']:
                 continue
+            print(entry)
             result.append(entry)
         return result
 

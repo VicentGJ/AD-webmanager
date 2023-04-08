@@ -1,4 +1,4 @@
-import ldap
+import ldap, logging
 from flask import abort, flash, g, redirect, render_template, request
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField
@@ -116,4 +116,68 @@ def init(app):
                                user=user, identity_fields=identity_fields,
                                group_fields=group_fields, admin=admin, groups=groups,
                                parent=parent, uac_values=LDAP_AD_USERACCOUNTCONTROL_VALUES, name=name)
+    
+    @app.route('/computer/<username>/+edit-profile', methods=['GET', 'POST'])
+    @ldap_auth(Settings.ADMIN_GROUP)
+    def computer_edit_profile(username):
+        title = "Edit Computer"
+        if not ldap_user_exists(username):
+            flash(f"The computer: {username}, doesn't exists (err404)", "error")
+            return redirect(url_for('tree_base'))
+        form = ComputerEdit(request.form)
+        user = ldap_get_user(username=username)
+        attr_compilation = get_attr(user)
+        users = ldap_get_all_users()
+        field_mapping = [
+            ('sAMAccountName', form.user_name),
+            ('location', form.location),
+            ('machineRole', form.machine_role),
+            ('managedBy', form.managed_by),
+            ('userAccountControl', form.uac_flags)
+        ]
+        form.uac_flags.choices = [
+            (key, value[0]) for key, value in LDAP_AD_USERACCOUNTCONTROL_VALUES.items()]
+        form.visible_fields = [field[1] for field in field_mapping]
 
+        if form.validate_on_submit():
+            try:
+                for attribute, field in field_mapping:
+                    value = field.data
+                    has_attribute = user.get(attribute) != None
+                    if value != user.get(attribute) or not has_attribute:
+                        if attribute == 'sAMAccountName':
+                            # Rename the account
+                            ldap_update_attribute(
+                                user['distinguishedName'], "sAMAccountName", value)
+                            ldap_update_attribute(user['distinguishedName'], "userPrincipalName",
+                                                  "%s@%s" % (value, g.ldap['domain']))
+                            # Finish by renaming the whole record
+                            # TODO: refactor this to use rename_s instead of update
+                            rdn = f'CN={value}'
+                            ldap_update_attribute(
+                                user['distinguishedName'], "distinguishedName", rdn)
+                            user = ldap_get_user(value)
+                        elif attribute == 'userAccountControl':
+                            current_uac = 512
+                            for key, flag in (LDAP_AD_USERACCOUNTCONTROL_VALUES.items()):
+                                if flag[1] and key in field.data:
+                                    current_uac += key
+                            ldap_update_attribute(
+                                user['distinguishedName'], attribute, str(current_uac))
+                        else:
+                            ldap_update_attribute(
+                                user['distinguishedName'], attribute, value)
+                flash(u"Profile updated successfully.", "success")
+                return redirect(url_for('computer_overview', username=form.user_name.data))
+            except ldap.LDAPError as e:
+                e = dict(e.args[0])
+                flash(e['info'], "error")
+                logging.exception("Got an exception")
+            except Exception as e:
+                flash(e, 'error')
+                logging.exception("Got an exception")
+        elif form.errors:
+            flash(u"Data validation failed.", "error")
+  
+        return render_template("forms/basicform.html", form=form, title=title, 
+                               parent=url_for('computer_overview', username=username))
