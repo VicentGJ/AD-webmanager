@@ -96,7 +96,7 @@ def init(app):
     @ldap_auth(Settings.ADMIN_GROUP)
     def user_add(base):
         title = "Add User"
-        users = ldap_get_all_users()
+        users = ldap_get_all_users(attrset=['sAMAccountName'])
         user_list = []
         for user in users:
             user_list.append(user['sAMAccountName'])
@@ -267,7 +267,7 @@ def init(app):
                 group_details, key=lambda entry: entry['sAMAccountName'])
 
             available_groups = ldap_get_entries(
-                ldap_filter="(objectclass=group)", scope="subtree")
+                ldap_filter="(objectclass=group)", scope="subtree", attrlist=['distinguishedName', 'sAMAccountName'])
             group_choices = [("_", "Select a Group")]
 
             for group_entry in available_groups:
@@ -397,8 +397,9 @@ def init(app):
             return redirect(url_for('tree_base'))
 
         user = ldap_get_user(username=username)
+        print(user)
         attr_compilation = get_attr(user)
-        users = ldap_get_all_users()
+        users = ldap_get_all_users(attrset=['sAMAccountName'])
         user_list = []
         for data in users:
             user_list.append(data['sAMAccountName'])
