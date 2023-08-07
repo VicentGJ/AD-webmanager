@@ -148,7 +148,8 @@ def init(app):
         """
         result = []
         attr_list = [
-            'name', 'showInAdvancedViewOnly', 'objectType', 'objectGUID', 'distinguishedName'
+            'name', 'showInAdvancedViewOnly', 'objectType', 'objectGUID', 'distinguishedName', 'objectClass', 
+            'sAMAccountName', 'userAccountControl'
         ]
         for attr_pair in Settings.TREE_ATTRIBUTES:
             attr_list.append(attr_pair[0])
